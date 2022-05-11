@@ -64,6 +64,14 @@ export type StringType<P> =
           type: "code";
           lang: "css" | "html" | "javascript" | "json";
         }
+      | {
+          type: "code";
+          lang: "graphql";
+          endpoint: string | ContextDependentConfig<P, string>;
+          method?: string | ContextDependentConfig<P, string>;
+          headers?: object | ContextDependentConfig<P, object>;
+          variables?: object | ContextDependentConfig<P, object>;
+        }
     ) &
       StringTypeBase<P>);
 
@@ -108,7 +116,11 @@ export type JSONLikeType<P> =
   | ({
       type: "array";
     } & DefaultValueOrExpr<P, any[]> &
-      PropTypeBase<P>);
+      PropTypeBase<P>)
+  | ({
+      type: "dataSource";
+      dataSource: "airtable" | "cms";
+    } & PropTypeBase<P>);
 
 interface ChoiceTypeBase<P> extends PropTypeBase<P> {
   type: "choice";
