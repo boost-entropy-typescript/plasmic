@@ -64,7 +64,7 @@ export default function PlasmicLoaderPage(props${ifTs(
       prefetchedData={plasmicData}
       prefetchedQueryData={queryCache}
     >
-      <PlasmicComponent component={plasmicData.entryCompMetas[0].name} />
+      <PlasmicComponent component={plasmicData.entryCompMetas[0].displayName} />
     </PlasmicRootProvider>
   );
 }
@@ -120,15 +120,7 @@ import { PlasmicCanvasHost } from '@plasmicapp/loader-nextjs';
 import { PLASMIC } from '../plasmic-init';
 
 export default function PlasmicHost() {
-  return PLASMIC && (
-    <div>
-      <Script
-        src="https://static1.plasmic.app/preamble.js"
-        strategy="beforeInteractive"
-      />
-      <PlasmicCanvasHost />
-    </div>
-  );
+  return PLASMIC && <PlasmicCanvasHost />;
 }
     `;
   } else {
@@ -146,21 +138,13 @@ import { PlasmicCanvasHost, registerComponent } from '@plasmicapp/host';
 // registerComponent(...)
 
 export default function PlasmicHost() {
-  return (
-    <div>
-      <Script
-        src="https://static1.plasmic.app/preamble.js"
-        strategy="beforeInteractive"
-      />
-      <PlasmicCanvasHost />
-    </div>
-  );
+  return <PlasmicCanvasHost />;
 }
     `;
   }
 }
 
-export function wrapAppRootForCodegen() {
+export function wrapAppRootForCodegen(): string {
   return `
 import '../styles/globals.css'
 import { PlasmicRootProvider } from "@plasmicapp/react-web";

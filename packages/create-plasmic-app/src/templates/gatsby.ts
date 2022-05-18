@@ -53,7 +53,7 @@ const PlasmicGatsbyPage = ({ data }${ifTs(ts, ": PlasmicGatsbyPageProps")}) => {
         {pageMetadata.description && <meta property="og:description" content={pageMetadata.description} />}
         {pageMetadata.openGraphImageUrl && <meta property="og:image" content={pageMetadata.openGraphImageUrl} />}
       </Helmet>
-      <PlasmicComponent component={pageMeta.name} />
+      <PlasmicComponent component={pageMeta.displayName} />
     </PlasmicRootProvider>
   );
 };
@@ -157,16 +157,7 @@ export const GATSBY_SSR_CONFIG = `
 
 const React = require("react")
 
-/**
- * Add preamble to allow functional code components in studio.
- *
- * See: https://docs.plasmic.app/learn/functional-code-components/
- */
 const HeadComponents = [
-  <script
-    key="plasmic-preamble"
-    src="https://static1.plasmic.app/preamble.js"
-  />,
   <script
     key="plasmic-hmr"
     type="text/javascript"
@@ -235,7 +226,7 @@ export function initPlasmicLoaderWithRegistrations(plasmicOptions${ifTs(
 `.trim();
 };
 
-export function wrapAppRootForCodegen() {
+export function wrapAppRootForCodegen(): string {
   return `
 import React from "react";
 import { PlasmicRootProvider } from "@plasmicapp/react-web";
