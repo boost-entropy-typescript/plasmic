@@ -273,7 +273,7 @@ type RestrictPropType<T, P> = T extends string
   ? SupportControlled<NumberType<P> | JSONLikeType<P> | CustomType<P>>
   : PropType<P>;
 
-interface ActionProps<P> {
+export interface ActionProps<P> {
   componentProps: P;
   /**
    * `contextData` can be `null` if the prop controls are rendering before
@@ -282,16 +282,23 @@ interface ActionProps<P> {
    */
   contextData: InferDataType<P> | null;
   studioOps: {
-    showModal: (modalProps: ModalProps) => void;
+    showModal: (
+      modalProps: Omit<ModalProps, "onClose"> & { onClose?: () => void }
+    ) => void;
     refreshQueryData: () => void;
   };
 }
 
-interface Action<P> {
-  type: "button-action";
-  label: string;
-  onClick: (props: ActionProps<P>) => void;
-}
+export type Action<P> =
+  | {
+      type: "button-action";
+      label: string;
+      onClick: (props: ActionProps<P>) => void;
+    }
+  | {
+      type: "custom-action";
+      comp: React.ComponentType<ActionProps<P>>;
+    };
 
 type DistributedKeyOf<T> = T extends any ? keyof T : never;
 

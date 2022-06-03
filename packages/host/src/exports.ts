@@ -7,6 +7,8 @@ export * from "./data";
 export { PlasmicElement } from "./element-types";
 export { registerFetcher as unstable_registerFetcher } from "./fetcher";
 export {
+  Action,
+  ActionProps,
   ComponentMeta,
   ComponentRegistration,
   ComponentTemplates,
