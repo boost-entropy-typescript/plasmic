@@ -1,3 +1,4 @@
+import { documentToHtmlString } from "@contentful/rich-text-html-renderer";
 import {
   ComponentMeta,
   DataProvider,
@@ -43,17 +44,18 @@ export const ContentfulCredentialsProviderMeta: GlobalContextMeta<ContentfulCred
       type: "string",
       displayName: "Space",
       description: "Name of your space",
-      defaultValue: "esjp7d70hc5f",
+      defaultValue: "lmfbwqzbh93n",
     },
     accessToken: {
       type: "string",
       displayName: "Access Token ",
       description: "Access Token",
-      defaultValue: "eNN04tTEhz0iTFvx5_03m43jRrqsplKUzLhLLesqZyc",
+      defaultValue: "aWvf6oSLTuqxKCxSUpokajdQr84hGQFE6zoJG7DVVLg",
     },
     environment: {
       type: "string",
       displayName: "Environment",
+      defaultValue: "master",
     },
   },
 };
@@ -209,16 +211,62 @@ export function ContentfulFetcher({
     );
   }
 
+  const parseContentfulData = (data: Record<string, any>) => {
+    if (!data?.fields) {
+      return undefined;
+    }
+
+    const parsedData: any = {};
+    const schema: any = {};
+    for (const [key, field] of Object.entries<any>(data.fields)) {
+      if (typeof field !== "object") {
+        parsedData[key] = field;
+        schema[key] = typeof field;
+      } else if (Array.isArray(field)) {
+        parsedData[key] = [];
+        schema[key] = [];
+        for (const item of field) {
+          parsedData[key].push({
+            title: item.fields.title,
+            description: item.fields.description,
+            url: item.fields.file.url,
+            contentType: item.fields.file.contentType,
+            fileName: item.fields.file.fileName,
+            size: item.fields.file.size,
+            height: item.fields.file.details.image.height,
+            width: item.fields.file.details.image.width,
+          });
+          schema[key].push("image");
+        }
+      } else if (field.nodeType === "document") {
+        parsedData[key] = documentToHtmlString(field);
+        schema[key] = "rich-text";
+      } else {
+        parsedData[key] = field;
+        schema[key] = typeof field;
+      }
+    }
+
+    return { data: parsedData, schema };
+  };
+
   let renderedData;
   if (contentType && entryID) {
     renderedData = (
-      <DataProvider name={"contentfulItem"} data={entryData}>
+      <DataProvider
+        name={"contentfulItem"}
+        data={parseContentfulData(entryData)}
+      >
         {children}
       </DataProvider>
     );
   } else if (contentType) {
     renderedData = entriesData?.items?.map((item: any, index: number) => (
-      <DataProvider key={item?.sys?.id} name={"contentfulItem"} data={item}>
+      <DataProvider
+        key={item?.sys?.id}
+        name={"contentfulItem"}
+        data={parseContentfulData(item)}
+      >
         {repeatedElement(index === 0, children)}
       </DataProvider>
     ));
@@ -235,8 +283,8 @@ export function ContentfulFetcher({
 
 interface ContentfulFieldProps {
   className?: string;
-  field?: string;
-  setControlContextData?: (data: { fields: string[] }) => void;
+  objectPath?: (string | number)[];
+  setControlContextData?: (data: { data: object }) => void;
 }
 
 export const ContentfulFieldMeta: ComponentMeta<ContentfulFieldProps> = {
@@ -245,11 +293,9 @@ export const ContentfulFieldMeta: ComponentMeta<ContentfulFieldProps> = {
   importName: "ContentfulField",
   importPath: modulePath,
   props: {
-    field: {
-      type: "choice",
-      options: (props: any, ctx: any) => {
-        return ctx?.fields ?? [];
-      },
+    objectPath: {
+      type: "dataSelector",
+      data: (props, ctx) => ctx?.data ?? {},
       displayName: "Field",
       description: "Field to be displayed.",
     },
@@ -258,29 +304,34 @@ export const ContentfulFieldMeta: ComponentMeta<ContentfulFieldProps> = {
 
 export function ContentfulField({
   className,
-  field,
+  objectPath,
   setControlContextData,
 }: ContentfulFieldProps) {
   const item = useSelector("contentfulItem");
   if (!item) {
     return <div>ContentfulField must be used within a ContentfulFetcher </div>;
   }
-  // Getting only fields that aren’t objects
-  const displayableFields = Object.keys(item?.fields).filter((field) => {
-    const value = L.get(item?.fields, field);
-    return typeof value !== "object";
-  });
+  console.log("dale", "contentfulItem", item);
   setControlContextData?.({
-    fields: displayableFields,
+    data: item.data,
   });
-  if (!field) {
+  if (!objectPath) {
     return <div>Please specify a valid path or select a field.</div>;
   }
 
-  const data = L.get(item?.fields, field as string);
+  const data = L.get(item.data, objectPath);
+  const type = L.get(item.schema, objectPath);
   if (!data) {
     return <div>Please specify a valid field.</div>;
+  } else if (type === "rich-text") {
+    return (
+      <div className={className} dangerouslySetInnerHTML={{ __html: data }} />
+    );
+  } else if (type === "image") {
+    return <img className={className} src={data.url} />;
+  } else if (typeof data !== "object") {
+    return <div className={className}>{data}</div>;
   } else {
-    return <div className={className}> {data} </div>;
+    return <div className={className}>{data.toString()}</div>;
   }
 }
