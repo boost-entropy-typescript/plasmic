@@ -67,9 +67,10 @@ export type StringType<P> =
       | {
           type: "cardPicker";
           modalTitle?: string | ContextDependentConfig<P, string>;
-          cards:
+          options:
             | {
                 value: string;
+                label?: string;
                 imgUrl: string;
                 footer?: React.ReactNode;
               }[]
@@ -77,6 +78,7 @@ export type StringType<P> =
                 P,
                 {
                   value: string;
+                  label?: string;
                   imgUrl: string;
                   footer?: React.ReactNode;
                 }[]
@@ -316,6 +318,7 @@ export interface ActionProps<P> {
     refreshQueryData: () => void;
     appendToSlot: (element: PlasmicElement, slotName: string) => void;
     removeFromSlotAt: (pos: number, slotName: string) => void;
+    updateProps: (newValues: any) => void;
   };
 }
 
@@ -327,7 +330,7 @@ export type Action<P> =
     }
   | {
       type: "custom-action";
-      comp: React.ComponentType<ActionProps<P>>;
+      control: React.ComponentType<ActionProps<P>>;
     };
 
 type DistributedKeyOf<T> = T extends any ? keyof T : never;

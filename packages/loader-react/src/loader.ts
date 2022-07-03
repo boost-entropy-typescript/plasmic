@@ -116,6 +116,9 @@ export class InternalPlasmicComponentLoader {
     activeSplits: [],
   };
 
+  private substitutedComponents: Record<string, React.ComponentType<any>> = {};
+  private substitutedGlobalVariantHooks: Record<string, () => any> = {};
+
   constructor(private opts: InitOptions) {
     this.registry = Registry.getInstance();
     this.fetcher = new PlasmicModulesFetcher(opts);
@@ -130,6 +133,10 @@ export class InternalPlasmicComponentLoader {
       // same contexts here and in loader-downloaded code.
       '@plasmicapp/query': PlasmicQuery,
       '@plasmicapp/host': PlasmicHost,
+      '@plasmicapp/loader-runtime-registry': {
+        components: this.substitutedComponents,
+        globalVariantHooks: this.substitutedGlobalVariantHooks,
+      },
     });
   }
 
@@ -241,10 +248,8 @@ export class InternalPlasmicComponentLoader {
       specsToFetch: ComponentLookupSpec[]
     ) => {
       await this.fetchMissingData({ missingSpecs: specsToFetch });
-      const {
-        found: existingMetas2,
-        missing: missingSpecs2,
-      } = this.maybeGetCompMetas(...specs);
+      const { found: existingMetas2, missing: missingSpecs2 } =
+        this.maybeGetCompMetas(...specs);
       if (missingSpecs2.length > 0) {
         return null;
       }
@@ -258,10 +263,8 @@ export class InternalPlasmicComponentLoader {
     }
 
     // Else we only fetch actually missing specs
-    const {
-      found: existingMetas,
-      missing: missingSpecs,
-    } = this.maybeGetCompMetas(...specs);
+    const { found: existingMetas, missing: missingSpecs } =
+      this.maybeGetCompMetas(...specs);
     if (missingSpecs.length === 0) {
       return prepComponentData(this.bundle, ...existingMetas);
     }
@@ -368,9 +371,9 @@ export class InternalPlasmicComponentLoader {
     // in component meta.
     for (const sub of this.subs) {
       const metas = getCompMetas(this.bundle.components, sub.lookup);
-      metas.forEach((meta) =>
-        this.registry.register(meta.entry, { default: sub.component })
-      );
+      metas.forEach((meta) => {
+        this.substitutedComponents[meta.id] = sub.component;
+      });
     }
 
     // We also swap global variants' useXXXGlobalVariant() hook with
@@ -381,12 +384,8 @@ export class InternalPlasmicComponentLoader {
     // hooks to read from them instead.
     for (const globalGroup of this.bundle.globalGroups) {
       if (globalGroup.type !== 'global-screen') {
-        this.registry.register(globalGroup.contextFile, {
-          [globalGroup.useName]: createUseGlobalVariant(
-            globalGroup.name,
-            globalGroup.projectId
-          ),
-        });
+        this.substitutedGlobalVariantHooks[globalGroup.id] =
+          createUseGlobalVariant(globalGroup.name, globalGroup.projectId);
       }
     }
     this.registry.updateModules(this.bundle);
