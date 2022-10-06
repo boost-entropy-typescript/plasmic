@@ -1,5 +1,5 @@
 {
-  "version": "0.1.54",
+  "version": "0.0.1",
   "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -32,16 +32,16 @@
     "singleQuote": true,
     "trailingComma": "es5"
   },
-  "name": "@plasmicapp/query",
-  "author": "Chung Wu",
-  "module": "dist/query.esm.js",
+  "name": "@plasmicpkgs/plasmic-tabs",
+  "author": "Abdukhamid Latipov",
+  "module": "dist/plasmic-tabs.esm.js",
   "size-limit": [
     {
-      "path": "dist/query.cjs.production.min.js",
+      "path": "dist/plasmic-tabs.cjs.production.min.js",
       "limit": "10 KB"
     },
     {
-      "path": "dist/query.esm.js",
+      "path": "dist/plasmic-tabs.esm.js",
       "limit": "10 KB"
     }
   ],
@@ -58,7 +58,6 @@
     "typescript": "^4.5.4"
   },
   "dependencies": {
-    "react-ssr-prepass": "^1.4.0",
-    "swr": ">1.0.0"
+    "constate": "^3.3.2"
   }
 }

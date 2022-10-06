@@ -1,6 +1,6 @@
 {
   "name": "@plasmicpkgs/react-slick",
-  "version": "0.0.84",
+  "version": "0.0.85",
   "description": "Plasmic registration call for the React Slick Slider component",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "@seznam/compose-react-refs": "^1.0.6",
+    "antd": "^4.23.4",
     "react-slick": "^0.28.1",
     "slick-carousel": "^1.8.1"
   },
