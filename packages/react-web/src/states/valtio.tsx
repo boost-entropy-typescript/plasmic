@@ -3,13 +3,15 @@ import deepEqual from "fast-deep-equal";
 import React from "react";
 import { proxy as createValtioProxy, ref, useSnapshot } from "valtio";
 import { subscribeKey } from "valtio/utils";
-import { set } from "./helpers";
+import { set, useIsomorphicLayoutEffect } from "./helpers";
 
-const mkUntrackedValue = (o: any) => (typeof o === "object" ? ref(o) : o);
+const mkUntrackedValue = (o: any) =>
+  o != null && typeof o === "object" ? ref(o) : o;
 
 type InitFunc<T> = (
   $props: Record<string, any>,
   $state: $State,
+  $ctx: Record<string, any>,
   indexes: number[]
 ) => T;
 type ObjectPath = (string | number)[];
@@ -59,7 +61,8 @@ interface Internal$State {
   statesInstanceBySpec: Map<string, Internal$StateInstance[]>;
   existingStates: Map<string, Internal$StateInstance>;
   registrationsQueue: { pathStr: string; f: InitFunc<any> }[];
-  props: any;
+  props: Record<string, any>;
+  ctx: Record<string, any>;
 }
 
 const transformPathStringToObj = (str: string) => {
@@ -293,7 +296,12 @@ function initializeStateValue(
           $$state.stateValues,
           initialStatePath,
           mkUntrackedValue(
-            initialSpec.initFunc!($$state.props, $state, getIndexes(path, spec))
+            initialSpec.initFunc!(
+              $$state.props,
+              $state,
+              $$state.ctx,
+              getIndexes(path, spec)
+            )
           )
         )
     );
@@ -303,6 +311,7 @@ function initializeStateValue(
   const initialValue = initialSpec.initFunc!(
     $$state.props,
     $state,
+    $$state.ctx,
     getIndexes(initialStatePath, initialSpec)
   );
   saveStateInitialValue($$state, initialStatePath, initialSpec, initialValue);
@@ -334,7 +343,8 @@ function saveStateInitialValue(
 
 export function useDollarState(
   specs: $StateSpec<any>[],
-  props: Record<string, any>
+  props: Record<string, any>,
+  $ctx?: Record<string, any>
 ) {
   const $$state = React.useRef(
     createValtioProxy<Internal$State>({
@@ -355,11 +365,13 @@ export function useDollarState(
       statesInstanceBySpec: new Map<string, Internal$StateInstance[]>(),
       existingStates: new Map<string, Internal$StateInstance>(),
       unsubscriptionsByState: {},
-      props: undefined,
+      props: {},
+      ctx: {},
       registrationsQueue: [],
     })
   ).current;
   $$state.props = mkUntrackedValue(props);
+  $$state.ctx = mkUntrackedValue($ctx ?? {});
 
   const $state = React.useRef(
     Object.assign(
@@ -404,6 +416,7 @@ export function useDollarState(
                     f(
                       props,
                       $state,
+                      $ctx ?? {},
                       getIndexes(path, $$state.specsByKey[specKey])
                     )
                   )
@@ -422,13 +435,18 @@ export function useDollarState(
   $$state.existingStates.forEach(({ path, specKey }) => {
     const spec = $$state.specsByKey[specKey];
     if (spec.initFunc) {
-      const newInit = spec.initFunc(props, $state, getIndexes(path, spec));
+      const newInit = spec.initFunc(
+        props,
+        $state,
+        $ctx ?? {},
+        getIndexes(path, spec)
+      );
       if (!deepEqual(newInit, get($$state.initStateValues, path))) {
         resetSpecs.push({ path, spec });
       }
     }
   });
-  React.useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     resetSpecs.forEach(({ path, spec }) => {
       const newInit = initializeStateValue($$state, path, spec);
       if (spec.onChangeProp) {
@@ -436,7 +454,7 @@ export function useDollarState(
       }
     });
   }, [props, resetSpecs]);
-  React.useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     $$state.registrationsQueue.forEach(({ f, pathStr }) => {
       $$state.specsByKey[pathStr].initFunc = f;
     });
@@ -455,7 +473,8 @@ export default useDollarState;
 // Simple version of $state useDollarState for read-only
 export function useCanvasDollarState(
   specs: $StateSpec<any>[],
-  props: Record<string, any>
+  props: Record<string, any>,
+  $ctx?: Record<string, any>
 ) {
   const $$state = createValtioProxy<Internal$State>({
     stateValues: {},
@@ -473,11 +492,12 @@ export function useCanvasDollarState(
     statesInstanceBySpec: new Map<string, Internal$StateInstance[]>(),
     existingStates: new Map<string, Internal$StateInstance>(),
     unsubscriptionsByState: {},
-    props: undefined,
+    props: {},
+    ctx: {},
     registrationsQueue: [],
   });
   $$state.props = mkUntrackedValue(props);
-
+  $$state.ctx = mkUntrackedValue($ctx);
   const $state = create$StateProxy($$state, (path, spec) => {
     return {
       get() {
