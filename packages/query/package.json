@@ -1,5 +1,5 @@
 {
-  "version": "0.1.57",
+  "version": "0.1.58",
   "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -58,7 +58,6 @@
     "typescript": "^4.5.4"
   },
   "dependencies": {
-    "react-ssr-prepass": "^1.4.0",
     "swr": "^1.0.0"
   }
 }
