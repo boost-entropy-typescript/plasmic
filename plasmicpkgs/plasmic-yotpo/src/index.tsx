@@ -1,15 +1,16 @@
+import React from 'react'
 import registerComponent, {
   ComponentMeta,
 } from "@plasmicapp/host/registerComponent";
 import registerGlobalContext from "@plasmicapp/host/registerGlobalContext";
 import {
-  ContentfulCredentialsProvider,
-  ContentfulCredentialsProviderMeta,
-  ContentfulFetcher,
-  ContentfulFetcherMeta,
-  ContentfulField,
-  ContentfulFieldMeta,
-} from "./contentful";
+  YotpoCredentialsProvider,
+  YotpoCredentialsProviderMeta,
+  YotpoReviewsMeta,
+  YotpoReviews,
+  YotpoStarRating,
+  YotpoStarRatingMeta
+} from "./yotpo";
 
 export function registerAll(loader?: {
   registerComponent: typeof registerComponent;
@@ -28,17 +29,19 @@ export function registerAll(loader?: {
 
   if (loader) {
     loader.registerGlobalContext(
-      ContentfulCredentialsProvider,
-      ContentfulCredentialsProviderMeta
+      YotpoCredentialsProvider,
+      YotpoCredentialsProviderMeta
     );
   } else {
     registerGlobalContext(
-      ContentfulCredentialsProvider,
-      ContentfulCredentialsProviderMeta
+      YotpoCredentialsProvider,
+      YotpoCredentialsProviderMeta
     );
   }
-  _registerComponent(ContentfulFetcher, ContentfulFetcherMeta);
-  _registerComponent(ContentfulField, ContentfulFieldMeta);
+
+  _registerComponent(YotpoReviews, YotpoReviewsMeta);
+  _registerComponent(YotpoStarRating, YotpoStarRatingMeta);
+
 }
 
-export * from "./contentful";
+export * from "./yotpo";
