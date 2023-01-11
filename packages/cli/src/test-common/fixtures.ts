@@ -1,3 +1,4 @@
+/// <reference types="@types/jest" />
 import L from "lodash";
 import { SyncArgs } from "../actions/sync";
 import { PlasmicConfig, ProjectConfig } from "../utils/config-utils";
@@ -96,8 +97,6 @@ export function standardTestSetup(includeDep = true) {
     nonRecursive: false,
     skipUpgradeCheck: true,
     forceOverwrite: true,
-    newComponentScheme: "blackbox",
-    appendJsxOnMissingBase: false,
     config: tmpRepo.plasmicJsonPath(),
     auth: tmpRepo.plasmicAuthPath(),
     loaderConfig: tmpRepo.plasmicLoaderJsonPath(),
