@@ -11,7 +11,13 @@ import {
   StateSpecNode,
 } from "./graph";
 import { assert, set, useIsomorphicLayoutEffect } from "./helpers";
-import { $State, $StateSpec, InitFunc, ObjectPath } from "./types";
+import {
+  $State,
+  $StateSpec,
+  InitFunc,
+  ObjectPath,
+  PLASMIC_STATE_PROXY_SYMBOL,
+} from "./types";
 
 function isNum(value: string | number | symbol): value is number {
   return typeof value === "symbol" ? false : !isNaN(+value);
@@ -132,6 +138,10 @@ function create$StateProxy(
         return Reflect.deleteProperty(target, property);
       },
       get(target, property, receiver) {
+        if (property === PLASMIC_STATE_PROXY_SYMBOL) {
+          return true;
+        }
+
         proxyRoot = proxyRoot == null ? receiver : proxyRoot;
         const nextPath = getNextPath(property);
 
@@ -219,7 +229,7 @@ function create$StateProxy(
           : {}
         : Array.isArray(initialObject)
         ? []
-        : Object.create(Object.getPrototypeOf(initialObject));
+        : Object.create(Object.getPrototypeOf(initialObject ?? {}));
     const proxyObj = new Proxy(baseObject, handlers);
     if (initialObject) {
       Reflect.ownKeys(initialObject).forEach((key) => {
@@ -264,56 +274,53 @@ export function useDollarState(
   $$state.props = props;
   $$state.ctx = $ctx ?? {};
   const $state = React.useRef(
-    (() => {
-      const useRef$state = Object.assign(
-        create$StateProxy($$state, (node, path, proxyRoot) => {
-          if (!node.hasState(path)) {
-            node.createStateCell(path);
-            const spec = node.getSpec();
-            if (spec.initFunc) {
-              initializeStateValue($$state, node, path, proxyRoot);
-            } else if (!spec.valueProp) {
-              set(proxyRoot, path, spec.initVal);
-            }
+    Object.assign(
+      create$StateProxy($$state, (node, path, proxyRoot) => {
+        if (!node.hasState(path)) {
+          node.createStateCell(path);
+          const spec = node.getSpec();
+          if (spec.initFunc) {
+            initializeStateValue($$state, node, path, proxyRoot);
+          } else if (!spec.valueProp) {
+            set(proxyRoot, path, spec.initVal);
           }
-          return {
-            get(target, property, receiver) {
-              const spec = node.getSpec();
-              if (spec.valueProp) {
-                return $$state.props[spec.valueProp];
-              } else {
-                return Reflect.get(target, property, receiver);
-              }
-            },
-          };
-        }),
-        {
-          registerInitFunc: function <T>(
-            pathStr: string,
-            f: InitFunc<T>,
-            repetitionIndex?: number[]
-          ) {
-            const { node, realPath } = findStateCell(
-              $$state.rootSpecTree,
-              pathStr,
-              repetitionIndex
-            );
-            if (!node.hasState(realPath)) {
-              node.createStateCell(realPath);
-            }
-            if (
-              !deepEqual(
-                node.getState(realPath).initialValue,
-                f($$state.props, useRef$state, $$state.ctx)
-              )
-            ) {
-              $$state.registrationsQueue.push({ node, path: realPath, f });
+        }
+        return {
+          get(target, property, receiver) {
+            const spec = node.getSpec();
+            if (spec.valueProp) {
+              return $$state.props[spec.valueProp];
+            } else {
+              return Reflect.get(target, property, receiver);
             }
           },
-        }
-      );
-      return useRef$state;
-    })()
+        };
+      }),
+      {
+        registerInitFunc: function <T>(
+          pathStr: string,
+          f: InitFunc<T>,
+          repetitionIndex?: number[]
+        ) {
+          const { node, realPath } = findStateCell(
+            $$state.rootSpecTree,
+            pathStr,
+            repetitionIndex
+          );
+          if (!node.hasState(realPath)) {
+            node.createStateCell(realPath);
+          }
+          if (
+            !deepEqual(
+              node.getState(realPath).initialValue,
+              f($$state.props, $state, $$state.ctx)
+            )
+          ) {
+            $$state.registrationsQueue.push({ node, path: realPath, f });
+          }
+        },
+      }
+    )
   ).current;
 
   // For each spec with an initFunc, evaluate it and see if
