@@ -27,6 +27,8 @@ export interface $StateSpec<T> {
   onChangeProp?: string;
 
   isImmutable?: boolean;
+
+  variableType: "text" | "number" | "boolean" | "array" | "object" | "variant";
 }
 
 export interface $State {

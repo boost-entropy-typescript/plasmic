@@ -141,7 +141,11 @@ function create$StateProxy(
       },
       get(target, property, receiver) {
         if (property === PLASMIC_STATE_PROXY_SYMBOL) {
-          return true;
+          return {
+            node: currNode,
+            path: currPath,
+            isOutside,
+          };
         }
         const nextPath = getNextPath(property);
 
@@ -367,9 +371,7 @@ export function useDollarState(
     node: StateSpecNode<any>;
   }[] = [];
   $$state.specTreeLeaves
-    .flatMap((node) =>
-      node.states().map(({ stateCell }) => ({ stateCell, node }))
-    )
+    .flatMap((node) => node.states().map((stateCell) => ({ stateCell, node })))
     .forEach(({ node, stateCell }) => {
       const initFunc = node.getInitFunc(stateCell);
       if (initFunc) {
