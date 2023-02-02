@@ -67,6 +67,9 @@ export type StringType<P> =
           lang: "css" | "html" | "javascript" | "json";
         }
       | {
+          type: "richText";
+        }
+      | {
           type: "color";
           noDeref?: boolean;
         }
@@ -150,10 +153,19 @@ export type JSONLikeType<P> =
   | "object"
   | ({
       type: "object";
+      fields?: {
+        [p: string]: PropType<P>
+      }
     } & DefaultValueOrExpr<P, any> &
       PropTypeBase<P>)
   | ({
       type: "array";
+      itemType?: {
+        type: "object",
+        fields: {
+          [p: string]: PropType<P>
+        }
+      }
     } & DefaultValueOrExpr<P, any[]> &
       PropTypeBase<P>)
   | ({
@@ -520,6 +532,9 @@ export interface ComponentMeta<P> {
    * Whether the component provides data to its slots using DataProvider.
    */
   providesData?: boolean;
+  figmaMappings?: {
+    figmaComponentName: string;
+  }[];
 }
 
 export interface ComponentRegistration {
