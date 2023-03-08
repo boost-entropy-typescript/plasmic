@@ -156,7 +156,7 @@ interface TableContextData extends TablesContextData {
 }
 
 interface RowContextData extends TableContextData {
-  row: ApiCmsRow;
+  row?: ApiCmsRow;
   fieldMeta?: CmsFieldMeta;
 }
 
@@ -182,7 +182,7 @@ interface CmsQueryRepeaterProps
 
 export const cmsQueryRepeaterMeta: ComponentMeta<CmsQueryRepeaterProps> = {
   name: `${componentPrefix}-query-repeater`,
-  displayName: "CMS Data Loader",
+  displayName: "CMS Data Fetcher",
   description:
     "Fetches CMS data and repeats content of children once for every row fetched.",
   importName: "CmsQueryRepeater",
@@ -415,7 +415,11 @@ export const cmsRowFieldMeta: ComponentMeta<CmsRowFieldProps> = {
     table: {
       type: "choice",
       displayName: "Model",
-      description: "CMS model (table) to use.",
+      hidden: (props, ctx: TableContextData | null) =>
+        (ctx?.tables?.length ?? 0) <= 1 && !props.table,
+      helpText: "Pick model from a CMS Data Fetcher",
+      description:
+        "Usually not used! Only with multiple CMS Data Loaders, use this to choose which to show. Otherwise, go select the CMS Data Loader if you want to load different data.",
       options: (_, ctx) => mkTableOptions(ctx?.tables),
       defaultValueHint: (_, ctx) => ctx?.table,
     },
@@ -534,29 +538,31 @@ export function CmsRowField({
       Field {table ?? "Unknown Model"}.{field ?? "Unknown Field"}
     </div>
   );
+  const fieldMeta = res
+    ? deriveInferredTableField({
+        table: res.table,
+        tables,
+        field,
+        typeFilters: ["text", "long-text", "rich-text"],
+      })
+    : undefined;
+
+  if (tables) {
+    // TODO: Only include table if __plasmic_cms_row_{table} exists.
+    setControlContextData?.({
+      tables,
+      ...(res && res.row
+        ? { table: res.table, row: res.row, fieldMeta: fieldMeta }
+        : {}),
+    });
+  }
+
   if (!res) {
     return unknown;
   }
 
   if (!res.row) {
     return <div className={className}>Error: No CMS Entry found</div>;
-  }
-
-  const fieldMeta = deriveInferredTableField({
-    table: res.table,
-    tables,
-    field,
-    typeFilters: ["text", "long-text", "rich-text"],
-  });
-
-  if (tables) {
-    // TODO: Only include table if __plasmic_cms_row_{table} exists.
-    setControlContextData?.({
-      tables,
-      table: res.table,
-      row: res.row,
-      fieldMeta: fieldMeta,
-    });
   }
 
   if (!fieldMeta) {
@@ -668,7 +674,11 @@ export const cmsRowLinkMeta: ComponentMeta<CmsRowLinkProps> = {
     table: {
       type: "choice",
       displayName: "Model",
-      description: "CMS model (table) to use.",
+      hidden: (props, ctx: TableContextData | null) =>
+        (ctx?.tables?.length ?? 0) <= 1 && !props.table,
+      helpText: "Pick model from a CMS Data Fetcher",
+      description:
+        "Usually not used! Only with multiple CMS Data Loaders, use this to choose which to show. Otherwise, go select the CMS Data Loader if you want to load different data.",
       options: (_: any, ctx: TableContextData | null) =>
         mkTableOptions(ctx?.tables),
       defaultValueHint: (_, ctx) => ctx?.table,
@@ -784,7 +794,11 @@ export const cmsRowImageMeta: ComponentMeta<CmsRowImageProps> = {
     table: {
       type: "choice",
       displayName: "Model",
-      description: "CMS model (table) to use.",
+      hidden: (props, ctx: TableContextData | null) =>
+        (ctx?.tables?.length ?? 0) <= 1 && !props.table,
+      helpText: "Pick model from a CMS Data Fetcher",
+      description:
+        "Usually not used! Only with multiple CMS Data Loaders, use this to choose which to show. Otherwise, go select the CMS Data Loader if you want to load different data.",
       options: (_: any, ctx: TableContextData | null) =>
         mkTableOptions(ctx?.tables),
       defaultValueHint: (_, ctx) => ctx?.table,
@@ -881,7 +895,11 @@ export const cmsRowFieldValueMeta: ComponentMeta<CmsRowFieldValueProps> = {
     table: {
       type: "choice",
       displayName: "Model",
-      description: "CMS model (table) to use.",
+      hidden: (props, ctx: TableContextData | null) =>
+        (ctx?.tables?.length ?? 0) <= 1 && !props.table,
+      helpText: "Pick model from a CMS Data Fetcher",
+      description:
+        "Usually not used! Only with multiple CMS Data Loaders, use this to choose which to show. Otherwise, go select the CMS Data Loader if you want to load different data.",
       options: (_: any, ctx: TableContextData | null) =>
         mkTableOptions(ctx?.tables),
       defaultValueHint: (_, ctx) => ctx?.table,
