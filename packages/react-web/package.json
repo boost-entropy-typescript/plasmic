@@ -1,6 +1,6 @@
 {
   "name": "@plasmicapp/react-web",
-  "version": "0.2.171",
+  "version": "0.2.174",
   "description": "plasmic library for rendering in the presentational style",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -32,7 +32,34 @@
       "import": "./lib/query/index.js",
       "require": "./lib/query/index.cjs.js"
     },
-    "./lib/plasmic.css": "./lib/plasmic.css"
+    "./lib/plasmic.css": "./lib/plasmic.css",
+    "./skinny": {
+      "import": "./skinny/dist/index.js"
+    },
+    "./skinny/dist/plume/button": {
+      "import": "./skinny/dist/plume/button/index.js"
+    },
+    "./skinny/dist/plume/checkbox": {
+      "import": "./skinny/dist/plume/checkbox/index.js"
+    },
+    "./skinny/dist/plume/menu": {
+      "import": "./skinny/dist/plume/menu/index.js"
+    },
+    "./skinny/dist/plume/menu-button": {
+      "import": "./skinny/dist/plume/menu-button/index.js"
+    },
+    "./skinny/dist/plume/select": {
+      "import": "./skinny/dist/plume/select/index.js"
+    },
+    "./skinny/dist/plume/switch": {
+      "import": "./skinny/dist/plume/switch/index.js"
+    },
+    "./skinny/dist/plume/text-input": {
+      "import": "./skinny/dist/plume/text-input/index.js"
+    },
+    "./skinny/dist/plume/triggered-overlay": {
+      "import": "./skinny/dist/plume/triggered-overlay/index.js"
+    }
   },
   "files": [
     "dist",
@@ -59,9 +86,9 @@
   },
   "prettier": {},
   "dependencies": {
-    "@plasmicapp/data-sources": "0.1.46",
+    "@plasmicapp/data-sources": "0.1.48",
     "@plasmicapp/data-sources-context": "0.1.7",
-    "@plasmicapp/host": "1.0.113",
+    "@plasmicapp/host": "1.0.115",
     "@plasmicapp/query": "0.1.61",
     "@react-aria/checkbox": "^3.5.0",
     "@react-aria/focus": "^3.7.0",
