@@ -41,9 +41,20 @@ export interface PropTypeBase<P> {
    * markdown in the text here.
    */
   exprHint?: string;
+  /**
+   * Function for whether this prop should be hidden in the right panel,
+   * given the current props for this component
+   */
   hidden?: ContextDependentConfig<P, boolean>;
   readOnly?: boolean | ContextDependentConfig<P, boolean>;
+  /**
+   * If true, will hide the prop in a collapsed section; good for props that
+   * should not usually be used.
+   */
   advanced?: boolean;
+  /**
+   * If true, does not allow the user to use a dynamic expression for this prop
+   */
   disableDynamicValue?: boolean;
 }
 
@@ -369,6 +380,17 @@ type SlotType<P> =
       isRepeated?: boolean;
 
       /**
+       * A nicer, human-readable display name for your slot prop
+       */
+      displayName?: string;
+
+      /**
+       * Function for whether this slot should be hidden from the left tree,
+       * given the current props for this component
+       */
+      hidden?: ContextDependentConfig<P, boolean>;
+
+      /**
        * If slot is a render prop (accepts a function that takes in some
        * arguments and returns some JSX), then specify the names of the
        * arguments expected by the render prop function.
@@ -561,7 +583,7 @@ export type StyleSection =
   | "shadows"
   | "effects";
 
-export interface ComponentMeta<P> {
+export interface CodeComponentMeta<P> {
   /**
    * Any unique string name used to identify that component. Each component
    * should be registered with a different `meta.name`, even if they have the
@@ -678,6 +700,11 @@ export interface ComponentMeta<P> {
   unstable__refActions?: Record<string, RefActionRegistration<P>>;
 }
 
+/**
+ * @deprecated use CodeComponentMeta instead
+ */
+export type ComponentMeta<P> = CodeComponentMeta<P>;
+
 export interface FunctionParam<P> {
   name: string;
   displayName?: string;
@@ -692,7 +719,7 @@ export interface RefActionRegistration<P> {
 
 export interface ComponentRegistration {
   component: React.ComponentType<any>;
-  meta: ComponentMeta<any>;
+  meta: CodeComponentMeta<any>;
 }
 
 declare global {
@@ -707,7 +734,7 @@ if (root.__PlasmicComponentRegistry == null) {
 
 export default function registerComponent<T extends React.ComponentType<any>>(
   component: T,
-  meta: ComponentMeta<React.ComponentProps<T>>
+  meta: CodeComponentMeta<React.ComponentProps<T>>
 ) {
   // Check for duplicates
   if (

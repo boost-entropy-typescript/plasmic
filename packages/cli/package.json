@@ -1,6 +1,6 @@
 {
   "name": "@plasmicapp/cli",
-  "version": "0.1.235",
+  "version": "0.1.242",
   "description": "plasmic cli for syncing local code with Plasmic designs",
   "engines": {
     "node": ">=12"
@@ -20,7 +20,8 @@
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.12.1",
-    "@plasmicapp/react-web": "0.2.176",
+    "@plasmicapp/react-web": "0.2.181",
+    "@types/cli-progress": "^3.11.0",
     "@types/findup-sync": "^2.0.2",
     "@types/glob": "^7.1.3",
     "@types/inquirer": "^6.5.0",
@@ -54,6 +55,7 @@
     "@sentry/node": "^5.19.2",
     "axios": "^0.21.1",
     "chalk": "^4.1.0",
+    "cli-progress": "^3.12.0",
     "fast-glob": "^3.2.4",
     "findup-sync": "^4.0.0",
     "fs": "^0.0.1-security",
@@ -62,6 +64,7 @@
     "latest-version": "^5.1.0",
     "lodash": "^4.17.19",
     "moment": "^2.27.0",
+    "node-fetch": "^2",
     "open": "^8.0.9",
     "pako": "^1.0.11",
     "path": "^0.12.7",

@@ -1,6 +1,6 @@
 {
   "name": "@plasmicpkgs/plasmic-chakra-ui",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Plasmic registration calls for chakra ui components.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -21,6 +21,7 @@
     "analyze": "size-limit --why"
   },
   "peerDependencies": {
+    "@plasmicapp/host": ">=1.0.0",
     "react": ">=16"
   },
   "size-limit": [
@@ -45,7 +46,6 @@
   },
   "dependencies": {
     "@chakra-ui/react": "^2.2.8",
-    "@plasmicapp/host": "1.0.76",
     "react": ">=16.8.0"
   }
 }
