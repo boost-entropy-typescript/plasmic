@@ -1,6 +1,6 @@
 {
   "name": "@plasmicpkgs/plasmic-rich-components",
-  "version": "1.0.43",
+  "version": "1.0.44",
   "description": "Rich batteries-included general purpose components for business apps, admin panels, etc.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -53,7 +53,7 @@
     "access": "public"
   },
   "dependencies": {
-    "csv-stringify": "^6.3.0",
+    "csv-writer-browser": "^1.0.0",
     "fast-stringify": "^2.0.0",
     "lodash": "^4.17.21"
   }
