@@ -560,9 +560,6 @@ export function registerFormItem(loader?: Registerable) {
       initialValue: {
         type: "string",
       },
-      required: {
-        type: "boolean",
-      },
       rules: {
         type: "formValidationRules",
       } as any,
@@ -598,6 +595,13 @@ export function registerFormItem(loader?: Registerable) {
         displayName: "Always re-render",
         description:
           "Form items normally only re-render when the corresponding form value changes, for performance. This forces it to always re-render.",
+      },
+      dependencies: {
+        type: "array",
+        advanced: true,
+        displayName: "Dependencies",
+        description:
+          "Form items can depend on other form items. This forces it to reevaluate the validation rules when the other form item changes.",
       },
       helpTextMode: {
         type: "choice",
