@@ -32,7 +32,7 @@ function getDefaultValueHint(field: keyof ColumnConfig) {
 
 const dataTableMeta: ComponentMeta<RichTableProps> = {
   name: "hostless-rich-table",
-  displayName: "Rich Table",
+  displayName: "Table",
   defaultStyles: {
     width: "stretch",
   },
@@ -61,6 +61,7 @@ const dataTableMeta: ComponentMeta<RichTableProps> = {
 
     fields: {
       type: "array",
+      hidden: (ps) => !ps.data,
       unstable__keyFunc: (x) => x.key,
       unstable__minimalValue: (_props, contextData) =>
         contextData?.minimalFullLengthFields,
@@ -115,9 +116,29 @@ const dataTableMeta: ComponentMeta<RichTableProps> = {
         },
       },
     },
+
+    hideSearch: {
+      type: "boolean",
+      advanced: true,
+    },
+
+    hideExports: {
+      type: "boolean",
+      advanced: true,
+    },
+
+    hideDensity: {
+      type: "boolean",
+      advanced: true,
+    },
+
+    hideColumnPicker: {
+      type: "boolean",
+      advanced: true,
+    },
   },
   importName: "RichTable",
-  importPath: "@plasmicpkgs/plasmic-rich-components/dist/rich-table/RichTable",
+  importPath: "@plasmicpkgs/plasmic-rich-components",
 };
 
 export function registerRichTable(loader?: Registerable) {
