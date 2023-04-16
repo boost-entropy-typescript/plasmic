@@ -1,6 +1,6 @@
 {
   "name": "@plasmicpkgs/antd5",
-  "version": "0.0.39",
+  "version": "0.0.41",
   "description": "Plasmic registration calls for antd components",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -24,15 +24,6 @@
     "dist",
     "skinny"
   ],
-  "exports": {
-    ".": {
-      "require": "./dist/index.js",
-      "import": "./dist/antd.esm.js"
-    },
-    "./skinny/*": {
-      "import": "./skinny/*.js"
-    }
-  },
   "size-limit": [
     {
       "path": "dist/index.js",
