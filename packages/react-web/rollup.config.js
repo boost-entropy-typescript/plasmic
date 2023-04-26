@@ -2,11 +2,12 @@ import commonjs from "@rollup/plugin-commonjs";
 import json from "@rollup/plugin-json";
 import resolve from "@rollup/plugin-node-resolve";
 import path from "path";
+import dts from "rollup-plugin-dts";
 import typescript from "rollup-plugin-typescript2";
 import ts from "typescript";
 
 const external = (id) => {
-  if (id.startsWith("regenerator-runtime")) {
+  if (id.startsWith("regenerator-runtime") || id.startsWith("tslib")) {
     return false;
   }
   return !id.startsWith(".") && !path.isAbsolute(id);
@@ -47,6 +48,14 @@ export default [
         },
       }),
     ],
+  },
+  // This rolls up all the types into a single all.d.ts, which is used by
+  // DocsPortalEditor
+  {
+    input: "./dist/index.d.ts",
+    output: [{ file: "dist/all.d.ts", format: "es" }],
+    plugins: [dts({ respectExternal: true })],
+    external: ["react"],
   },
 
   // We also do a "skinny" build here that bundles each Plume component as a
