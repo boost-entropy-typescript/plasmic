@@ -169,16 +169,17 @@ export function useTriggeredOverlay<
   const canvasCtx = usePlasmicCanvasContext();
   const args = {
     ...pick(props, ...plasmicClass.internalArgProps),
-    [config.contentSlot]: canvasCtx ? (
-      children
-    ) : (
-      <FocusScope restoreFocus>
-        <DismissButton onDismiss={state.close} />
-        {children}
-        {/* We don't use the DismissButton at the end because it ends up taking up 1px space :-/ */}
-        {/* <DismissButton onDismiss={state.close} /> */}
-      </FocusScope>
-    ),
+    [config.contentSlot]:
+      canvasCtx && !canvasCtx.interactive ? (
+        children
+      ) : (
+        <FocusScope restoreFocus>
+          <DismissButton onDismiss={state.close} />
+          {children}
+          {/* We don't use the DismissButton at the end because it ends up taking up 1px space :-/ */}
+          {/* <DismissButton onDismiss={state.close} /> */}
+        </FocusScope>
+      ),
   };
 
   const overrides: Overrides = {
@@ -186,7 +187,7 @@ export function useTriggeredOverlay<
       props: mergeProps(overlayProps, getStyleProps(props), {
         ref: onOverlayRef,
       }),
-      wrap: (root) => {
+      wrap: (root: React.ReactNode) => {
         if (typeof document !== "undefined") {
           return ReactDOM.createPortal(root, document.body);
         } else {

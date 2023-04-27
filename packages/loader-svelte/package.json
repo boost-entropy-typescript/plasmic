@@ -1,6 +1,6 @@
 {
   "name": "@plasmicapp/loader-svelte",
-  "version": "0.0.231",
+  "version": "0.0.232",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "svelte": "src/index.js",
@@ -36,11 +36,10 @@
     "rollup-plugin-terser": "^7.0.2",
     "svelte": "^3.42.4",
     "svelte-check": "^2.2.5",
-    "svelte-preprocess": "^4.9.1",
-    "typescript": "^4.4.2"
+    "svelte-preprocess": "^4.9.1"
   },
   "dependencies": {
-    "@plasmicapp/loader-react": "1.0.251",
+    "@plasmicapp/loader-react": "1.0.252",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   }

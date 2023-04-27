@@ -1,6 +1,6 @@
 {
   "name": "@plasmicpkgs/plasmic-rich-components",
-  "version": "1.0.57",
+  "version": "1.0.58",
   "description": "Rich batteries-included general purpose components for business apps, admin panels, etc.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -21,7 +21,7 @@
   "scripts": {
     "build": "tsdx build",
     "start": "tsdx watch",
-    "test": "tsdx test --passWithNoTests",
+    "test": "yarn --cwd=../.. test --passWithNoTests",
     "lint": "tsdx lint",
     "prepare": "if-env PREPARE_NO_BUILD=true || yarn build",
     "size": "size-limit",
@@ -30,15 +30,14 @@
   "devDependencies": {
     "@ant-design/icons": "^5.0.1",
     "@ant-design/pro-components": "^2.4.1",
-    "@plasmicapp/data-sources": "0.1.69",
-    "@plasmicapp/host": "1.0.130",
+    "@plasmicapp/data-sources": "0.1.70",
+    "@plasmicapp/host": "1.0.131",
     "@size-limit/preset-small-lib": "^4.11.0",
     "@types/node": "^14.0.26",
     "antd": "^5.4.0",
     "size-limit": "^4.11.0",
     "tsdx": "^0.14.1",
-    "tslib": "^2.2.0",
-    "typescript": "^3.9.7"
+    "tslib": "^2.2.0"
   },
   "peerDependencies": {
     "@ant-design/icons": ">=5.0.0",

@@ -180,7 +180,7 @@ type AriaSelectItemType = AriaOptionType | AriaGroupType;
  * render functions can assume that _node is passed in.
  */
 function useAriaSelectProps(props: BaseSelectProps, config: SelectConfig<any>) {
-  let {
+  const {
     value,
     defaultValue,
     children,
@@ -335,9 +335,9 @@ export function useSelect<P extends BaseSelectProps, C extends AnyPlasmicClass>(
       props: mergeProps(getStyleProps(props), {
         ref: rootRef,
       }),
-      wrapChildren: (children) => (
+      wrapChildren: (children: React.ReactNode) => (
         <>
-          {!canvasCtx && (
+          {(!canvasCtx || canvasCtx.interactive) && (
             <HiddenSelect
               state={state}
               triggerRef={triggerRef}
@@ -350,23 +350,26 @@ export function useSelect<P extends BaseSelectProps, C extends AnyPlasmicClass>(
       ),
     },
     [config.trigger]: {
-      props: mergeProps(canvasCtx ? {} : triggerProps, {
-        ref: triggerRef,
-        autoFocus,
-        disabled: !!isDisabled,
-        // Don't trigger form submission!
-        type: "button",
-      }),
+      props: mergeProps(
+        canvasCtx && !canvasCtx.interactive ? {} : triggerProps,
+        {
+          ref: triggerRef,
+          autoFocus,
+          disabled: !!isDisabled,
+          // Don't trigger form submission!
+          type: "button",
+        }
+      ),
     },
     [config.overlay]: {
-      wrap: (content) => (
+      wrap: (content: React.ReactNode) => (
         <TriggeredOverlayContext.Provider value={triggerContext}>
           {content}
         </TriggeredOverlayContext.Provider>
       ),
     },
     [config.optionsContainer]: {
-      wrap: (content) => (
+      wrap: (content: React.ReactNode) => (
         <ListBoxWrapper state={state} menuProps={menuProps}>
           {content as React.ReactElement}
         </ListBoxWrapper>
@@ -446,9 +449,13 @@ function ListBoxWrapper(props: {
 
   return React.cloneElement(
     children,
-    mergeProps(children.props, canvasCtx ? {} : listBoxProps, {
-      style: noOutline(),
-      ref,
-    })
+    mergeProps(
+      children.props,
+      canvasCtx && !canvasCtx.interactive ? {} : listBoxProps,
+      {
+        style: noOutline(),
+        ref,
+      }
+    )
   );
 }

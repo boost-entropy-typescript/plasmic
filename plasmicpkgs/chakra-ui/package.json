@@ -1,6 +1,6 @@
 {
   "name": "@plasmicpkgs/plasmic-chakra-ui",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Plasmic registration calls for chakra ui components.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -14,7 +14,7 @@
   "scripts": {
     "start": "tsdx watch",
     "build": "tsdx build",
-    "test": "tsdx test --passWithNoTests",
+    "test": "yarn --cwd=../.. test --passWithNoTests",
     "lint": "tsdx lint",
     "prepare": "if-env PREPARE_NO_BUILD=true || yarn build",
     "size": "size-limit",
@@ -41,8 +41,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "size-limit": "^4.11.0",
-    "tsdx": "^0.14.1",
-    "typescript": "^3.9.7"
+    "tsdx": "^0.14.1"
   },
   "dependencies": {
     "@chakra-ui/react": "^2.2.8",
