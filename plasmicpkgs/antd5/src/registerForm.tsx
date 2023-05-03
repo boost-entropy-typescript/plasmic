@@ -19,6 +19,26 @@ import {
   usePrevious,
 } from "./utils";
 
+const reactNodeToString = function (reactNode: React.ReactNode): string {
+  let string = "";
+  if (typeof reactNode === "string") {
+    string = reactNode;
+  } else if (typeof reactNode === "number") {
+    string = reactNode.toString();
+  } else if (reactNode instanceof Array) {
+    reactNode.forEach(function (child) {
+      string += reactNodeToString(child);
+    });
+  } else if (isValidElement(reactNode)) {
+    string += reactNodeToString(reactNode.props.children);
+  }
+  return string;
+};
+
+function ensureArray<T>(x: T | T[]): T[] {
+  return Array.isArray(x) ? x : [x];
+}
+
 const FormItem = Form.Item;
 const FormList = Form.List;
 
@@ -405,7 +425,11 @@ interface PlasmicRule {
   message?: string;
 }
 
-function plasmicRulesToAntdRules(plasmicRules: PlasmicRule[]) {
+function plasmicRulesToAntdRules(
+  plasmicRules: PlasmicRule[],
+  label: string | undefined
+) {
+  const effectiveLabel = label || "This field";
   const rules: FormItemProps["rules"] = [];
   for (const plasmicRule of plasmicRules) {
     switch (plasmicRule.ruleType) {
@@ -413,32 +437,43 @@ function plasmicRulesToAntdRules(plasmicRules: PlasmicRule[]) {
         rules.push({
           type: "enum",
           enum: plasmicRule.options?.map((opt) => opt.value) ?? [],
-          message: plasmicRule.message,
+          message:
+            plasmicRule.message ?? `${effectiveLabel} must be a valid value`,
         });
         break;
       case "required":
         rules.push({
           required: true,
-          message: plasmicRule.message,
+          message: plasmicRule.message ?? `${effectiveLabel} is required`,
         });
         break;
       case "regex":
         rules.push({
           pattern: new RegExp(plasmicRule.pattern ?? ""),
-          message: plasmicRule.message,
+          message:
+            plasmicRule.message ?? `${effectiveLabel} must be a valid value`,
         });
         break;
       case "whitespace":
         rules.push({
           whitespace: true,
-          message: plasmicRule.message,
+          message: plasmicRule.message ?? `${effectiveLabel} is required`,
         });
         break;
       case "min":
+        rules.push({
+          [plasmicRule.ruleType]: plasmicRule.length,
+          message:
+            plasmicRule.message ??
+            `${effectiveLabel} must be at least ${plasmicRule.length} characters`,
+        });
+        break;
       case "max":
         rules.push({
           [plasmicRule.ruleType]: plasmicRule.length,
-          message: plasmicRule.message,
+          message:
+            plasmicRule.message ??
+            `${effectiveLabel} must be at most ${plasmicRule.length} characters`,
         });
         break;
       case "advanced":
@@ -479,7 +514,17 @@ function useFormInstanceMaybe(): FormInstance<any> | undefined {
 export function FormItemWrapper(props: InternalFormItemProps) {
   const relativeFormItemName = useFormItemRelativeName(props.name);
   const fullFormItemName = useFormItemFullName(props.name);
-  const rules = props.rules ? plasmicRulesToAntdRules(props.rules) : undefined;
+  const bestEffortLabel =
+    (!props.noLabel && reactNodeToString(props.label)) ||
+    ensureArray(props.name).slice(-1)[0];
+  const rules = props.rules
+    ? plasmicRulesToAntdRules(
+        props.rules,
+        typeof bestEffortLabel === "number"
+          ? "" + bestEffortLabel
+          : bestEffortLabel
+      )
+    : undefined;
 
   const inCanvas = !!usePlasmicCanvasContext();
   if (inCanvas) {
@@ -860,10 +905,10 @@ export function registerFormList(loader?: Registerable) {
         ],
       } as any,
     },
-    unstable__refActions: {
+    refActions: {
       add: {
         displayName: "Add an item",
-        parameters: [
+        argTypes: [
           {
             name: "defaultValue",
             displayName: "Default value",
@@ -878,7 +923,7 @@ export function registerFormList(loader?: Registerable) {
       },
       remove: {
         displayName: "Remove an item",
-        parameters: [
+        argTypes: [
           {
             name: "index",
             displayName: "Index",
@@ -888,7 +933,7 @@ export function registerFormList(loader?: Registerable) {
       },
       move: {
         displayName: "Move field",
-        parameters: [
+        argTypes: [
           {
             name: "from",
             displayName: "From",
