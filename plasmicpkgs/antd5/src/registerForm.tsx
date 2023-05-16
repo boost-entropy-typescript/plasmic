@@ -141,7 +141,7 @@ const Internal = (
               : props.wrapperCol
           }
         >
-          {/*Remove built-in spacing on form items*/}
+          {/*Remove built-in spacing on form fields*/}
           <style>{`
           .ant-form-item-explain + div, .ant-form-item-margin-offset {
             display: none;
@@ -173,7 +173,7 @@ export function FormWrapper(props: FormWrapperProps) {
 const COMMON_ACTIONS = [
   {
     type: "button-action" as const,
-    label: "Append new Form Item",
+    label: "Append new Form Field",
     onClick: ({ studioOps }: ActionProps<any>) => {
       studioOps.appendToSlot(
         {
@@ -186,7 +186,7 @@ const COMMON_ACTIONS = [
   },
   // {
   //   type: "button-action" as const,
-  //   label: "Append new Form Group",
+  //   label: "Append new Form Field Group",
   //   onClick: ({ studioOps }: ActionProps<any>) => {
   //     studioOps.appendToSlot(
   //       {
@@ -617,6 +617,7 @@ export function FormItemWrapper(props: InternalFormItemProps) {
       extra={description}
       help={hideValidationMessage ? "" : props.help}
       colon={noLabel ? false : undefined}
+      valuePropName={deriveValuePropName(props)}
       // If in horizontal mode and no label, then we align the content
       // with the rest of the controls in the grid
       // if alignLabellessWithControls is true
@@ -629,13 +630,42 @@ export function FormItemWrapper(props: InternalFormItemProps) {
           : undefined
       }
     >
-      {props.customizeProps ? (
-        <FormItemForwarder formItemProps={props} />
-      ) : (
-        props.children
-      )}
+      <FormItemForwarder formItemProps={props} />
     </FormItem>
   );
+}
+
+/**
+ * Derive the valuePropName to use, if the wrapped child has designated
+ * one via its Component.__plasmicFormFieldMeta?.valueProp.
+ */
+function deriveValuePropName(props: InternalFormItemProps): string | undefined {
+  if (props.valuePropName) {
+    // Always prefer an explicitly specified valuePropName
+    return props.valuePropName;
+  }
+
+  const valueProps = React.Children.map(props.children as any, (child) => {
+    if (React.isValidElement(child)) {
+      const childType = child.type;
+      if (childType) {
+        const x = (childType as any).__plasmicFormFieldMeta?.valueProp;
+        if (x) {
+          return x as string;
+        }
+        // Hard-coding "isChecked" for Plume checkbox / switch
+        const plumeType = (childType as any).__plumeType;
+        if (plumeType && (plumeType === "checkbox" || plumeType === "switch")) {
+          return "isChecked";
+        }
+      }
+    }
+    return undefined;
+  }).filter((x: any): x is string => !!x);
+  if (valueProps.length > 0) {
+    return valueProps[0];
+  }
+  return undefined;
 }
 
 function FormItemForwarder({ formItemProps, ...props }: any) {
@@ -651,12 +681,19 @@ function FormItemForwarder({ formItemProps, ...props }: any) {
     status,
   });
   return React.Children.map(formItemProps.children, (child, i) => {
-    const baseProps = { ...(child.props ?? {}), ...props };
+    let newProps = {
+      ...(child.props ?? {}),
+      ...props,
+      __plasmicFormField: true,
+    };
+    if (formItemProps.customizeProps) {
+      newProps = mergeProps(
+        newProps,
+        formItemProps.customizeProps(data, newProps)
+      );
+    }
     return i === 0 && isValidElement(child)
-      ? cloneElement(
-          child,
-          mergeProps(baseProps, formItemProps.customizeProps(data, baseProps))
-        )
+      ? cloneElement(child, newProps)
       : child;
   });
 }
@@ -664,7 +701,7 @@ function FormItemForwarder({ formItemProps, ...props }: any) {
 export function registerFormItem(loader?: Registerable) {
   registerComponentHelper(loader, FormItemWrapper, {
     name: "plasmic-antd5-form-item",
-    displayName: "Form Item",
+    displayName: "Form Field",
     parentComponentName: "plasmic-antd5-form",
     defaultStyles: {
       marginBottom: "24px",
@@ -702,7 +739,7 @@ export function registerFormItem(loader?: Registerable) {
         advanced: true,
         defaultValueHint: "value",
         description:
-          "The prop name for specifying the value of the form control component",
+          "If you are using a custom control whose prop for the value is not `value`, then specify the right prop name to use here.",
       },
       noLabel: {
         type: "boolean",
@@ -744,14 +781,14 @@ export function registerFormItem(loader?: Registerable) {
         advanced: true,
         displayName: "Always re-render",
         description:
-          "Form items normally only re-render when the corresponding form value changes, for performance. This forces it to always re-render.",
+          "Form fields normally only re-render when the corresponding form value changes, for performance. This forces it to always re-render.",
       },
       dependencies: {
         type: "array",
         advanced: true,
         displayName: "Dependencies",
         description:
-          "Form items can depend on other form items. This forces it to reevaluate the validation rules when the other form item changes.",
+          "Form fields can depend on other form fields. This forces it to reevaluate the validation rules when the other form field changes.",
       },
       hideValidationMessage: {
         type: "boolean",
@@ -825,7 +862,15 @@ export function registerFormItem(loader?: Registerable) {
             type: "component",
             name: "plasmic-antd5-checkbox",
           },
-          valuePropName: "checked",
+          noLabel: true,
+        },
+      },
+      Switch: {
+        props: {
+          children: {
+            type: "component",
+            name: "plasmic-antd5-switch",
+          },
           noLabel: true,
         },
       },
@@ -884,7 +929,7 @@ export function FormGroup(props: FormGroupProps) {
 export function registerFormGroup(loader?: Registerable) {
   registerComponentHelper(loader, FormGroup, {
     name: "plasmic-antd5-form-group",
-    displayName: "Form Group",
+    displayName: "Form Field Group",
     parentComponentName: "plasmic-antd5-form",
     actions: COMMON_ACTIONS,
     props: {
