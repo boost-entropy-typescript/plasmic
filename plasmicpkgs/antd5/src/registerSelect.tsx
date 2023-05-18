@@ -40,9 +40,13 @@ export function AntdSelect(
   );
 }
 
+export const selectComponentName = "plasmic-antd5-select";
+export const optionComponentName = "plasmic-antd5-option";
+export const optionGroupComponentName = "plasmic-antd5-option-group";
+
 export function registerSelect(loader?: Registerable) {
   registerComponentHelper(loader, AntdSelect, {
-    name: "plasmic-antd5-select",
+    name: selectComponentName,
     displayName: "Select",
     props: {
       options: {
@@ -62,13 +66,14 @@ export function registerSelect(loader?: Registerable) {
             },
             value: {
               type: "string",
-              hidden: (ps: any) => ps.type !== "option",
+              hidden: (_ps: any, _ctx: any, { item }: any) =>
+                item.type !== "option",
             },
             label: "string",
             options: {
               type: "array",
-              hidden: (ps: any) => {
-                return ps.type !== "option-group";
+              hidden: (_ps: any, _ctx: any, { item }: any) => {
+                return item.type !== "option-group";
               },
               itemType: {
                 type: "object",
@@ -85,10 +90,12 @@ export function registerSelect(loader?: Registerable) {
           {
             value: "option1",
             label: "Option 1",
+            type: "option",
           },
           {
             value: "option2",
             label: "Option 2",
+            type: "option",
           },
         ],
       },
@@ -104,10 +111,7 @@ export function registerSelect(loader?: Registerable) {
 
       children: {
         type: "slot",
-        allowedComponents: [
-          "plasmic-antd5-option",
-          "plasmic-antd5-option-group",
-        ],
+        allowedComponents: [optionComponentName, optionGroupComponentName],
         hidden: (ps) => !ps.useChildren,
       },
 
@@ -130,8 +134,8 @@ export function registerSelect(loader?: Registerable) {
         editOnly: true,
         uncontrolledProp: "defaultValue",
         description: "Initial selected option",
-        multiSelect: (ps: any) => ps.mode === "multiple",
-        options: (ps: any) => {
+        multiSelect: (ps) => ps.mode === "multiple",
+        options: (ps) => {
           const options = new Set<string>();
           if (!ps.useChildren) {
             const rec = (op: any) => {
@@ -282,9 +286,9 @@ export function registerSelect(loader?: Registerable) {
   });
 
   registerComponentHelper(loader, AntdOption, {
-    name: "plasmic-antd5-option",
+    name: optionComponentName,
     displayName: "Option",
-    parentComponentName: "plasmic-antd5-select",
+    parentComponentName: selectComponentName,
     props: {
       children: {
         type: "slot",
@@ -300,9 +304,9 @@ export function registerSelect(loader?: Registerable) {
   });
 
   registerComponentHelper(loader, AntdOptionGroup, {
-    name: "plasmic-antd5-option-group",
+    name: optionGroupComponentName,
     displayName: "Option Group",
-    parentComponentName: "plasmic-antd5-select",
+    parentComponentName: selectComponentName,
     props: {
       children: {
         type: "slot",

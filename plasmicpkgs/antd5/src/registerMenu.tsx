@@ -1,5 +1,6 @@
 import { Menu } from "antd";
 import { Registerable, registerComponentHelper } from "./utils";
+import { PropType } from "@plasmicapp/host/registerComponent";
 
 export const AntdMenu = Menu;
 export const AntdMenuDivider = Menu.Divider;
@@ -38,21 +39,38 @@ export const MENU_ITEM_TYPE = {
       displayName: "Menu item key",
       description:
         "Key of the menu item; the onClick will receive this as the value to indicate which item was clicked.",
-      hidden: (ps: any) => ps.type !== "item",
+      hidden: (ps: any, ctx: any, { item }: any) => item.type !== "item",
     },
     label: {
       type: "string",
       description: "Label of the menu item; will use the key if not specified.",
-      hidden: (ps: any) => ps.type === "divider",
+      hidden: (ps: any, ctx: any, { item }: any) => item.type === "divider",
     },
     children: {
       type: "array",
       displayName: "Menu items",
-      hidden: (ps: any) => ps.type !== "submenu" && ps.type !== "group",
+      hidden: (ps: any, ctx: any, { item }: any) =>
+        item.type !== "submenu" && item.type !== "group",
+    },
+    onClick: {
+      type: "eventHandler",
+      displayName: "Action",
+      description: "Action to perform when this item is selected",
+      argTypes: [{ name: "info", type: "object" }],
+      hidden: (ps: any, ctx: any, { item }: any) => item.type !== "item",
     },
   },
 };
+export const UNKEYED_MENU_ITEM_TYPE = {
+  ...MENU_ITEM_TYPE,
+  fields: Object.fromEntries(
+    Object.entries(MENU_ITEM_TYPE.fields).filter(([k]) => k !== "key")
+  ),
+};
+
 (MENU_ITEM_TYPE.fields.children as any).itemType = MENU_ITEM_TYPE;
+(UNKEYED_MENU_ITEM_TYPE.fields.children as any).itemType =
+  UNKEYED_MENU_ITEM_TYPE;
 
 /**
  * Note that the Menu component by itself isn't that useful.

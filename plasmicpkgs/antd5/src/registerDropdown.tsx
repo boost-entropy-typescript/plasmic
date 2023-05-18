@@ -1,7 +1,7 @@
 import { Dropdown, Menu } from "antd";
 import React from "react";
 import { Registerable, registerComponentHelper } from "./utils";
-import { MENU_ITEM_TYPE } from "./registerMenu";
+import { UNKEYED_MENU_ITEM_TYPE } from "./registerMenu";
 
 export function AntdDropdown(
   props: Omit<React.ComponentProps<typeof Dropdown>, "menu" | "overlay"> & {
@@ -53,7 +53,7 @@ export function registerDropdown(loader?: Registerable) {
       menuItems: {
         type: "slot",
         displayName: "Menu items",
-        hidden: (ps: any) => !ps.useMenuItemsSlot,
+        hidden: (ps) => !ps.useMenuItemsSlot,
         allowedComponents: [
           "plasmic-antd5-menu-item",
           "plasmic-antd5-menu-item-group",
@@ -81,8 +81,8 @@ export function registerDropdown(loader?: Registerable) {
       menuItemsJson: {
         type: "array",
         displayName: "Menu Items",
-        hidden: (ps: any) => ps.useMenuItemsSlot,
-        itemType: MENU_ITEM_TYPE as any,
+        hidden: (ps) => !!ps.useMenuItemsSlot,
+        itemType: UNKEYED_MENU_ITEM_TYPE as any,
         defaultValue: [
           {
             type: "item",

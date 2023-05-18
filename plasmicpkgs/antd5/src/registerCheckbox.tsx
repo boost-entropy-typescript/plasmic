@@ -26,9 +26,12 @@ AntdCheckbox.__plasmicFormFieldMeta = { valueProp: "checked" };
 
 export const AntdCheckboxGroup = Checkbox.Group;
 
+export const checkboxComponentName = "plasmic-antd5-checkbox";
+export const checkboxGroupComponentName = "plasmic-antd5-checkbox-group";
+
 export function registerCheckbox(loader?: Registerable) {
   registerComponentHelper(loader, AntdCheckbox, {
-    name: "plasmic-antd5-checkbox",
+    name: checkboxComponentName,
     displayName: "Checkbox",
     props: {
       checked: {
@@ -38,7 +41,7 @@ export function registerCheckbox(loader?: Registerable) {
         description:
           "Specifies the initial state: whether or not the checkbox is selected",
         defaultValueHint: false,
-        hidden: (ps: any) => !!ps.__plasmicFormField,
+        hidden: (ps) => !!(ps as any).__plasmicFormField,
       },
       disabled: {
         type: "boolean",
@@ -84,7 +87,7 @@ export function registerCheckbox(loader?: Registerable) {
   });
 
   registerComponentHelper(loader, AntdCheckboxGroup, {
-    name: "plasmic-antd5-checkbox-group",
+    name: checkboxGroupComponentName,
     displayName: "Checkbox Group",
     props: {
       value: {
@@ -93,7 +96,7 @@ export function registerCheckbox(loader?: Registerable) {
         uncontrolledProp: "defaultValue",
         description: "Default selected value",
         multiSelect: true,
-        options: (ps: any) => {
+        options: (ps) => {
           const options = new Set<string>();
           traverseReactEltTree(ps.children, (elt) => {
             if (
@@ -113,7 +116,7 @@ export function registerCheckbox(loader?: Registerable) {
       },
       children: {
         type: "slot",
-        allowedComponents: ["plasmic-antd5-checkbox"],
+        allowedComponents: [checkboxComponentName],
         // Error right now when using default slot content with stateful instances
         // defaultValue: [
         //   {
@@ -137,6 +140,6 @@ export function registerCheckbox(loader?: Registerable) {
     },
     importPath: "@plasmicpkgs/antd5/skinny/registerCheckbox",
     importName: "AntdCheckboxGroup",
-    parentComponentName: "plasmic-antd5-checkbox",
+    parentComponentName: checkboxComponentName,
   });
 }

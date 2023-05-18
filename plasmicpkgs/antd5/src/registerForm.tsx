@@ -3,8 +3,9 @@ import {
   DataProvider,
   repeatedElement,
   usePlasmicCanvasContext,
+  CodeComponentMode,
 } from "@plasmicapp/host";
-import { Form } from "antd";
+import { Checkbox, Form, Input, InputNumber, Radio, Select } from "antd";
 import type { FormInstance, FormProps } from "antd/es/form";
 import type { FormItemProps } from "antd/es/form/FormItem";
 import type { FormListOperation, FormListProps } from "antd/es/form/FormList";
@@ -12,7 +13,19 @@ import type { ColProps } from "antd/es/grid/col";
 import equal from "fast-deep-equal";
 import React, { cloneElement, isValidElement } from "react";
 import { mergeProps } from "./react-utils";
+import { buttonComponentName } from "./registerButton";
+import { checkboxComponentName } from "./registerCheckbox";
+import {
+  inputComponentName,
+  inputNumberComponentName,
+  passwordComponentName,
+  textAreaComponentName,
+} from "./registerInput";
+import { radioGroupComponentName } from "./registerRadio";
+import { selectComponentName } from "./registerSelect";
+import { switchComponentName } from "./registerSwitch";
 import { Registerable, registerComponentHelper, usePrevious } from "./utils";
+import { PropType } from "@plasmicapp/host/registerComponent";
 
 const reactNodeToString = function (reactNode: React.ReactNode): string {
   let string = "";
@@ -37,6 +50,38 @@ function ensureArray<T>(x: T | T[]): T[] {
 const FormItem = Form.Item;
 const FormList = Form.List;
 
+interface InternalFormItemProps extends Omit<FormItemProps, "rules"> {
+  rules?: PlasmicRule[];
+  noLabel?: boolean;
+  customizeProps?: (
+    fieldData: CuratedFieldData,
+    props: InternalFormItemProps
+  ) => FormItemProps;
+  setControlContextData?: (data: FormControlContextData) => void;
+}
+
+export enum InputType {
+  Text = "Text",
+  TextArea = "Text Area",
+  Password = "Password",
+  Number = "Number",
+  Select = "Select",
+  Option = "Option",
+  OptionGroup = "Option Group",
+  Radio = "Radio",
+  RadioGroup = "Radio Group",
+  Checkbox = "Checkbox",
+}
+
+export interface SimplifiedFormItemsProp extends InternalFormItemProps {
+  inputType: InputType;
+  options?: {
+    label: string;
+    value: string;
+  }[];
+  optionType?: "default" | "button";
+}
+
 interface FormWrapperProps extends FormProps {
   /**
    * https://ant.design/components/form#setfieldsvalue-do-not-trigger-onfieldschange-or-onvalueschange
@@ -48,6 +93,9 @@ interface FormWrapperProps extends FormProps {
   extendedOnValuesChange?: (
     values: Parameters<NonNullable<FormProps["onValuesChange"]>>[1]
   ) => void;
+  formItems: SimplifiedFormItemsProp[];
+  mode?: CodeComponentMode;
+  submitSlot?: boolean;
 }
 
 const PathContext = React.createContext<{
@@ -86,10 +134,47 @@ const Internal = (
   const lastValue = React.useRef(values);
   const { extendedOnValuesChange, setRemountKey, ...rest } = props;
   // extracted from https://github.com/react-component/field-form/blob/master/src/Form.tsx#L120
-  const childrenNode =
-    typeof props.children === "function"
-      ? props.children(values, form)
-      : props.children;
+  let childrenNode;
+  if (props.mode !== "simplified") {
+    childrenNode =
+      typeof props.children === "function"
+        ? props.children(values, form)
+        : props.children;
+  } else {
+    childrenNode = (
+      <>
+        {(props.formItems ?? []).map((formItem) => (
+          <FormItemWrapper
+            {...formItem}
+            noLabel={
+              formItem.inputType === InputType.Checkbox || formItem.noLabel
+            }
+            style={{ width: "100%" }}
+          >
+            {formItem.inputType === InputType.Text ? (
+              <Input />
+            ) : formItem.inputType === InputType.Password ? (
+              <Input.Password />
+            ) : formItem.inputType === InputType.TextArea ? (
+              <Input.TextArea />
+            ) : formItem.inputType === InputType.Number ? (
+              <InputNumber />
+            ) : formItem.inputType === InputType.Checkbox ? (
+              <Checkbox>{formItem.label}</Checkbox>
+            ) : formItem.inputType === InputType.Select ? (
+              <Select options={formItem.options} />
+            ) : formItem.inputType === InputType.RadioGroup ? (
+              <Radio.Group
+                options={formItem.options}
+                optionType={formItem.optionType}
+              />
+            ) : null}
+          </FormItemWrapper>
+        ))}
+        {props.submitSlot}
+      </>
+    );
+  }
 
   const fireOnValuesChange = React.useCallback(() => {
     const values = form.getFieldsValue(true);
@@ -183,6 +268,7 @@ const COMMON_ACTIONS = [
         "children"
       );
     },
+    hidden: (props: any) => props.mode === "simplified",
   },
   // {
   //   type: "button-action" as const,
@@ -247,21 +333,142 @@ const colProp = (
     defaultValue: defaultValue,
   } as const);
 
+export const formComponentName = "plasmic-antd5-form";
+
 export function registerForm(loader?: Registerable) {
   registerComponentHelper(loader, FormWrapper, {
-    name: "plasmic-antd5-form",
+    name: formComponentName,
     displayName: "Form",
     defaultStyles: {
       layout: "vbox",
       alignItems: "flex-start",
     },
     props: {
+      mode: "controlMode" as any,
+      formItems: {
+        type: "array",
+        itemType: {
+          type: "object",
+          fields: {
+            label: "string",
+            inputType: {
+              type: "choice",
+              options: Object.values(InputType).filter(
+                (inputType) =>
+                  ![
+                    InputType.Option,
+                    InputType.OptionGroup,
+                    InputType.Radio,
+                  ].includes(inputType)
+              ),
+              defaultValue: InputType.Text,
+            },
+            options: {
+              type: "array",
+              itemType: {
+                type: "object",
+                fields: {
+                  type: {
+                    type: "choice",
+                    options: [
+                      { value: "option", label: "Option" },
+                      { value: "option-group", label: "Option Group" },
+                    ],
+                    defaultValue: "option",
+                    hidden: (ps, _ctx, { path }) => {
+                      if (
+                        ps.formItems?.[path[1] as number]?.inputType !==
+                        InputType.Select
+                      ) {
+                        return true;
+                      }
+                      return false;
+                    },
+                  },
+                  label: "string",
+                  value: {
+                    type: "string",
+                    hidden: (ps, _ctx, { path, item }) => {
+                      if (
+                        ps.formItems?.[path[1] as number]?.inputType !==
+                        InputType.Select
+                      ) {
+                        return false;
+                      }
+                      return item.type !== "option";
+                    },
+                  },
+                  options: {
+                    type: "array",
+                    itemType: {
+                      type: "object",
+                      nameFunc: (item: any) => item.label || item.value,
+                      fields: {
+                        value: "string",
+                        label: "string",
+                      },
+                    },
+                    hidden: (ps, _ctx, { path, item }) => {
+                      if (
+                        ps.formItems?.[path[1] as number]?.inputType !==
+                        InputType.Select
+                      ) {
+                        return true;
+                      }
+                      return item.type !== "option-group";
+                    },
+                  },
+                },
+                nameFunc: (item) => item?.label,
+              },
+              hidden: (_ps: any, _ctx: any, { item }) =>
+                ![InputType.Select, InputType.RadioGroup].includes(
+                  item.inputType
+                ),
+            },
+            optionType: {
+              type: "choice",
+              options: [
+                { value: "default", label: "Radio" },
+                { value: "button", label: "Button" },
+              ],
+              hidden: (_ps: any, _ctx: any, { item }) =>
+                InputType.RadioGroup !== item.inputType,
+              defaultValueHint: "Radio",
+              displayName: "Option Type",
+            },
+            ...commonFormItemProps,
+          },
+          nameFunc: (item) => item.label,
+        },
+        hidden: (props) => props.mode !== "simplified",
+      },
+      submitSlot: {
+        type: "slot",
+        hidden: () => true,
+        defaultValue: {
+          type: "component",
+          name: buttonComponentName,
+          props: {
+            type: "primary",
+            submitsForm: true,
+            children: {
+              type: "text",
+              value: "Submit",
+            },
+          },
+        },
+        ...{
+          mergeWithParent: () => true,
+          hiddenMergedProps: (ps: any) => !ps.mode,
+        },
+      },
       children: {
         type: "slot",
         defaultValue: [
           {
             type: "component",
-            name: "plasmic-antd5-form-item",
+            name: formItemComponentName,
             props: {
               label: {
                 type: "text",
@@ -270,13 +477,13 @@ export function registerForm(loader?: Registerable) {
               name: "name",
               children: {
                 type: "component",
-                name: "plasmic-antd5-input",
+                name: inputComponentName,
               },
             },
           },
           {
             type: "component",
-            name: "plasmic-antd5-form-item",
+            name: formItemComponentName,
             props: {
               label: {
                 type: "text",
@@ -285,30 +492,24 @@ export function registerForm(loader?: Registerable) {
               name: "message",
               children: {
                 type: "component",
-                name: "plasmic-antd5-textarea",
+                name: textAreaComponentName,
               },
             },
           },
           {
             type: "component",
-            name: "plasmic-antd5-form-item",
+            name: buttonComponentName,
             props: {
-              noLabel: true,
               children: {
-                type: "component",
-                name: "plasmic-antd5-button",
-                props: {
-                  children: {
-                    type: "text",
-                    value: "Submit",
-                  },
-                  type: "primary",
-                  submitsForm: true,
-                },
+                type: "text",
+                value: "Submit",
               },
+              type: "primary",
+              submitsForm: true,
             },
           },
         ],
+        hidden: (props) => props.mode === "simplified",
       },
       initialValues: {
         type: "object",
@@ -698,11 +899,107 @@ function FormItemForwarder({ formItemProps, ...props }: any) {
   });
 }
 
+const commonFormItemProps: Record<string, PropType<InternalFormItemProps>> = {
+  name: {
+    type: "string" as const,
+  },
+  initialValue: {
+    type: "string" as const,
+  },
+  rules: {
+    type: "formValidationRules" as const,
+  } as any,
+  valuePropName: {
+    type: "string" as const,
+    advanced: true,
+    defaultValueHint: "value",
+    description:
+      "The prop name for specifying the value of the form control component",
+  },
+  noLabel: {
+    type: "boolean" as const,
+    advanced: true,
+  },
+  alignLabellessWithControls: {
+    type: "boolean" as const,
+    displayName: "Align with controls?",
+    description: "Aligns the content with form controls in the grid",
+    hidden: (ps, ctx) =>
+      !ps.noLabel || ctx?.internalFormCtx?.layout.layout !== "horizontal",
+    defaultValueHint: true,
+  },
+  colon: {
+    type: "boolean" as const,
+    defaultValueHint: true,
+    advanced: true,
+    hidden: () => true,
+  },
+  labelAlign: {
+    type: "choice" as const,
+    options: ["left", "right"],
+    advanced: true,
+    hidden: (ps, ctx) =>
+      !!ps.noLabel || ctx?.internalFormCtx?.layout.layout !== "horizontal",
+  },
+  hidden: {
+    type: "boolean" as const,
+    advanced: true,
+  },
+  validateTrigger: {
+    type: "choice" as const,
+    options: ["onSubmit", "onChange", "onBlur"],
+    multiSelect: true as const,
+    advanced: true,
+  },
+  shouldUpdate: {
+    type: "boolean" as const,
+    advanced: true,
+    displayName: "Always re-render",
+    description:
+      "Form items normally only re-render when the corresponding form value changes, for performance. This forces it to always re-render.",
+  },
+  dependencies: {
+    type: "array" as const,
+    advanced: true,
+    displayName: "Dependencies",
+    description:
+      "Form items can depend on other form items. This forces it to reevaluate the validation rules when the other form item changes.",
+  },
+  hideValidationMessage: {
+    type: "boolean" as const,
+    displayName: "Hide validation message?",
+    description: "If true, will hide the validation error message",
+    defaultValueHint: false,
+    advanced: true,
+  },
+  customizeProps: {
+    type: "function" as const,
+    description:
+      "Customize the props passed into the wrapped field component. Takes the current status ('success', 'warning', 'error', or 'validating').)",
+    argNames: ["fieldData"],
+    argValues: (_ps: any, ctx: any) => [
+      {
+        status: ctx?.status?.status,
+      },
+    ],
+    advanced: true,
+  } as any,
+  noStyle: {
+    type: "boolean" as const,
+    displayName: "Field control only",
+    description:
+      "Don't render anything but the field control - so no label, help text, validation error, etc.",
+    advanced: true,
+  },
+};
+
+export const formItemComponentName = "plasmic-antd5-form-item";
+
 export function registerFormItem(loader?: Registerable) {
   registerComponentHelper(loader, FormItemWrapper, {
-    name: "plasmic-antd5-form-item",
+    name: formItemComponentName,
     displayName: "Form Field",
-    parentComponentName: "plasmic-antd5-form",
+    parentComponentName: formComponentName,
     defaultStyles: {
       marginBottom: "24px",
       width: "stretch",
@@ -721,105 +1018,11 @@ export function registerFormItem(loader?: Registerable) {
         type: "slot",
         defaultValue: {
           type: "component",
-          name: "plasmic-antd5-input",
+          name: inputComponentName,
         },
         ...({ mergeWithParent: true } as any),
       },
-      name: {
-        type: "string",
-      },
-      initialValue: {
-        type: "string",
-      },
-      rules: {
-        type: "formValidationRules",
-      } as any,
-      valuePropName: {
-        type: "string",
-        advanced: true,
-        defaultValueHint: "value",
-        description:
-          "If you are using a custom control whose prop for the value is not `value`, then specify the right prop name to use here.",
-      },
-      noLabel: {
-        type: "boolean",
-        advanced: true,
-      },
-      alignLabellessWithControls: {
-        type: "boolean",
-        displayName: "Align with controls?",
-        description: "Aligns the content with form controls in the grid",
-        hidden: (ps, ctx) =>
-          !ps.noLabel || ctx?.internalFormCtx?.layout.layout !== "horizontal",
-        defaultValueHint: true,
-      },
-      colon: {
-        type: "boolean",
-        defaultValueHint: true,
-        advanced: true,
-        hidden: () => true,
-      },
-      labelAlign: {
-        type: "choice",
-        options: ["left", "right"],
-        advanced: true,
-        hidden: (ps, ctx) =>
-          !!ps.noLabel || ctx?.internalFormCtx?.layout.layout !== "horizontal",
-      },
-      hidden: {
-        type: "boolean",
-        advanced: true,
-      },
-      validateTrigger: {
-        type: "choice",
-        options: ["onSubmit", "onChange", "onBlur"],
-        multiSelect: true,
-        advanced: true,
-      },
-      shouldUpdate: {
-        type: "boolean",
-        advanced: true,
-        displayName: "Always re-render",
-        description:
-          "Form fields normally only re-render when the corresponding form value changes, for performance. This forces it to always re-render.",
-      },
-      dependencies: {
-        type: "array",
-        advanced: true,
-        displayName: "Dependencies",
-        description:
-          "Form fields can depend on other form fields. This forces it to reevaluate the validation rules when the other form field changes.",
-      },
-      hideValidationMessage: {
-        type: "boolean",
-        displayName: "Hide validation message?",
-        description: "If true, will hide the validation error message",
-        defaultValueHint: false,
-        advanced: true,
-      },
-      description: {
-        type: "slot",
-        hidePlaceholder: true,
-      },
-      customizeProps: {
-        type: "function",
-        description:
-          "Customize the props passed into the wrapped field component. Takes the current status ('success', 'warning', 'error', or 'validating').)",
-        argNames: ["fieldData"],
-        argValues: (_ps: any, ctx: any) => [
-          {
-            status: ctx?.status?.status,
-          },
-        ],
-        advanced: true,
-      } as any,
-      noStyle: {
-        type: "boolean",
-        displayName: "Field control only",
-        description:
-          "Don't render anything but the field control - so no label, help text, validation error, etc.",
-        advanced: true,
-      },
+      ...commonFormItemProps,
     },
     importPath: "@plasmicpkgs/antd5/skinny/registerForm",
     importName: "FormItemWrapper",
@@ -828,7 +1031,7 @@ export function registerFormItem(loader?: Registerable) {
         props: {
           children: {
             type: "component",
-            name: "plasmic-antd5-input",
+            name: inputComponentName,
           },
         },
       },
@@ -836,7 +1039,7 @@ export function registerFormItem(loader?: Registerable) {
         props: {
           children: {
             type: "component",
-            name: "plasmic-antd5-textarea",
+            name: textAreaComponentName,
           },
         },
       },
@@ -844,7 +1047,7 @@ export function registerFormItem(loader?: Registerable) {
         props: {
           children: {
             type: "component",
-            name: "plasmic-antd5-select",
+            name: selectComponentName,
           },
         },
       },
@@ -852,7 +1055,7 @@ export function registerFormItem(loader?: Registerable) {
         props: {
           children: {
             type: "component",
-            name: "plasmic-antd5-input-number",
+            name: inputNumberComponentName,
           },
         },
       },
@@ -860,7 +1063,7 @@ export function registerFormItem(loader?: Registerable) {
         props: {
           children: {
             type: "component",
-            name: "plasmic-antd5-checkbox",
+            name: checkboxComponentName,
           },
           noLabel: true,
         },
@@ -869,7 +1072,7 @@ export function registerFormItem(loader?: Registerable) {
         props: {
           children: {
             type: "component",
-            name: "plasmic-antd5-switch",
+            name: switchComponentName,
           },
           noLabel: true,
         },
@@ -878,7 +1081,7 @@ export function registerFormItem(loader?: Registerable) {
         props: {
           children: {
             type: "component",
-            name: "plasmic-antd5-radio-group",
+            name: radioGroupComponentName,
           },
         },
       },
@@ -886,7 +1089,7 @@ export function registerFormItem(loader?: Registerable) {
         props: {
           children: {
             type: "component",
-            name: "plasmic-antd5-input-password",
+            name: passwordComponentName,
           },
         },
       },
@@ -894,7 +1097,7 @@ export function registerFormItem(loader?: Registerable) {
         props: {
           children: {
             type: "component",
-            name: "plasmic-antd5-button",
+            name: buttonComponentName,
             props: {
               type: "primary",
             },
@@ -926,11 +1129,13 @@ export function FormGroup(props: FormGroupProps) {
   );
 }
 
+export const formGroupComponentName = "plasmic-antd5-form-group";
+
 export function registerFormGroup(loader?: Registerable) {
   registerComponentHelper(loader, FormGroup, {
-    name: "plasmic-antd5-form-group",
+    name: formGroupComponentName,
     displayName: "Form Field Group",
-    parentComponentName: "plasmic-antd5-form",
+    parentComponentName: formComponentName,
     actions: COMMON_ACTIONS,
     props: {
       name: {
@@ -1027,10 +1232,12 @@ export const FormListWrapper = React.forwardRef(function FormListWrapper(
   );
 });
 
+export const formListComponentName = "plasmic-antd5-form-list";
+
 export function registerFormList(loader?: Registerable) {
   registerComponentHelper(loader, FormListWrapper, {
-    name: "plasmic-antd5-form-list",
-    parentComponentName: "plasmic-antd5-form",
+    name: formListComponentName,
+    parentComponentName: formComponentName,
     displayName: "Form List",
     actions: COMMON_ACTIONS,
     props: {
@@ -1042,7 +1249,7 @@ export function registerFormList(loader?: Registerable) {
             children: [
               {
                 type: "component",
-                name: "plasmic-antd5-form-item",
+                name: formItemComponentName,
                 props: {
                   name: "firstName",
                   label: {
@@ -1057,7 +1264,7 @@ export function registerFormList(loader?: Registerable) {
               },
               {
                 type: "component",
-                name: "plasmic-antd5-form-item",
+                name: formItemComponentName,
                 props: {
                   name: "lastName",
                   label: {
