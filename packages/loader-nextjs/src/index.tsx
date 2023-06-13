@@ -118,10 +118,53 @@ export function initPlasmicLoader(opts: InitOptions) {
   );
 }
 
+const PlasmicNextLink = React.forwardRef(function PlasmicNextLink(
+  props: React.ComponentProps<typeof NextLink>,
+  ref: React.Ref<HTMLAnchorElement>
+) {
+  // Basically renders NextLink, except when href is undefined,
+  // which freaks out NextLink :-/
+  if (props.href) {
+    const {
+      href,
+      replace,
+      scroll,
+      shallow,
+      passHref,
+      prefetch,
+      locale,
+      ...rest
+    } = props;
+    // We use legacyBehavior, because we don't know which
+    // version of next the user has installed
+    return (
+      <NextLink
+        href={href}
+        replace={replace}
+        scroll={scroll}
+        shallow={shallow}
+        passHref={passHref}
+        prefetch={prefetch}
+        locale={locale}
+        {...({ legacyBehavior: true } as any)}
+      >
+        <a {...rest} ref={ref} />
+      </NextLink>
+    );
+  } else {
+    return <a {...props} href={undefined} ref={ref} />;
+  }
+});
+
 export function PlasmicRootProvider(
+  // We omit Head but still allow override for Link
   props: Omit<React.ComponentProps<typeof CommonPlasmicRootProvider>, "Head">
 ) {
   return (
-    <CommonPlasmicRootProvider Head={NextHead} Link={NextLink} {...props} />
+    <CommonPlasmicRootProvider
+      Head={NextHead}
+      Link={PlasmicNextLink}
+      {...props}
+    />
   );
 }
