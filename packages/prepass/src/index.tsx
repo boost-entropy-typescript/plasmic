@@ -1,8 +1,6 @@
 import { PlasmicPrepassContext } from "@plasmicapp/query";
 import prepass from "@plasmicapp/react-ssr-prepass";
 import React from "react";
-import { isFragment } from "react-is";
-import { PlasmicComponent } from "./PlasmicComponent";
 
 /**
  * Performs a prepass over Plasmic content, kicking off the necessary
@@ -52,9 +50,15 @@ export async function extractPlasmicQueryData(
     console.warn(`PLASMIC: Error encountered while pre-rendering`, err);
   }
 
+  // Ignore SWR cache keys and query taggeds with $csq$ that indicate a query that
+  // the value is exected to be only loaded in client-side and not possible to
+  // extract from server-side.
   const queryCache = Object.fromEntries(
     Array.from(cache.entries()).filter(
-      ([key, val]) => !key.startsWith("$swr$") && val !== undefined
+      ([key, val]) =>
+        !key.startsWith("$swr$") &&
+        !key.startsWith("$csq$") &&
+        val !== undefined
     )
   );
 
@@ -84,34 +88,7 @@ export async function plasmicPrepass(element: React.ReactElement) {
  * finishing as much data fetched as possible.
  */
 function buildPlasmicPrepassElement(element: React.ReactElement) {
-  return (
-    <GenericErrorBoundary>{processReactElement(element)}</GenericErrorBoundary>
-  );
-}
-
-function processReactElement(element: React.ReactElement) {
-  if (element.type === PlasmicComponent) {
-    return React.cloneElement(
-      element,
-      processPlasmicComponentProps(element.props)
-    );
-  } else {
-    return React.cloneElement(element, processComponentProps(element.props));
-  }
-}
-
-function processComponentProps(
-  props: Record<string, any>
-): Record<string, any> {
-  if (!props || typeof props !== "object") {
-    return props;
-  }
-
-  return Object.fromEntries(
-    Object.entries(props).map(([k, v]) => {
-      return [k, React.isValidElement(v) ? processReactElement(v) : v];
-    })
-  );
+  return <GenericErrorBoundary>{element}</GenericErrorBoundary>;
 }
 
 class GenericErrorBoundary extends React.Component<{
@@ -128,37 +105,4 @@ class GenericErrorBoundary extends React.Component<{
   render() {
     return <>{this.props.children}</>;
   }
-}
-
-/**
- * To process the componentProps passed to PlasmicComponent, wrap any
- * React element we find in <GenericErrorBoundary />.
- */
-function processPlasmicComponentProps(x: any): any {
-  if (!x) {
-    return x;
-  } else if (isFragment(x)) {
-    return (
-      <React.Fragment>
-        {React.Children.map(x.props.children, processPlasmicComponentProps)}
-      </React.Fragment>
-    );
-  } else if (React.isValidElement(x)) {
-    return <GenericErrorBoundary>{x}</GenericErrorBoundary>;
-  } else if (Array.isArray(x)) {
-    return x.map(processPlasmicComponentProps);
-  } else if (isLiteralObject(x)) {
-    return Object.fromEntries(
-      Object.entries(x).map(([key, val]) => [
-        key,
-        processPlasmicComponentProps(val),
-      ])
-    );
-  } else {
-    return x;
-  }
-}
-
-function isLiteralObject(obj: any): obj is object {
-  return !!obj && typeof obj === "object" && obj.constructor === Object;
 }
