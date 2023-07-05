@@ -169,7 +169,7 @@ const Internal = React.forwardRef(
     const { extendedOnValuesChange, setRemountKey, ...rest } = props;
     // extracted from https://github.com/react-component/field-form/blob/master/src/Form.tsx#L120
     let childrenNode;
-    if (props.mode === "advanced") {
+    if (props.mode !== "simplified") {
       childrenNode =
         typeof props.children === "function"
           ? props.children(values, form)
@@ -715,9 +715,7 @@ export function registerForm(loader?: Registerable) {
         },
         unstable__keyFunc: (x) => x.key,
         unstable__minimalValue: (ps, contextData) => {
-          return ps.mode === "simplified"
-            ? ps.formItems
-            : contextData?.minimalFullLengthFields;
+          return ps.data ? contextData?.minimalFullLengthFields : undefined;
         },
         unstable__canDelete: (item, ps, ctx) => {
           if (ps.mode !== "database-schema-driven") {
