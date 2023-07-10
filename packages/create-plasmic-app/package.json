@@ -1,12 +1,12 @@
 {
   "name": "create-plasmic-app",
-  "version": "0.0.76",
+  "version": "0.0.77",
   "description": "Create Plasmic-powered React apps",
   "main": "./dist/lib.js",
   "types": "./dist/lib.d.ts",
   "license": "MIT",
   "engines": {
-    "node": "^12.13.0 || ^14.15.0 || >=15.0.0"
+    "node": ">=18.0.0"
   },
   "bin": {
     "create-plasmic-app": "./dist/index.js"
