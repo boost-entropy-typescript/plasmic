@@ -1,20 +1,20 @@
 {
-  "name": "@plasmicpkgs/react-parallax-tilt",
-  "version": "0.0.158",
-  "description": "Plasmic registration call for the HTML5 video element",
+  "name": "@plasmicpkgs/react-quill",
+  "version": "1.0.2",
+  "description": "Plasmic registration call for react-quill WYSIWYG Editor",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "module": "dist/react-parallax-tilt.esm.js",
+  "module": "dist/react-quill.esm.js",
   "files": [
     "dist"
   ],
   "size-limit": [
     {
-      "path": "dist/react-parallax-tilt.cjs.production.min.js",
+      "path": "dist/react-quill.cjs.production.min.js",
       "limit": "10 KB"
     },
     {
-      "path": "dist/react-parallax-tilt.esm.js",
+      "path": "dist/react-quill.esm.js",
       "limit": "10 KB"
     }
   ],
@@ -28,6 +28,7 @@
     "analyze": "size-limit --why"
   },
   "devDependencies": {
+    "@plasmicapp/data-sources": "0.1.106",
     "@plasmicapp/host": "1.0.160",
     "@size-limit/preset-small-lib": "^4.11.0",
     "@types/node": "^14.0.26",
@@ -35,12 +36,16 @@
     "tsdx": "^0.14.1",
     "tslib": "^2.2.0"
   },
-  "dependencies": {
-    "react-parallax-tilt": "^1.5.74"
-  },
   "peerDependencies": {
+    "@plasmicapp/data-sources": ">=0.1.52",
     "@plasmicapp/host": ">=1.0.0",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "react-quill": "^2.0.0"
   }
 }
