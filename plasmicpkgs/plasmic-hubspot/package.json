@@ -1,10 +1,10 @@
 {
-  "name": "@plasmicpkgs/plasmic-pigeon-maps",
-  "version": "0.0.2",
-  "description": "Plasmic Pigeon Maps components.",
+  "name": "@plasmicpkgs/plasmic-hubspot",
+  "version": "0.0.3",
+  "description": "Plasmic Hubspot components.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
-  "module": "dist/plasmic-pigeon-maps.esm.js",
+  "module": "dist/plasmic-hubspot.esm.js",
   "publishConfig": {
     "access": "public"
   },
@@ -25,28 +25,27 @@
   },
   "size-limit": [
     {
-      "path": "dist/plasmic-pigeon-maps.cjs.production.min.js",
+      "path": "dist/plasmic-hubspot.cjs.production.min.js",
       "limit": "10 KB"
     },
     {
-      "path": "dist/plasmic-pigeon-maps.esm.js",
+      "path": "dist/plasmic-hubspot.esm.js",
       "limit": "10 KB"
     }
   ],
   "devDependencies": {
-    "@plasmicapp/host": "1.0.158",
-    "@plasmicapp/query": "^0.1.61",
+    "@plasmicapp/host": "1.0.161",
     "@size-limit/preset-small-lib": "^7.0.8",
-    "@types/react": "^17.0.43",
-    "@types/react-dom": "^17.0.14",
+    "@types/react": "^18.0.27",
+    "@types/react-dom": "^18.0.10",
     "husky": "^7.0.4",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "size-limit": "^7.0.8",
     "tsdx": "^0.14.1",
     "tslib": "^2.3.1"
   },
   "dependencies": {
-    "pigeon-maps": "^0.21.3"
+    "change-case": "^4.1.2"
   }
 }
