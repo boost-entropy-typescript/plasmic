@@ -1,20 +1,20 @@
 {
-  "name": "@plasmicpkgs/react-chartjs-2",
-  "version": "1.0.57",
-  "description": "Chart.js 2.x components for React",
+  "name": "@plasmicpkgs/radix-ui",
+  "version": "0.0.2",
+  "description": "Radix UI components for Plasmic",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "module": "dist/react-chartjs-2.esm.js",
+  "module": "dist/radix-ui.esm.js",
   "files": [
     "dist"
   ],
   "size-limit": [
     {
-      "path": "dist/react-chartjs-2.cjs.production.min.js",
+      "path": "dist/radix-ui.cjs.production.min.js",
       "limit": "10 KB"
     },
     {
-      "path": "dist/react-chartjs-2.esm.js",
+      "path": "dist/radix-ui.esm.js",
       "limit": "10 KB"
     }
   ],
@@ -28,28 +28,31 @@
     "analyze": "size-limit --why"
   },
   "devDependencies": {
-    "@plasmicapp/data-sources": "0.1.112",
     "@plasmicapp/host": "1.0.164",
     "@size-limit/preset-small-lib": "^4.11.0",
     "@types/node": "^14.0.26",
-    "chart.js": "^4.2.1",
-    "react-chartjs-2": "^5.2.0",
     "size-limit": "^4.11.0",
     "tsdx": "^0.14.1",
     "tslib": "^2.2.0"
   },
   "peerDependencies": {
-    "@plasmicapp/data-sources": ">=0.1.52",
     "@plasmicapp/host": ">=1.0.0",
-    "chart.js": ">=4.2.1",
     "react": ">=16.8.0",
-    "react-chartjs-2": ">=5.2.0",
     "react-dom": ">=16.8.0"
   },
   "publishConfig": {
     "access": "public"
   },
   "dependencies": {
-    "deepmerge": "^4.3.1"
+    "@radix-ui/react-context-menu": "^2.1.4",
+    "@radix-ui/react-dialog": "^1.0.4",
+    "@radix-ui/react-dropdown-menu": "^2.0.5",
+    "@radix-ui/react-popover": "^1.0.6",
+    "@radix-ui/react-slot": "^1.0.2",
+    "@radix-ui/react-tooltip": "^1.0.6",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.0.0",
+    "lucide-react": "^0.279.0",
+    "remeda": "^1.27.0"
   }
 }
