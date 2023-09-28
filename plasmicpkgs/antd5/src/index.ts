@@ -53,6 +53,8 @@ import { registerCollapse } from "./registerCollapse";
 import { registerPopover } from "./registerPopover";
 import { registerTabs } from "./registerTabs";
 import { registerRate } from "./registerRate";
+import { registerSlider } from "./registerSlider";
+import { registerDateRangePicker } from "./registerDateRangePicker";
 
 export function registerAll(loader?: Registerable) {
   registerConfigProvider(loader);
@@ -75,6 +77,7 @@ export function registerAll(loader?: Registerable) {
   registerTextArea(loader);
   registerNumberInput(loader);
   registerDatePicker(loader);
+  registerDateRangePicker(loader);
   registerUpload(loader);
   registerColorPicker(loader);
   registerDrawer(loader);
@@ -88,6 +91,7 @@ export function registerAll(loader?: Registerable) {
   registerPopover(loader);
   registerTabs(loader);
   registerRate(loader);
+  registerSlider(loader);
 }
 
 export { buttonComponentName } from "./registerButton";
@@ -99,6 +103,7 @@ export {
   formItemComponentName,
   formListComponentName,
   InputType,
+  deriveFormFieldConfigs,
 } from "./registerForm";
 
 export {
