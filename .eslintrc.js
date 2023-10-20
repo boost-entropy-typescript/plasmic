@@ -126,6 +126,9 @@ module.exports = {
     "no-var": "error",
     "no-constant-condition": ["error", { checkLoops: false }],
     "no-empty": ["error", { allowEmptyCatch: true }],
+    "@typescript-eslint/no-empty-function": "off",
+    "prefer-spread": "off",
+    "@typescript-eslint/no-this-alias": "off",
   },
   env: {
     es6: true,
@@ -169,6 +172,7 @@ module.exports = {
         "@typescript-eslint/no-empty-function": "warn",
         "@typescript-eslint/no-non-null-asserted-optional-chain": "warn",
         "@typescript-eslint/ban-ts-comment": "warn",
+        "@typescript-eslint/no-var-requires": "warn",
         "import/no-extraneous-dependencies": [
           "error",
           {

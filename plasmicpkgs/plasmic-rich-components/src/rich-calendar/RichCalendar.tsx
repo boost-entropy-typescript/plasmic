@@ -1,7 +1,7 @@
 import {
   deriveFieldConfigs,
-  normalizeData,
   NormalizedData,
+  useNormalizedData,
 } from "@plasmicapp/data-sources";
 import { parseDate } from "@plasmicpkgs/luxon-parser";
 import { Badge, Calendar } from "antd";
@@ -49,7 +49,12 @@ interface Event {
 }
 
 function getEventFullDate(date?: string): string | undefined {
-  return parseDate(date)?.toISOString() || undefined;
+  const parsed = parseDate(date);
+  if (!parsed) return undefined;
+  const yyyy = parsed.getFullYear();
+  const mm = (parsed.getMonth() + 1).toString().padStart(2, "0");
+  const dd = parsed.getDate().toString().padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
 }
 
 function getEventMonthYear(date?: string): string | undefined {
@@ -93,7 +98,7 @@ export function RichCalendar(props: RichCalendarProps) {
     monthFullCellRender,
     ...rest
   } = props;
-  const data = normalizeData(rawData);
+  const data = useNormalizedData(rawData);
 
   const { normalized, finalRoles: roleConfigs } = useRoleDefinitions(
     data,
