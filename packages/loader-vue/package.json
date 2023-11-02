@@ -1,6 +1,6 @@
 {
   "name": "@plasmicapp/loader-vue",
-  "version": "0.1.308",
+  "version": "0.1.309",
   "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
   "module": "./dist/index.esm.js",
@@ -15,7 +15,7 @@
     "build": "yarn build:types && yarn build:index",
     "build:types": "yarn tsc",
     "build:index": "node ../../build.mjs src/index.ts",
-    "prepare": "if-env PREPARE_NO_BUILD=true || yarn build"
+    "prepublishOnly": "npm run build"
   },
   "files": [
     "dist"
@@ -24,7 +24,7 @@
     "node": ">=12"
   },
   "dependencies": {
-    "@plasmicapp/loader-react": "1.0.314",
+    "@plasmicapp/loader-react": "1.0.315",
     "core-js": "^3.6.5",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",

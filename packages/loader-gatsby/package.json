@@ -1,6 +1,6 @@
 {
   "name": "@plasmicapp/loader-gatsby",
-  "version": "1.0.317",
+  "version": "1.0.318",
   "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
   "exports": {
@@ -31,7 +31,7 @@
     "build:gatsby-node": "node ../../build.mjs src/gatsby-node.ts --no-esm",
     "build:gatsby-ssr": "node ../../build.mjs src/gatsby-ssr.ts --no-esm",
     "yalcp": "yalc publish --push",
-    "prepare": "if-env PREPARE_NO_BUILD=true || yarn build"
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "gatsby",
@@ -62,9 +62,9 @@
     "gatsby": "^5.11.0"
   },
   "dependencies": {
-    "@plasmicapp/loader-core": "1.0.116",
-    "@plasmicapp/loader-react": "1.0.314",
-    "@plasmicapp/watcher": "1.0.78",
+    "@plasmicapp/loader-core": "1.0.117",
+    "@plasmicapp/loader-react": "1.0.315",
+    "@plasmicapp/watcher": "1.0.79",
     "lodash": "^4.17.21"
   }
 }

@@ -5,7 +5,7 @@ import { Registerable, registerComponentHelper } from "./utils";
 export const AntdInput = Input;
 export const AntdTextArea = Input.TextArea;
 export const AntdPassword = Input.Password;
-export const AntdInputNumber = InputNumber;
+export const AntdInputNumber: typeof InputNumber = InputNumber;
 
 export const inputHelpers = {
   states: {
@@ -32,6 +32,7 @@ const COMMON_STATES = {
     valueProp: "value",
     variableType: "text",
     onChangeProp: "onChange",
+    hidden: (ps: any) => !!ps.__plasmicFormField,
   },
 } as const;
 

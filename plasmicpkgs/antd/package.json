@@ -1,6 +1,6 @@
 {
   "name": "@plasmicpkgs/antd",
-  "version": "2.0.97",
+  "version": "2.0.98",
   "description": "Plasmic registration calls for antd components",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -50,7 +50,7 @@
   "scripts": {
     "build": "rollup -c rollup.config.mjs && yarn copy_css_files && yarn gentypes",
     "gentypes": "yarn tsc --emitDeclarationOnly --declaration src/index.ts --incremental --tsBuildInfoFile ./dist/.tsbuildinfo  --skipLibCheck --jsx react --lib dom,es2019 --esModuleInterop --strict --outDir ./dist/ && cp ./dist/*.d.ts skinny/ && rm skinny/index.d.ts",
-    "prepare": "if-env PREPARE_NO_BUILD=true || yarn build",
+    "prepublishOnly": "npm run build",
     "copy_css_files": "cp src/*.css dist/",
     "size": "size-limit",
     "analyze": "size-limit --why"
@@ -59,7 +59,7 @@
     "antd": "^4.19.5"
   },
   "devDependencies": {
-    "@plasmicapp/host": "1.0.177",
+    "@plasmicapp/host": "1.0.178",
     "@rollup/plugin-commonjs": "^11.0.0",
     "@rollup/plugin-json": "^4.0.0",
     "@rollup/plugin-node-resolve": "^9.0.0",

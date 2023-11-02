@@ -1,6 +1,6 @@
 {
   "name": "@plasmicapp/prepass",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "types": "./dist/index.d.ts",
   "main": "./dist/index.cjs.js",
   "module": "./dist/index.esm.js",
@@ -17,13 +17,13 @@
     "test": "yarn --cwd=../.. test",
     "coverage": "yarn --cwd=../.. test --coverage --passWithNoTests",
     "lint": "eslint",
-    "prepare": "if-env PREPARE_NO_BUILD=true || yarn build"
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@types/react": "^18.2.33"
   },
   "dependencies": {
-    "@plasmicapp/query": "0.1.74",
+    "@plasmicapp/query": "0.1.75",
     "@plasmicapp/react-ssr-prepass": "2.0.3"
   },
   "peerDependencies": {

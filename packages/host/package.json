@@ -1,6 +1,6 @@
 {
   "name": "@plasmicapp/host",
-  "version": "1.0.177",
+  "version": "1.0.178",
   "description": "plasmic library for app hosting",
   "main": "dist/index.cjs.js",
   "types": "dist/index.d.ts",
@@ -45,12 +45,12 @@
     "postbuild:registerTrait": "node ../../print-module-api.js ./packages/host/registerTrait/dist/index.cjs.js > registerTrait-api.txt",
     "test": "yarn --cwd=../.. test --passWithNoTests",
     "lint": "eslint",
-    "prepare": "if-env PREPARE_NO_BUILD=true || yarn build",
+    "prepublishOnly": "npm run build",
     "size": "size-limit",
     "analyze": "size-limit --why"
   },
   "dependencies": {
-    "@plasmicapp/query": "0.1.74",
+    "@plasmicapp/query": "0.1.75",
     "csstype": "^3.1.2",
     "window-or-global": "^1.0.1"
   },

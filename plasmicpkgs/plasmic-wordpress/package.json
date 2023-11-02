@@ -1,6 +1,6 @@
 {
   "name": "@plasmicpkgs/plasmic-wordpress",
-  "version": "0.0.98",
+  "version": "0.0.99",
   "description": "Plasmic Wordpress components.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -16,7 +16,7 @@
     "build": "tsdx build",
     "test": "yarn --cwd=../.. test --passWithNoTests",
     "lint": "tsdx lint",
-    "prepare": "if-env PREPARE_NO_BUILD=true || yarn build",
+    "prepublishOnly": "npm run build",
     "size": "size-limit",
     "analyze": "size-limit --why"
   },
@@ -36,8 +36,8 @@
     }
   ],
   "devDependencies": {
-    "@plasmicapp/host": "1.0.177",
-    "@plasmicapp/query": "0.1.74",
+    "@plasmicapp/host": "1.0.178",
+    "@plasmicapp/query": "0.1.75",
     "@size-limit/preset-small-lib": "^7.0.8",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",

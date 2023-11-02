@@ -1,10 +1,10 @@
 import { LogoutOutlined } from "@ant-design/icons";
 import type { MenuDataItem, ProLayoutProps } from "@ant-design/pro-components";
 import { ProConfigProvider, ProLayout } from "@ant-design/pro-components";
+import { useDataEnv, usePlasmicLink } from "@plasmicapp/host";
 import { ConfigProvider, Dropdown, theme } from "antd";
-import React, { ReactNode, useEffect, useState } from "react";
+import React, { ReactNode, useEffect, useRef, useState } from "react";
 import { isLight, useIsClient } from "../common";
-import { usePlasmicLink } from "@plasmicapp/host";
 import { AnchorLink } from "../widgets";
 
 function omitUndefined(x: object) {
@@ -77,15 +77,40 @@ export function RichLayout({
   logoElement,
   ...layoutProps
 }: RichLayoutProps) {
+  const $ctx = useDataEnv();
+  const ref = useRef<HTMLDivElement>(null);
   const isClient = useIsClient();
   const [pathname, setPathname] = useState<string | undefined>(undefined);
+  const [openKeys, setOpenKeys] = useState<string[]>([]);
+  const [ready, setReady] = useState(false);
   useEffect(() => {
+    setTimeout(() => {
+      setReady(true);
+    }, 500);
+
     if (typeof location !== "undefined") {
       setPathname(location.pathname);
     }
   }, []);
+
+  useEffect(() => {
+    if (!ready) return;
+    if (!ref.current) return;
+    // open selected submenu (only opens the last one in the list!)
+    const selectedSubmenus: string[] =
+      (Array.from(
+        ref.current.querySelectorAll(
+          "ul > li.ant-menu-submenu.ant-menu-submenu-selected > div"
+        )
+      )
+        .map((el) => el.getAttribute("data-menu-id")?.split("/").pop())
+        .filter((i) => i)
+        .map((i) => `/${i}`) as string[]) || [];
+    setOpenKeys(selectedSubmenus);
+  }, [ready]);
+
   // The usePlasmicLink function may be undefined, if host is not up to date
-  const Link = usePlasmicLink?.() ?? AnchorLink;
+  const PlasmicLink = usePlasmicLink?.() ?? AnchorLink;
   const { token } = theme.useToken();
   const origTextColor = token.colorTextBase;
   function getNavBgColor(): string {
@@ -140,7 +165,7 @@ export function RichLayout({
         colorTextSubMenuSelected: "#fff",
       };
   return (
-    <div className={className} style={{ display: "flex" }}>
+    <div ref={ref} className={className} style={{ display: "flex" }}>
       {/* Remove the always-on fixed gradient background layer. */}
       <style>{baseStyles}</style>
       <ProLayout
@@ -182,7 +207,10 @@ export function RichLayout({
           // *and* the text is just dark as well.
           // Haven't yet been able to unravel the pro components code to figure out the proper way to do this, so just
           // bluntly specifying tokens here, as recommended in some GitHub issue.
-          sider: layoutColorOverrides,
+          sider: omitUndefined({
+            colorMenuBackground: navBgColor,
+            ...layoutColorOverrides,
+          }),
         }}
         // Tweak defaults. ProLayout is janky and has terrible docs!
         layout={layoutProps.layout ?? "top"}
@@ -204,7 +232,7 @@ export function RichLayout({
         }}
         menu={{
           // collapsedShowGroupTitle: true,
-          defaultOpenAll: true,
+          defaultOpenAll: false,
           // hideMenuWhenCollapsed: true,
         }}
         avatarProps={
@@ -241,13 +269,20 @@ export function RichLayout({
           return footerChildren;
         }}
         onMenuHeaderClick={(e) => console.log(e)}
-        menuItemRender={(item, dom) => <Link href={item.path}>{dom}</Link>}
-        headerTitleRender={(logo, title, _) => {
+        openKeys={openKeys}
+        onOpenChange={(keys) =>
+          keys === false || !ready ? [] : setOpenKeys(keys)
+        }
+        selectedKeys={[$ctx?.pagePath]}
+        menuItemRender={(item, dom) => (
+          <PlasmicLink href={item.path}>{dom}</PlasmicLink>
+        )}
+        headerTitleRender={(logoEl, title, _) => {
           return (
-            <Link href={rootUrl}>
-              {logo}
+            <PlasmicLink href={rootUrl}>
+              {logoEl}
               {title}
-            </Link>
+            </PlasmicLink>
           );
         }}
       >

@@ -1,5 +1,5 @@
 {
-  "version": "1.0.78",
+  "version": "1.0.79",
   "license": "MIT",
   "sideEffects": false,
   "types": "./dist/index.d.ts",
@@ -24,7 +24,7 @@
     "build:index": "node ../../build.mjs ./src/index.ts",
     "test": "yarn --cwd=../.. test",
     "lint": "eslint",
-    "prepare": "if-env PREPARE_NO_BUILD=true || yarn build",
+    "prepublishOnly": "npm run build",
     "size": "size-limit",
     "analyze": "size-limit --why"
   },
