@@ -1,6 +1,6 @@
 {
   "name": "@plasmicapp/loader-react",
-  "version": "1.0.317",
+  "version": "1.0.318",
   "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
   "module": "./dist/index.esm.js",
@@ -42,9 +42,6 @@
     "build:types": "yarn tsc",
     "build:index": "node ../../build.mjs ./src/index.ts --use-client",
     "build:react-server": "node ../../build.mjs ./src/react-server.ts",
-    "postbuild": "yarn postbuild:index && yarn postbuild:react-server",
-    "postbuild:index": "node ../../print-module-api.js ./packages/loader-react/dist/index.js > index-api.txt",
-    "postbuild:react-server": "node ../../print-module-api.js ./packages/loader-react/dist/react-server.js > index-react-server-api.txt",
     "yalcp": "yalc publish --push",
     "test": "yarn --cwd=../.. test",
     "coverage": "yarn --cwd=../.. test --coverage --passWithNoTests",
@@ -54,13 +51,13 @@
     "analyze": "size-limit --why"
   },
   "dependencies": {
-    "@plasmicapp/data-sources-context": "0.1.18",
-    "@plasmicapp/host": "1.0.178",
-    "@plasmicapp/loader-core": "1.0.119",
-    "@plasmicapp/loader-fetcher": "1.0.41",
-    "@plasmicapp/loader-splits": "1.0.47",
-    "@plasmicapp/prepass": "1.0.11",
-    "@plasmicapp/query": "0.1.75",
+    "@plasmicapp/data-sources-context": "0.1.19",
+    "@plasmicapp/host": "1.0.179",
+    "@plasmicapp/loader-core": "1.0.120",
+    "@plasmicapp/loader-fetcher": "1.0.42",
+    "@plasmicapp/loader-splits": "1.0.48",
+    "@plasmicapp/prepass": "1.0.12",
+    "@plasmicapp/query": "0.1.76",
     "pascalcase": "^1.0.0",
     "server-only": "0.0.1"
   },
