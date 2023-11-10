@@ -1,5 +1,5 @@
 {
-  "version": "1.0.80",
+  "version": "1.0.81",
   "license": "MIT",
   "sideEffects": false,
   "types": "./dist/index.d.ts",
@@ -25,6 +25,7 @@
     "test": "yarn --cwd=../.. test",
     "lint": "eslint",
     "prepublishOnly": "npm run build",
+    "postpublish": "bash ../../scripts/publish-api-doc-model.sh",
     "size": "size-limit",
     "analyze": "size-limit --why"
   },
