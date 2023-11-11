@@ -202,6 +202,13 @@ export const FullCodeEditor = React.forwardRef(
                   endLineNumber: lastLine,
                 },
               ]);
+              const position = editorRef.current?.getPosition();
+              if (
+                position?.lineNumber === 1 ||
+                position?.lineNumber === lastLine
+              ) {
+                editorRef.current?.setPosition({ lineNumber: 2, column: 1 });
+              }
             }
           }
         }
