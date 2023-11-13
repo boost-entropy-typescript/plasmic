@@ -3403,10 +3403,15 @@ export function serializeTplComponentBase(
     plugin.twiddleGenInstanceProps(node, attrs);
   }
 
+  const triggeredHooks = ctx.reactHookSpecs.filter(
+    (spec) => spec.triggerNode === node
+  );
+
   return {
     orderedCondStr,
     attrs,
     serializedChildren,
+    triggeredHooks,
     variantArgNames,
   };
 }
@@ -3414,7 +3419,7 @@ export function serializeTplComponentBase(
 function serializeTplComponent(ctx: SerializerBaseContext, node: TplComponent) {
   const { nodeNamer } = ctx;
   const nodeName = nodeNamer(node);
-  const { attrs, orderedCondStr, serializedChildren } =
+  const { attrs, orderedCondStr, serializedChildren, triggeredHooks } =
     serializeTplComponentBase(ctx, node);
 
   const baseVs = node.vsettings.find((vs) => isBaseVariant(vs.variants));
@@ -3436,7 +3441,7 @@ function serializeTplComponent(ctx: SerializerBaseContext, node: TplComponent) {
     attrs,
     serializedChildren,
     undefined,
-    undefined,
+    triggeredHooks,
     node === ctx.component.tplTree
   );
 
@@ -4033,7 +4038,7 @@ function serializeCustomFunctionsAndLibs(ctx: SerializerBaseContext) {
             ? `* as ${codeLibraryImportAlias(lib)}` // namespace import
             : lib.importType === "default"
             ? `${codeLibraryImportAlias(lib)}` // default import
-            : `{ ${lib.namedImport} }` // named import
+            : `{ ${lib.namedImport} as ${codeLibraryImportAlias(lib)} }` // named import
         } from "${lib.importPath}";`;
       }
     }),
