@@ -76,6 +76,10 @@ export interface PropTypeBase<P> {
    * (This behavior only applies to canvas)
    */
   forceRemount?: boolean;
+  /**
+   * If true, the prop can't be overriden in different variants.
+   */
+  invariantable?: boolean;
 }
 
 export interface Defaultable<P, T> {
@@ -454,7 +458,7 @@ export interface RichSlotType<P> {
    * Furthermore, the component further shows the props of whatever is in the slot on
    *  the parent component for the user's convenience. Handy for various “wrapper" components, form fields, and so on.
    */
-  mergeWithParent?: ContextDependentConfig<P, boolean>;
+  mergeWithParent?: boolean | ContextDependentConfig<P, boolean>;
 
   /**
    * A function that returns true to hide the merged props conditionally.

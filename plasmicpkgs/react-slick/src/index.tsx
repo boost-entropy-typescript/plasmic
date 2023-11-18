@@ -50,14 +50,8 @@ export const SliderWrapper = forwardRef(function SliderWrapper_(
   props: SliderProps,
   userRef?: Ref<SliderMethods>
 ) {
-  const {
-    editingSlide,
-    initialSlide,
-    arrowColor,
-    className,
-    sliderScopeClassName,
-    ...rest
-  } = props;
+  const { editingSlide, arrowColor, className, sliderScopeClassName, ...rest } =
+    props;
   // "data-plasmic-canvas-envs" prop only exists in studio canvas
   const isEditMode = (props as any)["data-plasmic-canvas-envs"] ? true : false;
   const slider = useRef<Slider>(null);
@@ -68,12 +62,6 @@ export const SliderWrapper = forwardRef(function SliderWrapper_(
       slider.current?.slickGoTo(debouncedEditingSlide);
     }
   }, [debouncedEditingSlide, isEditMode]);
-
-  useEffect(() => {
-    // passing the initialSlide prop directly to <Slider> does not work when inifinite: true and slidesPerRow: 3. So usingSlickGoTo instead
-    if (initialSlide === undefined) return;
-    slider.current?.slickGoTo(initialSlide, true);
-  }, [initialSlide]);
 
   React.useImperativeHandle(
     userRef,
