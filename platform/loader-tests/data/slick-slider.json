@@ -1,8 +1,8 @@
 [
   [
-    "b0321cd3-88d2-47d1-8bc8-e261e664bccb",
+    "1397401c-b15c-47b2-8659-9b44c397e887",
     {
-      "root": "srqjIRMRbZHp",
+      "root": "_ulhJT6MD4vt",
       "map": {
         "SyWL3qqJsmzT": { "values": {}, "mixins": [], "__type": "RuleSet" },
         "MjSCeVR3_3Hq": {
@@ -24,7 +24,8 @@
           "styles": [],
           "layout": { "__ref": "u7JAC32LSb-b" },
           "active": true,
-          "__type": "Theme"
+          "__type": "Theme",
+          "addItemPrefs": {}
         },
         "4XJEuEac9uPH": {
           "uuid": "LLZpJNz2A-ob",
@@ -52,7 +53,7 @@
           "projectDependencies": [],
           "activeScreenVariantGroup": null,
           "flags": {},
-          "hostLessPackageInfo": { "__ref": "r2NZCalOsLBp" },
+          "hostLessPackageInfo": { "__ref": "5FY4hAf3PClt" },
           "globalContexts": [],
           "splits": [],
           "defaultComponents": {},
@@ -67,7 +68,6 @@
           "name": "hostless-slider",
           "params": [
             { "__ref": "ZEE1qbzSeuSN" },
-            { "__ref": "fWfOjAryIm2R" },
             { "__ref": "5axoDAZrXPhs" },
             { "__ref": "mSkPF1UgISd-" },
             { "__ref": "EueLVsoJC42u" },
@@ -83,7 +83,6 @@
             { "__ref": "IMrb6NF2ZNw1" },
             { "__ref": "TfzmHaaJmGOS" },
             { "__ref": "-fwVgg306w5x" },
-            { "__ref": "nh8IbkKpV3na" },
             { "__ref": "I7gp9gLhj7qD" },
             { "__ref": "Bao4rHYBC4RO" },
             { "__ref": "RJGEczmjJjKT" },
@@ -103,9 +102,10 @@
             { "__ref": "xrmSZq_26vMg" },
             { "__ref": "j1N2YJ-pQEPP" },
             { "__ref": "NwFi-aKCT50n" },
-            { "__ref": "pJZZ4Njd8kAK" }
+            { "__ref": "pJZZ4Njd8kAK" },
+            { "__ref": "HSsTXJSbs7q2" }
           ],
-          "states": [{ "__ref": "wTQJ4StVDb3R" }],
+          "states": [{ "__ref": "biSqrpHXFLwK" }],
           "tplTree": { "__ref": "DTYAAI-RG-nX" },
           "editableByContentEditor": true,
           "hiddenFromContentEditor": false,
@@ -124,18 +124,6 @@
           "alwaysAutoName": false,
           "trapsFocus": false,
           "__type": "Component"
-        },
-        "r2NZCalOsLBp": {
-          "name": "react-slick",
-          "npmPkg": ["react-slick", "slick-carousel"],
-          "cssImport": [
-            "slick-carousel/slick/slick-theme.css",
-            "slick-carousel/slick/slick.css"
-          ],
-          "deps": [],
-          "registerCalls": [],
-          "minimumReactVersion": null,
-          "__type": "HostLessPackageInfo"
         },
         "ZEE1qbzSeuSN": {
           "type": { "__ref": "ejSM67D97QE-" },
@@ -157,27 +145,6 @@
           "mergeWithParent": false,
           "isLocalizable": false,
           "__type": "SlotParam"
-        },
-        "fWfOjAryIm2R": {
-          "type": { "__ref": "jhsfocENDaBS" },
-          "state": { "__ref": "wTQJ4StVDb3R" },
-          "variable": { "__ref": "EqcamX9BYma3" },
-          "uuid": "WCXwiT8fYCgI",
-          "enumValues": [],
-          "origin": null,
-          "exportType": "ToolsOnly",
-          "defaultExpr": { "__ref": "L9IY-_ViBWkA" },
-          "previewExpr": null,
-          "propEffect": null,
-          "description": null,
-          "displayName": "Currently edited slide",
-          "about": "Switch to the specified slide (first is 0). Only affects the editor, not the final page.",
-          "isRepeated": null,
-          "isMainContentSlot": false,
-          "required": false,
-          "mergeWithParent": false,
-          "isLocalizable": false,
-          "__type": "StateParam"
         },
         "5axoDAZrXPhs": {
           "type": { "__ref": "ymPXtZUQRRxI" },
@@ -472,26 +439,6 @@
           "description": null,
           "displayName": "Infinite",
           "about": "Infinitely wrap around contents",
-          "isRepeated": null,
-          "isMainContentSlot": false,
-          "required": false,
-          "mergeWithParent": false,
-          "isLocalizable": false,
-          "__type": "PropParam"
-        },
-        "nh8IbkKpV3na": {
-          "type": { "__ref": "cNq-h3NzQdnJ" },
-          "variable": { "__ref": "tZPCCfW3Kgra" },
-          "uuid": "jIdgpkCPhFzS",
-          "enumValues": [],
-          "origin": null,
-          "exportType": "External",
-          "defaultExpr": { "__ref": "1rBdERndp7K1" },
-          "previewExpr": null,
-          "propEffect": null,
-          "description": null,
-          "displayName": "Initial Slide",
-          "about": "Index of the first visible slide (first is 0), accounting for multiple slides per view if applicable.",
           "isRepeated": null,
           "isMainContentSlot": false,
           "required": false,
@@ -879,16 +826,6 @@
           "isLocalizable": false,
           "__type": "PropParam"
         },
-        "wTQJ4StVDb3R": {
-          "variableType": "number",
-          "name": "currentSlide",
-          "param": { "__ref": "fWfOjAryIm2R" },
-          "accessType": "writable",
-          "onChangeParam": { "__ref": "NwFi-aKCT50n" },
-          "tplNode": null,
-          "implicitState": null,
-          "__type": "NamedState"
-        },
         "DTYAAI-RG-nX": {
           "tag": "div",
           "name": null,
@@ -969,17 +906,6 @@
           "name": "children",
           "uuid": "ZYZSMKqwpMTE",
           "__type": "Var"
-        },
-        "jhsfocENDaBS": { "name": "num", "__type": "Num" },
-        "EqcamX9BYma3": {
-          "name": "editingSlide",
-          "uuid": "q6-p797RTpr_",
-          "__type": "Var"
-        },
-        "L9IY-_ViBWkA": {
-          "code": "0",
-          "fallback": null,
-          "__type": "CustomCode"
         },
         "ymPXtZUQRRxI": { "name": "bool", "__type": "BoolType" },
         "kmBS0J5ysIVe": {
@@ -1073,11 +999,6 @@
         "Kw4BjTsf4GR9": {
           "name": "infinite",
           "uuid": "J6AETEXchNtd",
-          "__type": "Var"
-        },
-        "tZPCCfW3Kgra": {
-          "name": "initialSlide",
-          "uuid": "4uHjoDCgd5U1",
           "__type": "Var"
         },
         "ITIEbGASLDMK": {
@@ -1262,21 +1183,6 @@
         },
         "SjoGhh15pdLl": { "name": "num", "__type": "Num" },
         "e5_auDW5mTmn": { "values": {}, "mixins": [], "__type": "RuleSet" },
-        "srqjIRMRbZHp": {
-          "uuid": "-CRRDqAzMlWp",
-          "pkgId": "55e2baf4-296d-4a62-8d86-ea8b0d1b6e5a",
-          "projectId": "uRagYF6VEic22K6BNEW3U8",
-          "version": "1.0.1",
-          "name": "hostless react-slick",
-          "site": { "__ref": "RDfYw54DLI_5" },
-          "__type": "ProjectDependency"
-        },
-        "cNq-h3NzQdnJ": { "name": "num", "__type": "Num" },
-        "1rBdERndp7K1": {
-          "code": "0",
-          "fallback": null,
-          "__type": "CustomCode"
-        },
         "OuQSZJSvPbDj": {
           "name": "styleScopeClassName",
           "scopeName": "slider",
@@ -1306,14 +1212,77 @@
           "mergeWithParent": false,
           "isLocalizable": false,
           "__type": "PropParam"
+        },
+        "biSqrpHXFLwK": {
+          "variableType": "number",
+          "name": "currentSlide",
+          "param": { "__ref": "HSsTXJSbs7q2" },
+          "accessType": "writable",
+          "onChangeParam": { "__ref": "NwFi-aKCT50n" },
+          "tplNode": null,
+          "implicitState": null,
+          "__type": "NamedState"
+        },
+        "HSsTXJSbs7q2": {
+          "type": { "__ref": "cr1GU_6cGrZM" },
+          "state": { "__ref": "biSqrpHXFLwK" },
+          "variable": { "__ref": "fmNNC74VDKgk" },
+          "uuid": "w0y1vCmb_gAc",
+          "enumValues": [],
+          "origin": null,
+          "exportType": "External",
+          "defaultExpr": { "__ref": "xZsJT1hI6BI2" },
+          "previewExpr": null,
+          "propEffect": null,
+          "description": null,
+          "displayName": "Initial Slide",
+          "about": "Index of the first visible slide (first is 0), accounting for multiple slides per view if applicable.",
+          "isRepeated": null,
+          "isMainContentSlot": false,
+          "required": false,
+          "mergeWithParent": false,
+          "isLocalizable": false,
+          "__type": "StateParam"
+        },
+        "5FY4hAf3PClt": {
+          "name": "react-slick",
+          "npmPkg": ["react-slick", "slick-carousel"],
+          "cssImport": [
+            "slick-carousel/slick/slick-theme.css",
+            "slick-carousel/slick/slick.css"
+          ],
+          "deps": [],
+          "registerCalls": [],
+          "minimumReactVersion": null,
+          "__type": "HostLessPackageInfo"
+        },
+        "cr1GU_6cGrZM": { "name": "num", "__type": "Num" },
+        "fmNNC74VDKgk": {
+          "name": "initialSlide",
+          "uuid": "F8MVLA9ixsqN",
+          "__type": "Var"
+        },
+        "xZsJT1hI6BI2": {
+          "code": "0",
+          "fallback": null,
+          "__type": "CustomCode"
+        },
+        "_ulhJT6MD4vt": {
+          "uuid": "ight4xPOa8GJ",
+          "pkgId": "12a8a62d-5636-49e3-99c9-d362445593db",
+          "projectId": "dtpfrjZFM3t3SYcVXkS3iy",
+          "version": "1.0.0",
+          "name": "Imported Dep",
+          "site": { "__ref": "RDfYw54DLI_5" },
+          "__type": "ProjectDependency"
         }
       },
       "deps": [],
-      "version": "225-release-global-actions"
+      "version": "226-add-item-prefs"
     }
   ],
   [
-    "obs9QDDE1DEWv3HuHwH4XD",
+    "pB3UMJfcoLdnpZ6A3yU2Yp",
     {
       "root": "B7IAYDjpkj8q",
       "map": {
@@ -1727,7 +1696,8 @@
           ],
           "layout": { "__ref": "R8enDqA15WC2" },
           "active": true,
-          "__type": "Theme"
+          "__type": "Theme",
+          "addItemPrefs": {}
         },
         "8VN47wSZvJB3": { "name": "text", "__type": "Text" },
         "bzdWAWU54w0B": {
@@ -1802,8 +1772,8 @@
           "projectDependencies": [
             {
               "__xref": {
-                "uuid": "b0321cd3-88d2-47d1-8bc8-e261e664bccb",
-                "iid": "srqjIRMRbZHp"
+                "uuid": "1397401c-b15c-47b2-8659-9b44c397e887",
+                "iid": "_ulhJT6MD4vt"
               }
             }
           ],
@@ -2279,12 +2249,12 @@
           "uuid": "tzTZqK5Ok7W6",
           "name": "slick-slider-test",
           "params": [
-            { "__ref": "yxQLbli_J--u" },
-            { "__ref": "M28OoQ56Zhy4" },
             { "__ref": "yU-sAzP93ZAH" },
-            { "__ref": "6TtLlqMsJnp-" }
+            { "__ref": "6TtLlqMsJnp-" },
+            { "__ref": "PFQ10r8suLTv" },
+            { "__ref": "IemXgdpbSkOM" }
           ],
-          "states": [{ "__ref": "Dy6nJwtv-sjh" }, { "__ref": "FhvN3uw4MLXp" }],
+          "states": [{ "__ref": "FhvN3uw4MLXp" }, { "__ref": "KZC_mHpkY-mp" }],
           "tplTree": { "__ref": "Y7fjLAMILdxu" },
           "editableByContentEditor": true,
           "hiddenFromContentEditor": false,
@@ -2333,7 +2303,7 @@
           "name": null,
           "children": [
             { "__ref": "pMiH7SOm3-Dz" },
-            { "__ref": "IwA8waSD2Dgs" },
+            { "__ref": "pc80HsOmoeS2" },
             { "__ref": "ErwfHvfoHdvb" }
           ],
           "type": "other",
@@ -2395,7 +2365,7 @@
           "__type": "VariantSetting"
         },
         "PtPD5VnGjEdM": {
-          "cols": [{ "__ref": "90mKHuvVXKk9" }, { "__ref": "yWFYfQaDBuVv" }],
+          "cols": [{ "__ref": "90mKHuvVXKk9" }],
           "rowKey": { "__ref": "UBLrIWhgqr4b" },
           "__type": "ArenaFrameRow"
         },
@@ -2433,11 +2403,6 @@
           "cellKey": null,
           "__type": "ArenaFrameCell"
         },
-        "yWFYfQaDBuVv": {
-          "frame": { "__ref": "nluodGQzl459" },
-          "cellKey": null,
-          "__type": "ArenaFrameCell"
-        },
         "leFyVjkvS3k0": { "values": {}, "mixins": [], "__type": "RuleSet" },
         "nRLFcHSF9BhQ": {
           "uuid": "3784GRjhVFP3",
@@ -2445,24 +2410,6 @@
           "height": 768,
           "viewportHeight": 768,
           "container": { "__ref": "AGZkSilIXmLt" },
-          "lang": "English",
-          "pinnedVariants": {},
-          "targetVariants": [{ "__ref": "UBLrIWhgqr4b" }],
-          "pinnedGlobalVariants": {},
-          "targetGlobalVariants": [],
-          "viewMode": "stretch",
-          "bgColor": null,
-          "name": "",
-          "top": null,
-          "left": null,
-          "__type": "ArenaFrame"
-        },
-        "nluodGQzl459": {
-          "uuid": "Z1j6OkXLEyNK",
-          "width": 414,
-          "height": 736,
-          "viewportHeight": 736,
-          "container": { "__ref": "aqU049LBZLge" },
           "lang": "English",
           "pinnedVariants": {},
           "targetVariants": [{ "__ref": "UBLrIWhgqr4b" }],
@@ -2484,15 +2431,6 @@
           "vsettings": [{ "__ref": "e7qACaXJCM6J" }],
           "__type": "TplComponent"
         },
-        "aqU049LBZLge": {
-          "name": null,
-          "component": { "__ref": "ZOm9KRROsVGC" },
-          "uuid": "wELJOyeDNocN",
-          "parent": null,
-          "locked": null,
-          "vsettings": [{ "__ref": "z_p45Bch4gzN" }],
-          "__type": "TplComponent"
-        },
         "e7qACaXJCM6J": {
           "variants": [{ "__ref": "R80oJYEapP1X" }],
           "args": [],
@@ -2504,19 +2442,7 @@
           "columnsConfig": null,
           "__type": "VariantSetting"
         },
-        "z_p45Bch4gzN": {
-          "variants": [{ "__ref": "R80oJYEapP1X" }],
-          "args": [],
-          "attrs": {},
-          "rs": { "__ref": "EXd4tN3M-_U3" },
-          "dataCond": null,
-          "dataRep": null,
-          "text": null,
-          "columnsConfig": null,
-          "__type": "VariantSetting"
-        },
         "m6ubjb7VBvBq": { "values": {}, "mixins": [], "__type": "RuleSet" },
-        "EXd4tN3M-_U3": { "values": {}, "mixins": [], "__type": "RuleSet" },
         "yw5bb3sWMkVn": {
           "uuid": "Slk6FiYO8PwN",
           "name": "check.svg",
@@ -10800,7 +10726,7 @@
           "name": "Slider Carousel",
           "component": {
             "__xref": {
-              "uuid": "b0321cd3-88d2-47d1-8bc8-e261e664bccb",
+              "uuid": "1397401c-b15c-47b2-8659-9b44c397e887",
               "iid": "wKqxNVJ8Kt1w"
             }
           },
@@ -10810,62 +10736,6 @@
           "vsettings": [{ "__ref": "8Z9mr155B97M" }],
           "__type": "TplComponent"
         },
-        "Dy6nJwtv-sjh": {
-          "param": { "__ref": "yxQLbli_J--u" },
-          "accessType": "private",
-          "variableType": "number",
-          "onChangeParam": { "__ref": "M28OoQ56Zhy4" },
-          "tplNode": { "__ref": "pMiH7SOm3-Dz" },
-          "implicitState": {
-            "__xref": {
-              "uuid": "b0321cd3-88d2-47d1-8bc8-e261e664bccb",
-              "iid": "wTQJ4StVDb3R"
-            }
-          },
-          "__type": "State"
-        },
-        "yxQLbli_J--u": {
-          "type": { "__ref": "y7ztc4_PNwk4" },
-          "state": { "__ref": "Dy6nJwtv-sjh" },
-          "variable": { "__ref": "d38Qn5LxwAQO" },
-          "uuid": "VrpzyhYDQeDL",
-          "enumValues": [],
-          "origin": null,
-          "exportType": "ToolsOnly",
-          "defaultExpr": null,
-          "previewExpr": null,
-          "propEffect": null,
-          "description": "number",
-          "displayName": null,
-          "about": null,
-          "isRepeated": null,
-          "isMainContentSlot": false,
-          "required": false,
-          "mergeWithParent": false,
-          "isLocalizable": false,
-          "__type": "StateParam"
-        },
-        "M28OoQ56Zhy4": {
-          "type": { "__ref": "8o37d4rmXjv8" },
-          "state": { "__ref": "Dy6nJwtv-sjh" },
-          "variable": { "__ref": "YHkAUGoxNaVG" },
-          "uuid": "jhEewc-DIbQW",
-          "enumValues": [],
-          "origin": null,
-          "exportType": "ToolsOnly",
-          "defaultExpr": null,
-          "previewExpr": null,
-          "propEffect": null,
-          "description": "EventHandler",
-          "displayName": null,
-          "about": null,
-          "isRepeated": null,
-          "isMainContentSlot": false,
-          "required": false,
-          "mergeWithParent": false,
-          "isLocalizable": false,
-          "__type": "StateChangeHandlerParam"
-        },
         "8Z9mr155B97M": {
           "variants": [{ "__ref": "UBLrIWhgqr4b" }],
           "args": [
@@ -10874,7 +10744,6 @@
             { "__ref": "7BOGZscCFsUj" },
             { "__ref": "9sxirOWC8G50" },
             { "__ref": "cO8G6NcAsI22" },
-            { "__ref": "WxmM-tzRWBLc" },
             { "__ref": "fPdRPRtZjmqe" },
             { "__ref": "sIBHkEF9NQFs" }
           ],
@@ -10886,26 +10755,10 @@
           "columnsConfig": null,
           "__type": "VariantSetting"
         },
-        "y7ztc4_PNwk4": { "name": "num", "__type": "Num" },
-        "d38Qn5LxwAQO": {
-          "name": "hostless-slider editingSlide",
-          "uuid": "rFUCDxv4maoq",
-          "__type": "Var"
-        },
-        "8o37d4rmXjv8": {
-          "name": "func",
-          "params": [{ "__ref": "uAmLEo2UE9_C" }],
-          "__type": "FunctionType"
-        },
-        "YHkAUGoxNaVG": {
-          "name": "On hostless-slider editingSlide change",
-          "uuid": "ATro9b8RoELq",
-          "__type": "Var"
-        },
         "1T-tSpVmihK-": {
           "param": {
             "__xref": {
-              "uuid": "b0321cd3-88d2-47d1-8bc8-e261e664bccb",
+              "uuid": "1397401c-b15c-47b2-8659-9b44c397e887",
               "iid": "ZEE1qbzSeuSN"
             }
           },
@@ -10923,14 +10776,6 @@
           "mixins": [],
           "__type": "RuleSet"
         },
-        "uAmLEo2UE9_C": {
-          "name": "arg",
-          "argName": "val",
-          "displayName": null,
-          "type": { "__ref": "NK5c_JJ9Y1Jo" },
-          "__type": "ArgType"
-        },
-        "NK5c_JJ9Y1Jo": { "name": "num", "__type": "Num" },
         "sMPQJULwoPLG": {
           "tag": "div",
           "name": null,
@@ -11162,7 +11007,7 @@
         "GzrmVu9wmNBx": {
           "param": {
             "__xref": {
-              "uuid": "b0321cd3-88d2-47d1-8bc8-e261e664bccb",
+              "uuid": "1397401c-b15c-47b2-8659-9b44c397e887",
               "iid": "sjQ4vWY_DMBw"
             }
           },
@@ -11172,7 +11017,7 @@
         "7BOGZscCFsUj": {
           "param": {
             "__xref": {
-              "uuid": "b0321cd3-88d2-47d1-8bc8-e261e664bccb",
+              "uuid": "1397401c-b15c-47b2-8659-9b44c397e887",
               "iid": "UP_XQZGxG1Vt"
             }
           },
@@ -11187,7 +11032,7 @@
         "9sxirOWC8G50": {
           "param": {
             "__xref": {
-              "uuid": "b0321cd3-88d2-47d1-8bc8-e261e664bccb",
+              "uuid": "1397401c-b15c-47b2-8659-9b44c397e887",
               "iid": "n6GJIVnE9uPa"
             }
           },
@@ -11202,7 +11047,7 @@
         "cO8G6NcAsI22": {
           "param": {
             "__xref": {
-              "uuid": "b0321cd3-88d2-47d1-8bc8-e261e664bccb",
+              "uuid": "1397401c-b15c-47b2-8659-9b44c397e887",
               "iid": "ascjkNfMaSx8"
             }
           },
@@ -11213,16 +11058,6 @@
           "code": "3",
           "fallback": null,
           "__type": "CustomCode"
-        },
-        "WxmM-tzRWBLc": {
-          "param": {
-            "__xref": {
-              "uuid": "b0321cd3-88d2-47d1-8bc8-e261e664bccb",
-              "iid": "fWfOjAryIm2R"
-            }
-          },
-          "expr": { "__ref": "V2Gf0QWGraNc" },
-          "__type": "Arg"
         },
         "1tYGvQA1lJUK": {
           "tag": "div",
@@ -11683,7 +11518,7 @@
         "fPdRPRtZjmqe": {
           "param": {
             "__xref": {
-              "uuid": "b0321cd3-88d2-47d1-8bc8-e261e664bccb",
+              "uuid": "1397401c-b15c-47b2-8659-9b44c397e887",
               "iid": "tKSAZ4uR2wS0"
             }
           },
@@ -13909,60 +13744,11 @@
           "text": ["actions-container"],
           "__type": "TemplatedString"
         },
-        "IwA8waSD2Dgs": {
-          "tag": "div",
-          "name": null,
-          "children": [],
-          "type": "text",
-          "codeGenType": null,
-          "columnsSetting": null,
-          "uuid": "07SBEpHmGm-Y",
-          "parent": { "__ref": "Y7fjLAMILdxu" },
-          "locked": null,
-          "vsettings": [{ "__ref": "qk5sHyBxNajr" }],
-          "__type": "TplTag"
-        },
-        "qk5sHyBxNajr": {
-          "variants": [{ "__ref": "UBLrIWhgqr4b" }],
-          "args": [],
-          "attrs": { "id": { "__ref": "uLktKHz_FNku" } },
-          "rs": { "__ref": "U5Ixng1m5KKX" },
-          "dataCond": null,
-          "dataRep": null,
-          "text": { "__ref": "ZQTDkWQC1R0R" },
-          "columnsConfig": null,
-          "__type": "VariantSetting"
-        },
-        "U5Ixng1m5KKX": {
-          "values": { "position": "relative", "margin-top": "43px" },
-          "mixins": [],
-          "__type": "RuleSet"
-        },
-        "ZQTDkWQC1R0R": {
-          "expr": { "__ref": "Y6qh2SkqZ6zp" },
-          "html": false,
-          "__type": "ExprText"
-        },
-        "Y6qh2SkqZ6zp": {
-          "path": ["$state", "sliderCarousel", "currentSlide"],
-          "fallback": { "__ref": "INguPk2jW6lz" },
-          "__type": "ObjectPath"
-        },
-        "INguPk2jW6lz": {
-          "code": "\"\"",
-          "fallback": null,
-          "__type": "CustomCode"
-        },
-        "V2Gf0QWGraNc": {
-          "code": "0",
-          "fallback": null,
-          "__type": "CustomCode"
-        },
         "sIBHkEF9NQFs": {
           "param": {
             "__xref": {
-              "uuid": "b0321cd3-88d2-47d1-8bc8-e261e664bccb",
-              "iid": "nh8IbkKpV3na"
+              "uuid": "1397401c-b15c-47b2-8659-9b44c397e887",
+              "iid": "HSsTXJSbs7q2"
             }
           },
           "expr": { "__ref": "G2Dprjhynxiq" },
@@ -13978,13 +13764,137 @@
           "fallback": null,
           "__type": "CustomCode"
         },
-        "uLktKHz_FNku": {
-          "text": ["slider-state-text"],
-          "__type": "TemplatedString"
+        "KZC_mHpkY-mp": {
+          "__type": "State",
+          "param": { "__ref": "PFQ10r8suLTv" },
+          "accessType": "private",
+          "variableType": "number",
+          "onChangeParam": { "__ref": "IemXgdpbSkOM" },
+          "tplNode": { "__ref": "pMiH7SOm3-Dz" },
+          "implicitState": {
+            "__xref": {
+              "uuid": "1397401c-b15c-47b2-8659-9b44c397e887",
+              "iid": "biSqrpHXFLwK"
+            }
+          }
+        },
+        "PFQ10r8suLTv": {
+          "__type": "StateParam",
+          "type": { "__ref": "C6gKXMgyQDUR" },
+          "state": { "__ref": "KZC_mHpkY-mp" },
+          "variable": { "__ref": "4iOYDOoygTlV" },
+          "uuid": "6GZrw_edUcSb",
+          "enumValues": [],
+          "origin": null,
+          "exportType": "ToolsOnly",
+          "defaultExpr": null,
+          "previewExpr": null,
+          "propEffect": null,
+          "description": "number",
+          "displayName": null,
+          "about": null,
+          "isRepeated": null,
+          "isMainContentSlot": false,
+          "required": false,
+          "mergeWithParent": false,
+          "isLocalizable": false
+        },
+        "IemXgdpbSkOM": {
+          "__type": "StateChangeHandlerParam",
+          "type": { "__ref": "mm3mN3nmZInZ" },
+          "state": { "__ref": "KZC_mHpkY-mp" },
+          "variable": { "__ref": "LPjaeBsi76kL" },
+          "uuid": "N-1pE_YccrO-",
+          "enumValues": [],
+          "origin": null,
+          "exportType": "ToolsOnly",
+          "defaultExpr": null,
+          "previewExpr": null,
+          "propEffect": null,
+          "description": "EventHandler",
+          "displayName": null,
+          "about": null,
+          "isRepeated": null,
+          "isMainContentSlot": false,
+          "required": false,
+          "mergeWithParent": false,
+          "isLocalizable": false
+        },
+        "C6gKXMgyQDUR": { "__type": "Num", "name": "num" },
+        "4iOYDOoygTlV": {
+          "__type": "Var",
+          "name": "Slider Carousel initialSlide",
+          "uuid": "3i7MHOIovSSp"
+        },
+        "mm3mN3nmZInZ": {
+          "__type": "FunctionType",
+          "name": "func",
+          "params": [{ "__ref": "fA_ET0a0012s" }]
+        },
+        "LPjaeBsi76kL": {
+          "__type": "Var",
+          "name": "On Slider Carousel initialSlide change",
+          "uuid": "aZqZMcFyctLw"
+        },
+        "fA_ET0a0012s": {
+          "__type": "ArgType",
+          "name": "arg",
+          "argName": "val",
+          "displayName": null,
+          "type": { "__ref": "szE9gvLNYXJr" }
+        },
+        "szE9gvLNYXJr": { "__type": "Num", "name": "num" },
+        "pc80HsOmoeS2": {
+          "__type": "TplTag",
+          "tag": "div",
+          "name": null,
+          "children": [],
+          "type": "text",
+          "codeGenType": null,
+          "columnsSetting": null,
+          "uuid": "5RAodgr8XWF-",
+          "parent": { "__ref": "Y7fjLAMILdxu" },
+          "locked": null,
+          "vsettings": [{ "__ref": "re8lLnitTHcy" }]
+        },
+        "re8lLnitTHcy": {
+          "__type": "VariantSetting",
+          "variants": [{ "__ref": "UBLrIWhgqr4b" }],
+          "args": [],
+          "attrs": { "id": { "__ref": "hn0XJ114mf5C" } },
+          "rs": { "__ref": "DlELWxD254L5" },
+          "dataCond": null,
+          "dataRep": null,
+          "text": { "__ref": "rLvTG5MeAZR5" },
+          "columnsConfig": null
+        },
+        "DlELWxD254L5": {
+          "__type": "RuleSet",
+          "values": { "position": "relative" },
+          "mixins": []
+        },
+        "rLvTG5MeAZR5": {
+          "__type": "ExprText",
+          "expr": { "__ref": "KVSBusPh1Qmn" },
+          "html": false
+        },
+        "KVSBusPh1Qmn": {
+          "__type": "ObjectPath",
+          "path": ["$state", "sliderCarousel", "currentSlide"],
+          "fallback": { "__ref": "xqkZrTKJuCcI" }
+        },
+        "xqkZrTKJuCcI": {
+          "__type": "CustomCode",
+          "code": "\"\"",
+          "fallback": null
+        },
+        "hn0XJ114mf5C": {
+          "__type": "TemplatedString",
+          "text": ["slider-state-text"]
         }
       },
-      "deps": ["b0321cd3-88d2-47d1-8bc8-e261e664bccb"],
-      "version": "225-release-global-actions"
+      "deps": ["1397401c-b15c-47b2-8659-9b44c397e887"],
+      "version": "226-add-item-prefs"
     }
   ]
 ]
