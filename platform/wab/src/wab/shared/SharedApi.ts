@@ -1006,8 +1006,11 @@ export abstract class SharedApi {
     return this.put(`/billing/subscription/${args.teamId}`, args);
   }
 
-  async cancelSubscription(teamId: TeamId): Promise<{}> {
-    return this.delete(`/billing/subscription/${teamId}`);
+  async cancelSubscription(
+    teamId: TeamId,
+    { reason }: { reason?: string } = {}
+  ): Promise<{}> {
+    return this.delete(`/billing/subscription/${teamId}`, { reason });
   }
 
   async createSetupIntent(teamId: TeamId): Promise<Stripe.SetupIntent> {
@@ -1199,6 +1202,35 @@ export abstract class SharedApi {
   ): Promise<ApiProjectRevision> {
     const res = await this.get(`/admin/project/${projectId}/rev`);
     return res.rev;
+  }
+
+  async getPkgVersionAsAdmin(opts: {
+    pkgId?: string;
+    version?: string;
+    pkgVersionId?: string;
+  }): Promise<PkgVersionInfo> {
+    const search = new URLSearchParams();
+    if (opts.pkgId) {
+      search.set("pkgId", opts.pkgId);
+    }
+    if (opts.version) {
+      search.set("version", opts.version);
+    }
+    if (opts.pkgVersionId) {
+      search.set("pkgVersionId", opts.pkgVersionId);
+    }
+    const res = await this.get(`/admin/pkg-version/data?${search.toString()}`);
+    return res.pkgVersion as PkgVersionInfo;
+  }
+
+  async savePkgVersionAsAdmin(opts: {
+    pkgVersionId: string;
+    data: string;
+  }): Promise<PkgVersionInfo> {
+    const res = await this.post(`/admin/pkg-version/${opts.pkgVersionId}`, {
+      data: opts.data,
+    });
+    return res.pkgVersion as PkgVersionInfo;
   }
 
   async saveProjectRevisionDataAsAdmin(

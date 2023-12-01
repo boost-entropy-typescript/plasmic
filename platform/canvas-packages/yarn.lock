@@ -3223,10 +3223,10 @@
   resolved "https://registry.yarnpkg.com/@plasmicapp/react-ssr-prepass/-/react-ssr-prepass-2.0.3.tgz#d946d81c3d1e3a8f4f3cfcb8751edfe14b90d09e"
   integrity sha512-jFde/wfL8NlJEr76Mshyju/3GvJD5Z9YijCG1/8DR+KOEv7m5uRvORjxtEEw2GKDXRp2GqpQqj97iWGLFUsOzA==
 
-"@plasmicapp/react-web@^0.2.305":
-  version "0.2.305"
-  resolved "https://registry.yarnpkg.com/@plasmicapp/react-web/-/react-web-0.2.305.tgz#fd199d72bf954b53e4432be89726f9efa7421f5c"
-  integrity sha512-+XbggPn/Q29xi+hzk8nJp2WP8K394/Z/BlN7Fi/lbzZDVhMOQ88gZSCGS1hGr3/bcqEJLc9GWhBxazIy2wG6bA==
+"@plasmicapp/react-web@^0.2.306":
+  version "0.2.306"
+  resolved "https://registry.yarnpkg.com/@plasmicapp/react-web/-/react-web-0.2.306.tgz#107fcc6ab8c9e585f2c8a5516f9e01da0f192b2b"
+  integrity sha512-1EG8K0WGsHba5q9N4odJ7TvF/USl/kwVsWOPREXfCraEnit7bkPQFJfN6Pxi0SYN/mWRFKwdkvw3junxC1E83w==
   dependencies:
     "@plasmicapp/auth-react" "0.0.19"
     "@plasmicapp/data-sources" "0.1.143"
@@ -3264,10 +3264,10 @@
   resolved "https://registry.yarnpkg.com/@plasmicpkgs/airtable/-/airtable-0.0.199.tgz#4886971d6aea23ac0d64151bee50deaeb3fd301e"
   integrity sha512-Cd/XES77PTtA4FQS1bCP7PQq5UAix8jTWUqoM+e9CFzq2czVMIa96YbDNQlQTaUdDyAvUwkCjg8Io6523z4E/Q==
 
-"@plasmicpkgs/antd5@^0.0.196":
-  version "0.0.196"
-  resolved "https://registry.yarnpkg.com/@plasmicpkgs/antd5/-/antd5-0.0.196.tgz#f23fc8bc5c1cb3d30c868ab87855de66b63f848f"
-  integrity sha512-FCvongXEoVySdl/PfyX76Lc2PlRnMATZQIeUukhLY9SJiTX1MtyYeO/qHv3bILAZILL6aKdZdHvWm8KZMX4Elg==
+"@plasmicpkgs/antd5@^0.0.197":
+  version "0.0.197"
+  resolved "https://registry.yarnpkg.com/@plasmicpkgs/antd5/-/antd5-0.0.197.tgz#9dca2eca91d7e9b4ac9acd2d6e4ae872b82f8410"
+  integrity sha512-Xuali5Up73SFldfGt4ndUXIS4U84mS9C5sUmIOm56fCS/p0r6D3Va3lbV12R0l3VfrovS/8KqCv1tcFZtkl1sw==
   dependencies:
     antd "^5.7.3"
     classnames "^2.3.2"
@@ -3366,10 +3366,10 @@
   resolved "https://registry.yarnpkg.com/@plasmicpkgs/luxon-parser/-/luxon-parser-3.4.4.tgz#32150fc2c7bbad1e9e0242c897518680c6dc5fed"
   integrity sha512-VN/nwVehURL1TeHt7WlxuYXD7v9f87MG58YLrZeBQOcGDA9ck/gZNz7m1S1MeJ67gpnbpyJ3uFUPt+t1KnMQxw==
 
-"@plasmicpkgs/plasmic-basic-components@^0.0.203":
-  version "0.0.203"
-  resolved "https://registry.yarnpkg.com/@plasmicpkgs/plasmic-basic-components/-/plasmic-basic-components-0.0.203.tgz#78980a46445ea6e9e52a67b278404cc78cf2ef79"
-  integrity sha512-B4yUMFm09L92J84+8cD5U3M/XRV4ZnbBavBKfBfQaWE3j6KZaQXUwpuQXr0VshqHgcaQCjmeLpKH1x6AaFIG4Q==
+"@plasmicpkgs/plasmic-basic-components@^0.0.204":
+  version "0.0.204"
+  resolved "https://registry.yarnpkg.com/@plasmicpkgs/plasmic-basic-components/-/plasmic-basic-components-0.0.204.tgz#7af59d3f2b48da3540ea303f4d02d35a68df7f8e"
+  integrity sha512-e6OvzO1x2+E20yuyaLtsZdjkxdBEJ38KEDMn8dy8++hTpyflc+h5RQAWX9y9h2u3UrXmGvTrPD3m5kWsekxR4A==
 
 "@plasmicpkgs/plasmic-chakra-ui@^0.0.17":
   version "0.0.17"
@@ -3416,6 +3416,13 @@
   dependencies:
     dlv "^1.1.3"
 
+"@plasmicpkgs/plasmic-link-preview@^1.0.83":
+  version "1.0.83"
+  resolved "https://registry.yarnpkg.com/@plasmicpkgs/plasmic-link-preview/-/plasmic-link-preview-1.0.83.tgz#882f1556b4cb7247b5c0bc3adb06d461b1fa1453"
+  integrity sha512-b0pMbZekfIgl4KO+MY8Uo8WYa3kkLBaeuQKu20WVqbOUViY3ky2Fbi/4/aWQY3QQfjHiZ/W4fVhxbkI+cOtJ4g==
+  dependencies:
+    node-html-parser "^6.1.11"
+
 "@plasmicpkgs/plasmic-nav@^0.0.155":
   version "0.0.155"
   resolved "https://registry.yarnpkg.com/@plasmicpkgs/plasmic-nav/-/plasmic-nav-0.0.155.tgz#a4061716dfc1bf03806324adcd4d88515fc28e07"
@@ -3426,10 +3433,10 @@
   resolved "https://registry.yarnpkg.com/@plasmicpkgs/plasmic-query/-/plasmic-query-0.0.202.tgz#8744901761c8a3048e91de96d95ebebc0d811538"
   integrity sha512-3Ec2axZHtJgad7GNg1VmzcDmFHlWF3RlNs7jo99+B5jd1sIP0UrjEZpxubCUdLKBB271Y+N8yoZVhe/Zv+NgHg==
 
-"@plasmicpkgs/plasmic-rich-components@^1.0.170":
-  version "1.0.170"
-  resolved "https://registry.yarnpkg.com/@plasmicpkgs/plasmic-rich-components/-/plasmic-rich-components-1.0.170.tgz#6b62b0f25ef8789b187ec44cc89da7afc93782bc"
-  integrity sha512-5ZlHAROnEvgQ95eD13Zon69mm8PNx49SJNHai9gKRet0BLBiiM2ELbomHuA1qEWzKQ/qApqywuP4r1KLXKZvsA==
+"@plasmicpkgs/plasmic-rich-components@^1.0.171":
+  version "1.0.171"
+  resolved "https://registry.yarnpkg.com/@plasmicpkgs/plasmic-rich-components/-/plasmic-rich-components-1.0.171.tgz#831c33666c6e0e78351fcef49241b52e684c4e82"
+  integrity sha512-/UKGEtifd669EDjpGwz5PcT1oSEtQSQ+W6YfprrVAak8x+262F0nimNsT0F7HN4GmCNJ35+rgXLEv83lD7Q23g==
   dependencies:
     "@ctrl/tinycolor" "^3.6.1"
     "@plasmicpkgs/luxon-parser" "^3.4.4"
@@ -3482,10 +3489,10 @@
     "@types/dlv" "^1.1.2"
     dlv "^1.1.3"
 
-"@plasmicpkgs/radix-ui@^0.0.37":
-  version "0.0.37"
-  resolved "https://registry.yarnpkg.com/@plasmicpkgs/radix-ui/-/radix-ui-0.0.37.tgz#7b461b06870357786b2175eccb2c620f66a2b9cb"
-  integrity sha512-wfnKLiK0+sfI48yEFRm67mT2Gy4gr4mux4P+W5/qHDFBsDtLUJqXWhXqX/7mUZPTKd0EJQ+oGmPUSlBc6zYWsQ==
+"@plasmicpkgs/radix-ui@^0.0.38":
+  version "0.0.38"
+  resolved "https://registry.yarnpkg.com/@plasmicpkgs/radix-ui/-/radix-ui-0.0.38.tgz#4c0aaab7f3ffbfda4d301cecea93f98c0937e642"
+  integrity sha512-vbtOhriLLopak1hfPsgF/dUTbjSoFpaQqKVzxqX6uKYqjB+w77w4R9bwIDSeSBLBmKB4C2509qCaGjSYJ3QMvQ==
   dependencies:
     "@radix-ui/react-context-menu" "^2.1.4"
     "@radix-ui/react-dialog" "^1.0.4"
@@ -3544,10 +3551,10 @@
     react-scroll-parallax "3.0.0-alpha.14"
     resize-observer-polyfill "^1.5.1"
 
-"@plasmicpkgs/react-slick@^0.0.203":
-  version "0.0.203"
-  resolved "https://registry.yarnpkg.com/@plasmicpkgs/react-slick/-/react-slick-0.0.203.tgz#9b2e52d43309c33963c0913cb87d57ef0849e134"
-  integrity sha512-ga+oAvXiNPPtdTZuWxXd1Xob+KiIBFONBDb18E8vGyxlkuJbuKVc14Bv6g6sk/GA2372lfXOdV86R5SUPJxe5A==
+"@plasmicpkgs/react-slick@^0.0.204":
+  version "0.0.204"
+  resolved "https://registry.yarnpkg.com/@plasmicpkgs/react-slick/-/react-slick-0.0.204.tgz#bca9a4c441da5791c7cff4dbbad33aa693a8a66a"
+  integrity sha512-zNYg6BXVnUyT7v2DcFB02LZjZLWmunAMXdQxWgMmFpjDEHgaCB9pnXdKapwDh6Wqh/+7X/e1gw8gbyKafyGKOg==
   dependencies:
     "@seznam/compose-react-refs" "^1.0.6"
     antd "^4.23.4"
@@ -6970,6 +6977,17 @@ css-select@^4.1.3, css-select@^4.2.1:
     domutils "^2.8.0"
     nth-check "^2.0.1"
 
+css-select@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/css-select/-/css-select-5.1.0.tgz#b8ebd6554c3637ccc76688804ad3f6a6fdaea8a6"
+  integrity sha512-nwoRF1rvRRnnCqqY7updORDsuqKzqYJ28+oSMaJMMgOauh3fvwHqMS7EZpIPqK8GL+g9mKxF1vP/ZjSeNjEVHg==
+  dependencies:
+    boolbase "^1.0.0"
+    css-what "^6.1.0"
+    domhandler "^5.0.2"
+    domutils "^3.0.1"
+    nth-check "^2.0.1"
+
 css-tree@^1.1.2, css-tree@^1.1.3:
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/css-tree/-/css-tree-1.1.3.tgz#eb4870fb6fd7707327ec95c2ff2ab09b5e8db91d"
@@ -6978,7 +6996,7 @@ css-tree@^1.1.2, css-tree@^1.1.3:
     mdn-data "2.0.14"
     source-map "^0.6.1"
 
-css-what@^6.0.1:
+css-what@^6.0.1, css-what@^6.1.0:
   version "6.1.0"
   resolved "https://registry.yarnpkg.com/css-what/-/css-what-6.1.0.tgz#fb5effcf76f1ddea2c81bdfaa4de44e79bac70f4"
   integrity sha512-HTUrgRJ7r4dsZKU6GjmpfRK1O76h97Z8MfS1G0FozR+oF2kG6Vfe8JE6zwrkbxigziPHinCJ+gCPjA9EaBDtRw==
@@ -7183,7 +7201,16 @@ dom-serializer@^1.0.1:
     domhandler "^4.2.0"
     entities "^2.0.0"
 
-domelementtype@^2.0.1, domelementtype@^2.2.0:
+dom-serializer@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/dom-serializer/-/dom-serializer-2.0.0.tgz#e41b802e1eedf9f6cae183ce5e622d789d7d8e53"
+  integrity sha512-wIkAryiqt/nV5EQKqQpo3SToSOV9J0DnbJqwK7Wv/Trc92zIAYZ4FlMu+JPFW1DfGFt81ZTCGgDEabffXeLyJg==
+  dependencies:
+    domelementtype "^2.3.0"
+    domhandler "^5.0.2"
+    entities "^4.2.0"
+
+domelementtype@^2.0.1, domelementtype@^2.2.0, domelementtype@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/domelementtype/-/domelementtype-2.3.0.tgz#5c45e8e869952626331d7aab326d01daf65d589d"
   integrity sha512-OLETBj6w0OsagBwdXnPdN0cnMfF9opN69co+7ZrbfPGrdpPVNBUj02spi6B1N7wChLQiPn4CSH/zJvXw56gmHw==
@@ -7195,6 +7222,13 @@ domhandler@^4.2.0, domhandler@^4.3.1:
   dependencies:
     domelementtype "^2.2.0"
 
+domhandler@^5.0.2, domhandler@^5.0.3:
+  version "5.0.3"
+  resolved "https://registry.yarnpkg.com/domhandler/-/domhandler-5.0.3.tgz#cc385f7f751f1d1fc650c21374804254538c7d31"
+  integrity sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w==
+  dependencies:
+    domelementtype "^2.3.0"
+
 domutils@^2.8.0:
   version "2.8.0"
   resolved "https://registry.yarnpkg.com/domutils/-/domutils-2.8.0.tgz#4437def5db6e2d1f5d6ee859bd95ca7d02048135"
@@ -7203,6 +7237,15 @@ domutils@^2.8.0:
     dom-serializer "^1.0.1"
     domelementtype "^2.2.0"
     domhandler "^4.2.0"
+
+domutils@^3.0.1:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/domutils/-/domutils-3.1.0.tgz#c47f551278d3dc4b0b1ab8cbb42d751a6f0d824e"
+  integrity sha512-H78uMmQtI2AhgDJjWeQmHwJJ2bLPD3GMmO7Zja/ZZh84wkm+4ut+IUnUdRa8uCGX88DiVx1j6FRe1XfxEgjEZA==
+  dependencies:
+    dom-serializer "^2.0.0"
+    domelementtype "^2.3.0"
+    domhandler "^5.0.3"
 
 dot-case@^3.0.4:
   version "3.0.4"
@@ -7238,6 +7281,11 @@ entities@^2.0.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/entities/-/entities-2.2.0.tgz#098dc90ebb83d8dffa089d55256b351d34c4da55"
   integrity sha512-p92if5Nz619I0w+akJrLZH0MX0Pb5DX39XOwQTtXSdQQOaYH03S1uIQp4mhOZtAXrxq4ViO67YTiLBo2638o9A==
+
+entities@^4.2.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/entities/-/entities-4.5.0.tgz#5d268ea5e7113ec74c4d033b79ea5a35a488fb48"
+  integrity sha512-V0hjH4dGPh9Ao5p0MoRY6BVqtwCjhz6vI5LT8AJ55H+4g9/4vbHx1I54fS0XuclLhDHArPQCiMjDxjaL8fPxhw==
 
 error-ex@^1.3.1:
   version "1.3.2"
@@ -8696,6 +8744,14 @@ node-html-parser@^5.4.1:
   integrity sha512-RaBPP3+51hPne/OolXxcz89iYvQvKOydaqoePpOgXcrOKZhjVIzmpKZz+Hd/RBO2/zN2q6CNJhQzucVz+u3Jyw==
   dependencies:
     css-select "^4.2.1"
+    he "1.2.0"
+
+node-html-parser@^6.1.11:
+  version "6.1.11"
+  resolved "https://registry.yarnpkg.com/node-html-parser/-/node-html-parser-6.1.11.tgz#387378111348c001a5c5fbebb7f478fdf65610aa"
+  integrity sha512-FAgwwZ6h0DSDWxfD0Iq1tsDcBCxdJB1nXpLPPxX8YyVWzbfCjKWEzaynF4gZZ/8hziUmp7ZSaKylcn0iKhufUQ==
+  dependencies:
+    css-select "^5.1.0"
     he "1.2.0"
 
 node-int64@^0.4.0:

@@ -12,10 +12,7 @@ import { PkgVersion, ProjectRevision } from "@/wab/server/entities/Entities";
 import { ensureDevFlags } from "@/wab/server/workers/worker-utils";
 import { Bundler } from "@/wab/shared/bundler";
 import { UnsafeBundle } from "@/wab/shared/bundles";
-import {
-  assertSiteInvariants,
-  InvariantError,
-} from "@/wab/shared/site-invariants";
+import { InvariantError } from "@/wab/shared/site-invariants";
 import { isHostLessPackage } from "@/wab/sites";
 import { trackComponentRoot, trackComponentSite } from "@/wab/tpls";
 import semver from "semver";
@@ -137,7 +134,9 @@ export async function upgradeHostlessProject(
     )
   );
 
-  assertSiteInvariants(site);
+  // Comment this for now to avoid big time spikes in the server.
+  //
+  // assertSiteInvariants(site);
   const expectedDepIds = [
     ...walkDependencyTree(site, "all").map((p) => (p as any).__bundleId),
   ];
@@ -179,10 +178,13 @@ export const getHostlessData = (() => {
     const latestVersions = new Set<string>();
     await Promise.all(
       hostlessProjects.map(async (p) => {
-        const pkg = ensure(
-          await db.getPkgByProjectId(p.id),
-          () => "Expected hostless projects to have published versions"
-        );
+        const pkg = await db.getPkgByProjectId(p.id);
+        // For hostless without a published version, just ignore it.
+        // Needed when creating a new hostless project that does not have
+        // a published version yet.
+        if (!pkg) {
+          return;
+        }
         const latestVersion = await db.getPkgVersion(pkg.id);
         const allVersions = await db.listPkgVersions(pkg.id);
         allVersions.forEach((v) =>
