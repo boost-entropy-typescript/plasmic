@@ -2928,7 +2928,10 @@ export class DbMgr implements MigrationDbMgr {
       "save",
       true
     );
-    const latest = await this.getLatestProjectRev(projectId, { branchId });
+    const latest = await this.getLatestProjectRev(projectId, {
+      branchId,
+      revisionNumOnly: true,
+    });
     if (revisionNum !== latest.revision + 1) {
       throw new ProjectRevisionError(
         `Tried saving revision ${revisionNum}, but expecting ${
@@ -3194,7 +3197,12 @@ export class DbMgr implements MigrationDbMgr {
     {
       noAddPerm = false,
       branchId,
-    }: { noAddPerm?: boolean; branchId?: BranchId } = {}
+      revisionNumOnly,
+    }: {
+      noAddPerm?: boolean;
+      branchId?: BranchId;
+      revisionNumOnly?: boolean;
+    } = {}
   ) {
     await this.checkProjectBranchPerms(
       { projectId, branchId },
@@ -3209,6 +3217,8 @@ export class DbMgr implements MigrationDbMgr {
     whereEqOrNull(qb, "rev.branch", { branchId }, true);
     qb.setParameter("projectId", projectId);
     qb.orderBy("rev.revision", "DESC").limit(1);
+    // This is done to avoid loading the entire data of a project revision.
+    qb.select(revisionNumOnly ? "rev.revision" : "rev");
     return ensureFound<ProjectRevision>(
       await getOneOrFailIfTooMany(qb.printSql()),
       `Project with ID ${projectId} branch ${branchId}`
@@ -6341,13 +6351,22 @@ export class DbMgr implements MigrationDbMgr {
   async getDataSourceById(
     dataSourceId: string,
     opts?: {
-      skipPermissionCheck: boolean;
+      columns?: (keyof DataSource)[];
+      skipPermissionCheck?: boolean;
     }
   ) {
     const source = ensureFound(
       await this.dataSources().findOne({
-        id: dataSourceId,
-        deletedAt: IsNull(),
+        select: opts?.columns
+          ? uniq([
+              ...(opts?.columns ?? []),
+              "workspaceId",
+            ] as (keyof DataSource)[])
+          : undefined,
+        where: {
+          id: dataSourceId,
+          deletedAt: IsNull(),
+        },
       }),
       `Data source ${dataSourceId}`
     );
@@ -6463,7 +6482,9 @@ export class DbMgr implements MigrationDbMgr {
   }
 
   async checkDataSourceIssueOpIdPerms(id: string) {
-    const dataSource = await this.getDataSourceById(id);
+    const dataSource = await this.getDataSourceById(id, {
+      columns: ["workspaceId"],
+    });
     await this.checkWorkspacePerms(
       dataSource.workspaceId,
       "editor",
@@ -6476,7 +6497,9 @@ export class DbMgr implements MigrationDbMgr {
     dataSourceId: string
   ) {
     await this.checkDataSourceIssueOpIdPerms(dataSourceId);
-    const source = await this.getDataSourceById(dataSourceId);
+    const source = await this.getDataSourceById(dataSourceId, {
+      columns: ["source"],
+    });
     const sourceMeta = getDataSourceMeta(source.source);
     const normed = normalizeOperationTemplate(sourceMeta, dataOp);
     const dataSourceOp = this.dataSourceOperations().create({
@@ -6497,7 +6520,9 @@ export class DbMgr implements MigrationDbMgr {
     dataSourceId: string
   ) {
     await this.checkDataSourceIssueOpIdPerms(dataSourceId);
-    const source = await this.getDataSourceById(dataSourceId);
+    const source = await this.getDataSourceById(dataSourceId, {
+      columns: ["source"],
+    });
     const sourceMeta = getDataSourceMeta(source.source);
     const normed = normalizeOperationTemplate(sourceMeta, dataOp);
     return this.dataSourceOperations().findOne({
