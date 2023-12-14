@@ -104,6 +104,8 @@ export interface LoaderBundleOutput {
   globalGroups: GlobalGroupMeta[];
   projects: ProjectMeta[];
   activeSplits: Split[];
+  // URL seach params for loading JavaScript chunks in this bundle
+  bundleUrlQuery: string | null;
 }
 
 export interface LoaderHtmlOutput {
@@ -191,7 +193,10 @@ export class Api {
     // We only expect a redirect when we're dealing with published mode, as there should be
     // a stable set of versions to be used. As in browser, we could receive a opaque response
     // with a redirect, we don't try to use last response in browser.
-    const useLastReponse = this.opts.manualRedirect && !preview && !isBrowser;
+    const useLastReponse =
+      // We consider that manualRedirect is true by default, only by setting it to false
+      // we disable it.
+      !(this.opts.manualRedirect === false) && !preview && !isBrowser;
 
     if (useLastReponse) {
       const redirectResp = await this.fetch(url, {
@@ -305,5 +310,14 @@ export class Api {
     return {
       "x-plasmic-api-project-tokens": tokens,
     };
+  }
+
+  getChunksUrl(bundle: LoaderBundleOutput, modules: CodeModule[]) {
+    return `${this.host}/api/v1/loader/chunks?${
+      bundle.bundleUrlQuery
+    }&fileName=${modules
+      .map((m) => m.fileName)
+      .sort()
+      .join(",")}`;
   }
 }
