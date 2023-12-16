@@ -408,7 +408,7 @@ export async function buildLatestLoaderAssets(req: Request, res: Response) {
 }
 
 export async function getLoaderChunk(req: Request, res: Response) {
-  const mgr = userDbMgr(req);
+  const mgr = superDbMgr(req);
   const {
     platform,
     nextjsAppDir,
@@ -509,6 +509,9 @@ export async function getLoaderChunk(req: Request, res: Response) {
 
   const response = `
     (() => {
+      if (!globalThis.__PLASMIC_CHUNKS) {
+        globalThis.__PLASMIC_CHUNKS = {};
+      }
       ${modules
         .map((module) =>
           `globalThis.__PLASMIC_CHUNKS[${JSON.stringify(
