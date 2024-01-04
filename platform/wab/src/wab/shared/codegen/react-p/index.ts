@@ -575,26 +575,9 @@ export function makeGlobalContextBundle(
       const maybeArg = tpl.vsettings[0].args.find((arg) => arg.param === param);
       const varName = paramToVarName(tpl.component, param);
       let serializedExpr = "undefined";
-      if (isKnownDefaultStylesPropType(param.type)) {
-        const conditionals = buildConditionalDefaultStylesPropArg(site);
-        serializedExpr = joinVariantVals(
-          conditionals.map(([expr, combo]) => [
-            safeExprAsCode(expr, exprCtx),
-            combo,
-          ]),
-          variantChecker,
-          "undefined"
-        ).value;
-      } else if (maybeArg) {
-        if (
-          isKnownColorPropType(param.type) &&
-          isKnownStyleTokenRef(maybeArg.expr) &&
-          !param.type.noDeref
-        ) {
-          const conditionals = buildConditionalDerefTokenValueArg(
-            site,
-            maybeArg.expr.token
-          );
+      if (param.exportType !== ParamExportType.ToolsOnly) {
+        if (isKnownDefaultStylesPropType(param.type)) {
+          const conditionals = buildConditionalDefaultStylesPropArg(site);
           serializedExpr = joinVariantVals(
             conditionals.map(([expr, combo]) => [
               safeExprAsCode(expr, exprCtx),
@@ -603,8 +586,29 @@ export function makeGlobalContextBundle(
             variantChecker,
             "undefined"
           ).value;
-        } else {
-          serializedExpr = safeExprAsCode(maybeArg.expr, exprCtx);
+        } else if (maybeArg) {
+          if (
+            isKnownColorPropType(param.type) &&
+            isKnownStyleTokenRef(maybeArg.expr) &&
+            !param.type.noDeref
+          ) {
+            const conditionals = buildConditionalDerefTokenValueArg(
+              site,
+              maybeArg.expr.token
+            );
+            serializedExpr = joinVariantVals(
+              conditionals.map(([expr, combo]) => [
+                safeExprAsCode(expr, exprCtx),
+                combo,
+              ]),
+              variantChecker,
+              "undefined"
+            ).value;
+          } else {
+            serializedExpr = safeExprAsCode(maybeArg.expr, exprCtx);
+          }
+        } else if (param.defaultExpr) {
+          serializedExpr = safeExprAsCode(param.defaultExpr, exprCtx);
         }
       } else if (param.defaultExpr) {
         serializedExpr = safeExprAsCode(param.defaultExpr, exprCtx);
@@ -5551,16 +5555,19 @@ export function makeSplitsProviderBundle(
     import { getActiveVariation } from "@plasmicapp/react-web/lib/splits";
     ${makeGlobalGroupImports(referencedGlobalVariantGroups)}
 
-    export interface PlasmicSplitsProviderProps {
+    type GetActiveVariationParams = Partial<
+      Parameters<typeof getActiveVariation>[0]
+    >;
+
+    export interface PlasmicSplitsProviderProps extends GetActiveVariationParams {
       children?: React.ReactNode;
-      traits?: Record<string, string>;
     };
 
-    const splits = ${JSON.stringify(
+    export const splits = ${JSON.stringify(
       exportActiveSplitsConfig(runningSplits, projectId)
     )};
 
-    function getGlobalContextValueFromVariation(groupId: string, variation: Record<string, string>) {
+    export function getGlobalContextValueFromVariation(groupId: string, variation: Record<string, string>) {
       let groupValue: string | undefined = undefined;
       Object.keys(variation).forEach((variationKey: string) => {
         const [_type, splitId] = variationKey.split(".");
@@ -5586,10 +5593,11 @@ export function makeSplitsProviderBundle(
     };
 
     export default function PlasmicSplitsProvider(props: PlasmicSplitsProviderProps) {
-      const { children, traits } = props;
+      const { children, traits, ...rest } = props;
       const variation = getActiveVariation({
         splits,
         traits: traits ?? {},
+        ...rest,
       });
 
       return (
