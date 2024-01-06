@@ -65,7 +65,7 @@ import { AppView } from "./top-view";
 import * as widgets from "./widgets";
 
 const LazyTeamAnalytics = React.lazy(() => import("./analytics/TeamAnalytics"));
-const LazyAdminPage = React.lazy(() => import("./pages/AdminPage"));
+const LazyAdminPage = React.lazy(() => import("./pages/admin/AdminPage"));
 const LazyViewInitializer = React.lazy(
   () => import("./studio/view-initializer")
 );
@@ -321,7 +321,7 @@ function LoggedInContainer(props: LoggedInContainerProps) {
                   />
                   <Route
                     exact
-                    path={UU.admin.pattern}
+                    path={[UU.admin.pattern, UU.adminTeams.pattern]}
                     render={() =>
                       isCoreTeamEmail(selfInfo.email, appCtx.appConfig) ? (
                         <NormalLayout appCtx={appCtx}>
