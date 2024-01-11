@@ -1,6 +1,6 @@
 {
   "name": "@plasmicpkgs/antd5",
-  "version": "0.0.207",
+  "version": "0.0.208",
   "description": "Plasmic registration calls for antd components",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -55,7 +55,7 @@
     "test-storybook": "test-storybook"
   },
   "dependencies": {
-    "antd": "^5.7.3",
+    "antd": "^5.12.7",
     "classnames": "^2.3.2",
     "dayjs": "^1.11.10",
     "fast-deep-equal": "^3.1.3",
@@ -68,7 +68,7 @@
     "@plasmicapp/data-sources": "0.1.146",
     "@plasmicapp/host": "1.0.188",
     "@plasmicapp/query": "0.1.77",
-    "@plasmicapp/react-web": "0.2.314",
+    "@plasmicapp/react-web": "0.2.315",
     "@rollup/plugin-commonjs": "^11.0.0",
     "@rollup/plugin-json": "^4.0.0",
     "@rollup/plugin-node-resolve": "^9.0.0",

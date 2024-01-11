@@ -320,6 +320,7 @@ export const updatableProjectFields = [
   "extraData",
   "secretApiToken",
   "isMainBranchProtected",
+  "isUserStarter",
 ] as const;
 
 export const editorOnlyUpdatableProjectFields = [
@@ -1341,7 +1342,12 @@ export class DbMgr implements MigrationDbMgr {
       ...projectPerms.filter(
         (p) => accessLevelRank(p.accessLevel) >= accessLevelRank("content")
       ),
-    ].map((p) => _.pick(p, ["userId", "email"]));
+    ].map((p) => {
+      return {
+        userId: p.userId,
+        email: p.user == null ? p.email : p.user.email,
+      };
+    });
 
     if (excludePlasmicEmails) {
       users = users.filter((u) => !isCoreTeamEmail(u.email, DEVFLAGS));
@@ -2471,6 +2477,13 @@ export class DbMgr implements MigrationDbMgr {
         );
       }
       fields["workspace"] = { id: fields.workspaceId };
+    }
+    if ("isUserStarter" in fields && fields.workspaceId) {
+      await this.checkWorkspacePerms(
+        fields.workspaceId,
+        "editor",
+        "change workspace starters"
+      );
     }
     // We use assignAllowEmpty rather than mergeAllowEmpty to disallow merging
     // the two codeSandboxInfo array

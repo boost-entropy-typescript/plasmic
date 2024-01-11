@@ -576,7 +576,8 @@
       "indirect": false,
       "globalContextsFilePath": "",
       "splitsProviderFilePath": "",
-      "customFunctions": []
+      "customFunctions": [],
+      "jsBundleThemes": []
     },
     {
       "projectId": "ooL7EhXDmFQWnW9sxtchhE",
@@ -682,7 +683,7 @@
           "projectId": "ooL7EhXDmFQWnW9sxtchhE",
           "renderModuleFilePath": "wab/client/plasmic/plasmic_kit_dashboard/PlasmicNewProjectModal.tsx",
           "importSpec": {
-            "modulePath": "NewProjectModal.tsx"
+            "modulePath": "wab/client/components/NewProjectModal.tsx"
           },
           "cssFilePath": "wab/client/plasmic/plasmic_kit_dashboard/PlasmicNewProjectModal.module.css",
           "scheme": "blackbox",
