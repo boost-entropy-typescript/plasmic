@@ -847,6 +847,7 @@ export interface ListBranchesResponse {
 export interface CreateBranchRequest {
   name: string;
   sourceBranchId?: BranchId;
+  base?: "new" | "latest";
 }
 
 export interface CreateBranchResponse {
@@ -864,6 +865,7 @@ export type TryMergeResponse = MergeResult;
 
 export interface UpdateBranchRequest {
   name: string;
+  hostUrl?: string;
 }
 
 export interface ListInviteRequestsResponse {
