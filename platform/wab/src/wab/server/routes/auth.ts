@@ -361,6 +361,7 @@ export async function updateSelf(req: Request, res: Response) {
 }
 
 export async function updateSelfPassword(req: Request, res: Response) {
+  const superMgr = superDbMgr(req);
   const dbMgr = userDbMgr(req);
   const oldPassword = (req.body.oldPassword as string) || "";
   const newPassword = (req.body.newPassword as string) || "";
@@ -383,6 +384,8 @@ export async function updateSelfPassword(req: Request, res: Response) {
       throw error;
     }
   }
+  await superMgr.deleteSessionsForUser(req.sessionID, getUser(req).id);
+
   res.json(
     ensureType<UpdatePasswordResponse>({
       status: true,
@@ -445,12 +448,17 @@ export async function resetPassword(req: Request, res: Response) {
     return;
   }
 
-  // We don't care to time-limit the validity of these URLs for now.
-  // const MILLIS_IN_TWO_DAYS = 1000 * 60 * 60 * 24 * 2;
-  // const millisElapsed = new Date().valueOf() - resetRequest.createdAt.valueOf();
-  // if (millisElapsed > MILLIS_IN_TWO_DAYS) {
-  //   throw new NotFoundError();
-  // }
+  const MILLIS_IN_TEN_MINUTES = 1000 * 60 * 10;
+  const millisElapsed = new Date().valueOf() - resetRequest.createdAt.valueOf();
+  if (millisElapsed > MILLIS_IN_TEN_MINUTES) {
+    res.json(
+      ensureType<ResetPasswordResponse>({
+        status: false,
+        reason: "InvalidToken",
+      })
+    );
+    return;
+  }
 
   try {
     await mgr.updateUserPassword(user, newPassword);
@@ -478,6 +486,7 @@ export async function resetPassword(req: Request, res: Response) {
   }
 
   await mgr.markResetPasswordUsed(resetRequest);
+  await mgr.deleteSessionsForUser(req.sessionID, user.id);
 
   res.json(ensureType<ResetPasswordResponse>({ status: true }));
 }

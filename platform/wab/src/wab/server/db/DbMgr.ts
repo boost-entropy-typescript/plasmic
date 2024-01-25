@@ -1187,6 +1187,17 @@ export class DbMgr implements MigrationDbMgr {
     return await this.entMgr.save(team);
   }
 
+  async isTeamWhiteLabel(team: Team) {
+    if (!!team.whiteLabelName) {
+      return true;
+    }
+    let parentTeam = team.parentTeam;
+    if (team.parentTeamId && !team.parentTeam) {
+      parentTeam = await this.getTeamById(team.parentTeamId);
+    }
+    return !!team.whiteLabelName || !!parentTeam?.whiteLabelName;
+  }
+
   async startFreeTrial({
     teamId,
     featureTierName,
@@ -1401,6 +1412,18 @@ export class DbMgr implements MigrationDbMgr {
       .where(
         "p.id = :projectId AND p.deletedAt IS NULL AND w.deletedAt IS NULL AND t.deletedAt IS NULL",
         { projectId }
+      )
+      .getOne();
+  }
+
+  async getTeamByWorkspaceId(workspaceId: WorkspaceId) {
+    await this.checkWorkspacePerms(workspaceId, "viewer", "get", false);
+    return await this.teams()
+      .createQueryBuilder("t")
+      .innerJoin(Workspace, "w", "w.teamId = t.id")
+      .where(
+        "w.id = :workspaceId AND w.deletedAt IS NULL AND t.deletedAt IS NULL",
+        { workspaceId }
       )
       .getOne();
   }
@@ -1825,6 +1848,15 @@ export class DbMgr implements MigrationDbMgr {
     return user;
   }
 
+  async deleteSessionsForUser(currentSessionId: string, userId: string) {
+    return this.sessions()
+      .createQueryBuilder()
+      .where('"id" != :currentSessionId', { currentSessionId })
+      .andWhere('"id" like :userId', { userId: `${userId}-%` })
+      .delete()
+      .execute();
+  }
+
   //
   // Password methods.
   //
@@ -1857,6 +1889,14 @@ export class DbMgr implements MigrationDbMgr {
     }
     const hashedPassword = bcrypt.hashSync(password, bcrypt.genSaltSync());
     user.bcrypt = hashedPassword;
+    Object.assign(user, this.stampUpdate());
+    await this.entMgr.save(user);
+  }
+
+  async clearUserPassword(userId: string) {
+    await this.checkSuperUser();
+    const user = await this.getUserById(userId);
+    user.bcrypt = "";
     Object.assign(user, this.stampUpdate());
     await this.entMgr.save(user);
   }
@@ -2407,6 +2447,9 @@ export class DbMgr implements MigrationDbMgr {
         : undefined;
 
       workspaceId = personalWorkspace?.id ?? workspaceId;
+    } else if (workspaceId && inviteOnly === undefined) {
+      const team = await this.getTeamByWorkspaceId(workspaceId);
+      inviteOnly = team ? await this.isTeamWhiteLabel(team) : undefined;
     }
 
     const project = this.projects().create({
@@ -6059,17 +6102,17 @@ export class DbMgr implements MigrationDbMgr {
     return !project.extraData?.hideHostingBadge;
   }
 
-  async setShowHostingBadgeForProject(
+  async updateProjectExtraData(
     projectId: ProjectId,
-    showBadge: boolean
+    extraData: Partial<Project["extraData"]>
   ) {
-    await this.checkProjectPerms(projectId, "editor", "update hosting");
+    await this.checkProjectPerms(projectId, "editor", "update extra data");
     const project = await this.getProjectById(projectId);
     await this.updateProject({
       id: projectId,
       extraData: {
         ...(project.extraData ?? {}),
-        hideHostingBadge: !showBadge,
+        ...extraData,
       },
     });
   }
@@ -6669,14 +6712,20 @@ export class DbMgr implements MigrationDbMgr {
     return db;
   }
 
-  async listCmsTables(databaseId: CmsDatabaseId) {
+  async listCmsTables(
+    databaseId: CmsDatabaseId,
+    includeArchived: boolean = false
+  ) {
     await this.checkCmsDatabasePerms(databaseId, "viewer");
-    return this.cmsTables().find({
-      where: {
+    let cmsTablesQuery = this.cmsTables()
+      .createQueryBuilder()
+      .where(`"databaseId" = :databaseId AND "deletedAt" IS NULL`, {
         databaseId,
-        ...excludeDeleted(),
-      },
-    });
+      });
+    if (!includeArchived) {
+      cmsTablesQuery = cmsTablesQuery.andWhere(`"isArchived" IS NOT TRUE`);
+    }
+    return cmsTablesQuery.getMany();
   }
 
   async createCmsTable(opts: {
@@ -6749,9 +6798,10 @@ export class DbMgr implements MigrationDbMgr {
       schema?: CmsTableSchema;
       description?: string | null;
       settings?: CmsTableSettings | null;
+      isArchived?: boolean | null;
     }
   ) {
-    const { name, schema, description, settings } = opts;
+    const { name, schema, description, settings, isArchived } = opts;
     const table = await this.getCmsTableById(tableId);
     await this.checkCmsDatabasePerms(table.databaseId, "editor");
     if (name && table.name !== name) {
@@ -6765,6 +6815,9 @@ export class DbMgr implements MigrationDbMgr {
     }
     if (settings) {
       table.settings = settings;
+    }
+    if (isArchived !== undefined) {
+      table.isArchived = isArchived;
     }
     Object.assign(table, this.stampUpdate());
     await this.entMgr.save(table);

@@ -92,6 +92,11 @@ export interface ProjectExtraData {
    * badge is shown.
    */
   hideHostingBadge?: boolean;
+
+  /**
+   * Allow robots to crawl the site. If undefined, robots aren't allowed.
+   */
+  allowRobots?: boolean;
 }
 
 export interface ApiEntityBase<IdType extends string = string> {
@@ -1395,6 +1400,7 @@ export interface ApiCmsTable extends ApiEntityBase<CmsTableId> {
   schema: CmsTableSchema;
   description: string | null;
   settings: CmsTableSettings | null;
+  isArchived: boolean | null;
 }
 
 export interface ApiCmsRow extends ApiEntityBase<CmsRowId> {
