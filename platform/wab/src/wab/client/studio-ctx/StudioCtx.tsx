@@ -774,6 +774,13 @@ export class StudioCtx extends WithDbCtx {
             }
             // Restore correct canvas size.
             const restoreCanvasSize = () => {
+              // Subscribe to auto-derived height changes
+              getArenaFrames(this.currentArena).forEach((frame) => {
+                if (isHeightAutoDerived(frame)) {
+                  frame._height?.get();
+                }
+              });
+
               const scalerRect = this.getCanvasEditorFramesScalerRect();
               if (scalerRect) {
                 this._canvasSize.set(Box.fromRect(scalerRect).scale(this.zoom));
@@ -2937,7 +2944,7 @@ export class StudioCtx extends WithDbCtx {
   /** Controls the padding around the canvas (for limiting scrolling). */
   canvasPadding = computedFn(() => {
     const clipperBB = this.maybeClipperBB();
-    if (clipperBB) {
+    if (clipperBB && !this.currentArenaEmpty) {
       return {
         vertical: clipperBB.height * 0.95,
         horizontal: clipperBB.width * 0.95,
