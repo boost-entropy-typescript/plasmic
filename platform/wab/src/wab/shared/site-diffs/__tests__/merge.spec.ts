@@ -63,7 +63,7 @@ import {
   removeVariantGroup,
 } from "@/wab/components";
 import { getProjectFlags } from "@/wab/devflags";
-import { asCode, codeLit } from "@/wab/exprs";
+import { asCode, codeLit, tryExtractJson } from "@/wab/exprs";
 import { Pt } from "@/wab/geom";
 import { ImageAssetType } from "@/wab/image-asset-type";
 import { mkParam, mkParamsForState } from "@/wab/lang";
@@ -113,7 +113,9 @@ import {
 import { isArray, isString, pick, range, sortBy } from "lodash";
 import { DeepPartial } from "utility-types";
 import codeComponentsWithSameNameBundle from "./code-components-with-same-name.json";
+import globalContextBundle from "./global-context-merge.json";
 import richTextConflict from "./rich-text-conflict.json";
+import styleTokenBundle from "./style-tokens-conflict.json";
 import edgeCasesBundle2 from "./test-edge-cases-merge-2.json";
 import edgeCasesBundle from "./test-edge-cases-merge.json";
 import mergeDepsBundle from "./test-merging-deps.json";
@@ -4916,5 +4918,41 @@ describe("merging", () => {
     );
     expect(tplToMove.parent).toBe(tplComp);
     expect(tplToMove.uuid).toBe(tplToMoveUuid);
+  });
+
+  it("Global context should merge without conflicts", () => {
+    const result = testMergeFromJsonBundle(
+      hackyCast<ProjectFullDataResponse>(globalContextBundle)
+    );
+    expect(result).toMatchObject({
+      status: "merged",
+    });
+    const site = result.mergedSite;
+    const globalContextComponent = site.components.filter(
+      (c) => c.name === "GlobalContext"
+    );
+    expect(globalContextComponent.length).toBe(1);
+    expect(site.globalContexts.length).toBe(1);
+    const globalContextTpl = site.globalContexts[0];
+    const argValues = globalContextTpl.vsettings[0].args;
+    expect(argValues.length).toBe(2);
+    expect(
+      argValues.find((arg) => arg.param.variable.name === "propA")
+    ).not.toBeNil();
+    expect(
+      argValues.find((arg) => arg.param.variable.name === "propB")
+    ).not.toBeNil();
+    expect(tryExtractJson(argValues[0].expr)).toBe("set");
+    expect(tryExtractJson(argValues[1].expr)).toBe("set");
+  });
+
+  it("Style tokens should not have conflicts when removing", () => {
+    const result = testMergeFromJsonBundle(
+      hackyCast<ProjectFullDataResponse>(styleTokenBundle)
+    );
+
+    expect(result).toMatchObject({
+      status: "merged",
+    });
   });
 });

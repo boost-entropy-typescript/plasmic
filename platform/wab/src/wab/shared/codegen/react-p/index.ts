@@ -294,10 +294,13 @@ import { ReactHookSpec } from "./react-hook-spec";
 import {
   defaultStyleCssFileName,
   getExportedComponentName,
+  getHostNamedImportsForRender,
+  getHostNamedImportsForSkeleton,
   getImportedCodeComponentHelperName,
   getImportedComponentName,
   getNormalizedComponentName,
   getPlatformImportComponents,
+  getReactWebNamedImportsForRender,
   getSkeletonModuleFileName,
   isPageAwarePlatform,
   makeArgPropsName,
@@ -584,7 +587,7 @@ export function makeGlobalContextBundle(
           const conditionals = buildConditionalDefaultStylesPropArg(site);
           serializedExpr = joinVariantVals(
             conditionals.map(([expr, combo]) => [
-              safeExprAsCode(expr, exprCtx),
+              getRawCode(expr, exprCtx),
               combo,
             ]),
             variantChecker,
@@ -602,20 +605,20 @@ export function makeGlobalContextBundle(
             );
             serializedExpr = joinVariantVals(
               conditionals.map(([expr, combo]) => [
-                safeExprAsCode(expr, exprCtx),
+                getRawCode(expr, exprCtx),
                 combo,
               ]),
               variantChecker,
               "undefined"
             ).value;
           } else {
-            serializedExpr = safeExprAsCode(maybeArg.expr, exprCtx);
+            serializedExpr = getRawCode(maybeArg.expr, exprCtx);
           }
         } else if (param.defaultExpr) {
-          serializedExpr = safeExprAsCode(param.defaultExpr, exprCtx);
+          serializedExpr = getRawCode(param.defaultExpr, exprCtx);
         }
       } else if (param.defaultExpr) {
-        serializedExpr = safeExprAsCode(param.defaultExpr, exprCtx);
+        serializedExpr = getRawCode(param.defaultExpr, exprCtx);
       }
 
       serializedExpr = `(${overridePropName} && "${varName}" in ${overridePropName}) ? ${overridePropName}.${varName}! : ${serializedExpr}`;
@@ -1070,6 +1073,10 @@ const __wrapUserPromise = globalThis.__PlasmicWrapUserPromise ?? (async (loc, pr
   `
     : "";
 
+  // We import a lot of things from @plasmicapp/react-web. For components,
+  // we append a "__" suffix in case there's any name collision with other
+  // components that we may be importing into this file. We don't need
+  // to worry about non-components, as we don't expect name collisions there.
   const renderModule = `
     // @ts-nocheck
     /* eslint-disable */
@@ -1095,8 +1102,13 @@ const __wrapUserPromise = globalThis.__PlasmicWrapUserPromise ?? (async (loc, pr
 
     import * as React from "react";
     ${makePlatformImports(opts)}
-    import * as p from  "${getReactWebPackageName(opts)}";
-    import * as ph from "${getHostPackageName(opts)}";
+
+    import {
+      ${getReactWebNamedImportsForRender()}
+    } from  "${getReactWebPackageName(opts)}";
+    import {
+      ${getHostNamedImportsForRender()}
+    } from "${getHostPackageName(opts)}";
     ${
       shouldWrapWithUsePlasmicAuth(ctx, component)
         ? `import * as plasmicAuth from "${getPlasmicAuthPackageName(opts)}";`
@@ -1119,9 +1131,6 @@ const __wrapUserPromise = globalThis.__PlasmicWrapUserPromise ?? (async (loc, pr
         ? `import * as pp from "${getPlumePackageName(opts, plumeType)}";`
         : ""
     }
-    import {hasVariant, classNames, wrapWithClassName, createPlasmicElementProxy, makeFragment, MultiChoiceArg, SingleBooleanChoiceArg, SingleChoiceArg, pick, omit, useTrigger, StrictProps, deriveRenderOpts, ensureGlobalVariants} from "${getReactWebPackageName(
-      opts
-    )}";
     ${referencedImports.join("\n")}
     ${importGlobalVariantContexts}
     ${makeStylesImports(site, component, projectConfig, ctx.exportOpts)}
@@ -1767,11 +1776,11 @@ function serializeInitFunc(
   if (!state.tplNode && state.variableType === "variant") {
     initFunc = `({$props, $state, $queries, $ctx}) => (${
       state.param.defaultExpr
-        ? safeExprAsCode(state.param.defaultExpr, exprCtx) + " ?? "
+        ? getRawCode(state.param.defaultExpr, exprCtx) + " ?? "
         : ""
     } $props.${getStateValuePropName(state)})`;
   } else if (!state.tplNode && state.param.defaultExpr) {
-    initFunc = `({$props, $state, $queries, $ctx}) => (${safeExprAsCode(
+    initFunc = `({$props, $state, $queries, $ctx}) => (${getRawCode(
       state.param.defaultExpr,
       exprCtx
     )})`;
@@ -1784,13 +1793,13 @@ function serializeInitFunc(
           (vsArg) => vsArg.param === state.implicitState?.param
         );
         if (arg) {
-          exprs.push([safeExprAsCode(arg.expr, exprCtx), vs.variants]);
+          exprs.push([getRawCode(arg.expr, exprCtx), vs.variants]);
         }
       } else if (isTplTag(tpl)) {
         const namedState = ensureKnownNamedState(state);
         const varName = toVarName(namedState.name);
         if (varName in vs.attrs) {
-          exprs.push([safeExprAsCode(vs.attrs[varName], exprCtx), vs.variants]);
+          exprs.push([getRawCode(vs.attrs[varName], exprCtx), vs.variants]);
         }
       }
     }
@@ -1804,7 +1813,7 @@ function serializeInitFunc(
     ) {
       const initExpr = getVirtualWritableStateInitialValue(state);
       if (initExpr) {
-        exprs.unshift([safeExprAsCode(initExpr, exprCtx), [baseVariant]]);
+        exprs.unshift([getRawCode(initExpr, exprCtx), [baseVariant]]);
       }
     }
     if (
@@ -1816,7 +1825,7 @@ function serializeInitFunc(
       // initializing readonly state from code commponents
       // writable states are initialized with the value prop
       exprs.unshift([
-        safeExprAsCode(state.implicitState.param.defaultExpr, exprCtx),
+        getRawCode(state.implicitState.param.defaultExpr, exprCtx),
         [baseVariant],
       ]);
     }
@@ -1895,7 +1904,7 @@ function serializeStateSpecs(component: Component, ctx: SerializerBaseContext) {
         state.tplNode &&
         isTplComponent(state.tplNode) &&
         isCodeComponentWithHelpers(state.tplNode.component)
-          ? `onMutate: p.generateOnMutateForSpec("${
+          ? `onMutate: generateOnMutateForSpec("${
               ensureKnownNamedState(state.implicitState).name
             }", ${codeComponentHelperName})`
           : ``
@@ -2025,7 +2034,7 @@ export function serializeComponentLocalVars(ctx: SerializerBaseContext) {
 
     ${
       ctx.projectFlags.usePlasmicTranslation
-        ? `const $translator = p.usePlasmicTranslator?.();`
+        ? `const $translator = usePlasmicTranslator?.();`
         : ""
     }
     ${
@@ -2033,17 +2042,17 @@ export function serializeComponentLocalVars(ctx: SerializerBaseContext) {
         ? `const __nextRouter = useNextRouter();`
         : ""
     }
-    const $ctx = ph.useDataEnv?.() || {};
+    const $ctx = useDataEnv?.() || {};
     const refsRef = React.useRef({});
     const $refs = refsRef.current;
 
     ${
       ctx.usesGlobalActions
-        ? `const $globalActions = ph.useGlobalActions?.();`
+        ? `const $globalActions = useGlobalActions?.();`
         : ""
     }
 
-    const currentUser = p.useCurrentUser?.() || {};
+    const currentUser = useCurrentUser?.() || {};
 
     ${
       ctx.usesComponentLevelQueries
@@ -2052,10 +2061,10 @@ export function serializeComponentLocalVars(ctx: SerializerBaseContext) {
     }
     ${
       component.states.length
-        ? `const stateSpecs: Parameters<typeof p.useDollarState>[0] = React.useMemo(() =>
+        ? `const stateSpecs: Parameters<typeof useDollarState>[0] = React.useMemo(() =>
           (${serializeStateSpecs(component, ctx)})
         , [$props, $ctx, $refs]);
-        const $state = p.useDollarState(stateSpecs, {$props, $ctx, $queries: ${
+        const $state = useDollarState(stateSpecs, {$props, $ctx, $queries: ${
           ctx.usesComponentLevelQueries ? "$queries" : "{}"
         }, $refs});`
         : ""
@@ -2755,9 +2764,9 @@ export function serializeTplTextBlockContent(
 
   let value = r.value;
   if (useTranslation && transKey && !ctx.insideRichTextBlock) {
-    value = `<p.Trans${
+    value = `<Trans__${
       transKey() ? ` transKey={${transKey()}}` : ""
-    }>{${value}}</p.Trans>`;
+    }>{${value}}</Trans__>`;
   }
   // This is the raw string value when the value is unconditional.
   const rawUncondValue =
@@ -2895,7 +2904,7 @@ export function serializeTplTagBase(
         ctx.variantComboChecker,
         jsLiteral("div")
       ).value;
-      tag = "p.PlasmicIcon";
+      tag = "PlasmicIcon__";
     }
     delete attrs["outerHTML"];
   }
@@ -2906,7 +2915,7 @@ export function serializeTplTagBase(
     }
 
     if (shouldUsePlasmicImg(node, ctx.projectFlags)) {
-      tag = "p.PlasmicImg";
+      tag = "PlasmicImg__";
       plasmicImgAttrStyles.forEach((prop) => {
         const reactProp = toReactAttr(`display-${prop}`);
         if (!(reactProp in attrs)) {
@@ -2947,13 +2956,13 @@ export function serializeTplTagBase(
     const builtinEventHandlers = {
       onChange: [
         `(e) => {
-        p.generateStateOnChangeProp($state, [${statePath}])(e.target.value)
+        generateStateOnChangeProp($state, [${statePath}])(e.target.value)
       }`,
       ],
     };
     mergeEventHandlers(attrs, builtinEventHandlers);
 
-    attrs["value"] = `p.generateStateValueProp($state, [${statePath}]) ?? ""`;
+    attrs["value"] = `generateStateValueProp($state, [${statePath}]) ?? ""`;
   }
 
   const orderedCondStr = serializeDataConds(
@@ -3018,7 +3027,7 @@ function serializeTplTag(ctx: SerializerBaseContext, node: TplTag) {
   }
 
   if (isPageAwarePlatform(ctx.exportOpts.platform) && tag === "a") {
-    tag = "p.PlasmicLink";
+    tag = "PlasmicLink__";
     attrs["platform"] = jsLiteral(ctx.exportOpts.platform);
     attrs["component"] = "Link";
   }
@@ -3131,7 +3140,7 @@ function makeCreatePlasmicElement(
   const keys = L.keys(attrs).sort();
   const hasChildren = serializedChildren.length > 0;
   const hasGap = wrapChildrenInFlex && wrapChildrenInFlex !== "false";
-  const tagType = hasGap ? "p.Stack" : elementType;
+  const tagType = hasGap ? "Stack__" : elementType;
   // Detect if elementType is a React component to decide between
   // <Stack as={Component}> and <Stack as={"tag"}>.
   const asType = isReactComponent(elementType)
@@ -3232,7 +3241,7 @@ function makeCreatePlasmicElement(
       .join(",\n")}};
     ${
       codeComponentStates.length > 0
-        ? `p.initializeCodeComponentStates($state, [
+        ? `initializeCodeComponentStates($state, [
             ${codeComponentStates
               .map(
                 (state) => `{
@@ -3246,7 +3255,7 @@ function makeCreatePlasmicElement(
     }
     ${
       statesUsingCtx.length > 0
-        ? `p.initializePlasmicStates($state, [
+        ? `initializePlasmicStates($state, [
           ${statesUsingCtx
             .map(
               (state) => `{
@@ -3267,9 +3276,9 @@ function makeCreatePlasmicElement(
 function wrapInDataCtxReader(nodeStr: string) {
   // nodeStr may be a single React element, or a code expression
   // (for example, if child is a repeated element).
-  return `<ph.DataCtxReader>{
+  return `<DataCtxReader__>{
     ($ctx) => (${nodeStr})
-  }</ph.DataCtxReader>`;
+  }</DataCtxReader__>`;
 }
 
 export function serializeTplComponentBase(
@@ -3407,7 +3416,7 @@ export function serializeTplComponentBase(
           if (node.component.plumeInfo) {
             const plugin = getPlumeCodegenPlugin(node.component);
             pushEventHandler(`(...eventArgs) => {
-              p.generateStateOnChangeProp($state, [${statePath}])(${
+              generateStateOnChangeProp($state, [${statePath}])(${
               plugin?.genOnChangeEventToValue
                 ? `(${plugin.genOnChangeEventToValue}).apply(null, eventArgs)`
                 : "eventArgs[0]"
@@ -3422,11 +3431,11 @@ export function serializeTplComponentBase(
               node.component
             );
             pushEventHandler(
-              `p.generateStateOnChangePropForCodeComponents($state, "${stateName}", [${statePath}], ${codeComponentHelperName})`
+              `generateStateOnChangePropForCodeComponents($state, "${stateName}", [${statePath}], ${codeComponentHelperName})`
             );
           } else {
             pushEventHandler(
-              `p.generateStateOnChangeProp($state, [${statePath}])`
+              `generateStateOnChangeProp($state, [${statePath}])`
             );
           }
         }
@@ -3435,7 +3444,7 @@ export function serializeTplComponentBase(
           const plumeType = node.component.plumeInfo?.type ?? "";
           attrs[
             getStateValuePropName(state.implicitState!)
-          ] = `p.generateStateValueProp($state, [${statePath}])${
+          ] = `generateStateValueProp($state, [${statePath}])${
             ["switch", "checkbox"].includes(plumeType)
               ? `?? false`
               : plumeType === "text-input"
@@ -3594,7 +3603,7 @@ function serializeTplSlot(ctx: SerializerBaseContext, node: TplSlot) {
     fallback
   );
   const serializedFallback = asOneNode(serializedFallbackArray);
-  const serializedSlot = `p.renderPlasmicSlot({
+  const serializedSlot = `renderPlasmicSlot({
       defaultContents: ${serializedFallback},
       value: ${argValue},
       ${slotClassName ? `className: ${slotClassName}` : ""}
@@ -3777,7 +3786,7 @@ function serializeWithPlasmicPageGuard(
     ${generateUnauthorizedSubstituteComponentCall()}
 
     const PageGuard: React.FC<P> = (props) => (
-      <p.PlasmicPageGuard
+      <PlasmicPageGuard__
         minRole={${jsLiteral(roleId)}}
         appId={${jsLiteral(ctx.projectConfig.projectId)}}
         authorizeEndpoint={${jsLiteral(`${getPublicUrl()}/authorize`)}}
@@ -3785,7 +3794,7 @@ function serializeWithPlasmicPageGuard(
         ${generateUnauthorizedComp()}
       >
         <WrappedComponent {...props} />
-      </p.PlasmicPageGuard>
+      </PlasmicPageGuard__>
     );
     return PageGuard;
   }
@@ -3828,7 +3837,7 @@ function serializeWithUsePlasmicAuth(
       });
 
       return (
-        <p.PlasmicDataSourceContextProvider
+        <PlasmicDataSourceContextProvider__
           value={{
             ...dataSourceCtx,
             isUserLoading,
@@ -3837,7 +3846,7 @@ function serializeWithUsePlasmicAuth(
           }}
         >
           <WrappedComponent {...props} />
-        </p.PlasmicDataSourceContextProvider>
+        </PlasmicDataSourceContextProvider__>
       )
     }
     return WithUsePlasmicAuthComponent;
@@ -4188,7 +4197,7 @@ function serializeOverridesTypes(
       ctx.nodeNamer(node),
       "Unexpected nodeNamer nullish return for " + node.uuid
     );
-    let val = `p.Flex<${serializeDefaultElementType(ctx, node)}>`;
+    let val = `Flex__<${serializeDefaultElementType(ctx, node)}>`;
 
     if (
       isKnownTplTag(node) &&
@@ -4235,7 +4244,7 @@ function serializeDefaultElementType(
 ) {
   if (isTplTag(node)) {
     if (shouldUsePlasmicImg(node, ctx.projectFlags)) {
-      return `typeof p.PlasmicImg`;
+      return `typeof PlasmicImg__`;
     } else {
       return jsString(node.tag);
     }
@@ -4505,31 +4514,31 @@ function serializeSkeletonWrapperTs(
   params?: Record<string, string | string[] | undefined>;
   searchParams?: Record<string, string | string[] | undefined>;
 }`;
-        content = `<ph.PageParamsProvider
+        content = `<PageParamsProvider__
           params={params}
           query={searchParams}
         >
           ${content}
-        </ph.PageParamsProvider>`;
+        </PageParamsProvider__>`;
       } else {
-        content = `<ph.PageParamsProvider
+        content = `<PageParamsProvider__
           route={useRouter()?.pathname}
           params={useRouter()?.query}
           query={useRouter()?.query}
         >
           ${content}
-        </ph.PageParamsProvider>`;
+        </PageParamsProvider__>`;
       }
     } else if (opts.platform === "gatsby") {
       plasmicModuleImports.push("Head");
       componentPropsSig = `{ location, path, params }: PageProps`;
-      content = `<ph.PageParamsProvider
+      content = `<PageParamsProvider__
         route={path}
         params={params}
         query={Object.fromEntries(new URLSearchParams(location.search))}
       >
         ${content}
-      </ph.PageParamsProvider>`;
+      </PageParamsProvider__>`;
     }
 
     let globalContextsImport = "";
@@ -4566,7 +4575,9 @@ function serializeSkeletonWrapperTs(
       // This file is owned by you, feel free to edit as you see fit.
       // plasmic-unformatted
       import * as React from "react";
-      import * as ph from "${getHostPackageName(opts)}";
+      import { ${getHostNamedImportsForSkeleton()} } from "${getHostPackageName(
+      opts
+    )}";
       ${globalContextsImport}
       ${makeGlobalGroupImports(globalGroups, opts)}
       import {${plasmicModuleImports.join(", ")}} from "${
@@ -4711,7 +4722,7 @@ export function serializeParamType(
     // VariantGroup's members
     return serializeVariantArgsGroupType(variantGroup);
   } else if (isImageType(param.type) && projectFlags.usePlasmicImg) {
-    return `React.ComponentProps<typeof p.PlasmicImg>["src"]`;
+    return `React.ComponentProps<typeof PlasmicImg__>["src"]`;
   } else if (isKnownFunctionType(param.type)) {
     return `(${param.type.params
       .map((arg) => `${arg.argName}: ${wabToTsType(arg.type, true)}`)
@@ -4937,7 +4948,7 @@ function conditionalComponentArgs(
             toCode(
               joinVariantVals(
                 conditionals.map(([expr, combo]) => [
-                  safeExprAsCode(expr, ctx.exprCtx),
+                  getRawCode(expr, ctx.exprCtx),
                   combo,
                 ]),
                 ctx.variantComboChecker,
@@ -5064,10 +5075,6 @@ function getSerializedImgSrcForAsset(
   return jsLiteral(maybeSrcObject ?? "");
 }
 
-export function safeExprAsCode(expr: Expr, exprCtx: ExprCtx) {
-  return getRawCode(expr, exprCtx);
-}
-
 function conditionalStyleProp(
   ctx: SerializerBaseContext,
   node: TplNode,
@@ -5149,10 +5156,16 @@ function serializeNonParamExpr(
       });
       return `($translator?.(${jsLiteral(key)}) ?? ${jsLiteral(lit)})`;
     } else {
-      return safeExprAsCode(expr, ctx.exprCtx);
+      return getRawCode(expr, ctx.exprCtx, {
+        fallbackSerializer: (fallback) =>
+          serializeNonParamExpr(ctx, fallback, opts),
+      });
     }
   } else {
-    return safeExprAsCode(expr, ctx.exprCtx);
+    return getRawCode(expr, ctx.exprCtx, {
+      fallbackSerializer: (fallback) =>
+        serializeNonParamExpr(ctx, fallback, opts),
+    });
   }
 }
 
