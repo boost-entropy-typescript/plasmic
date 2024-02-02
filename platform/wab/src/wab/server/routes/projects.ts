@@ -1802,13 +1802,15 @@ export async function publishProject(req: Request, res: Response) {
     body.branchId
   );
   req.promLabels.projectId = projectId;
+  const project = await mgr.getProjectById(projectId);
   userAnalytics(req).track({
     event: "Publish project",
     properties: {
+      projectId: projectId,
+      projectName: project.name,
       pkgId: req.params.pkgId,
     },
   });
-  const project = await mgr.getProjectById(projectId);
   const affectedResourceIds = [
     createTaggedResourceId("project", projectId),
     ...(project.workspace?.teamId
@@ -2629,10 +2631,17 @@ export async function updateProjectData(req: Request, res: Response) {
   const dbMgr = userDbMgr(req);
   const suMgr = superDbMgr(req);
   const projectId = req.params.projectId;
-  const latestRev = await dbMgr.getLatestProjectRev(projectId);
+  const data = req.body as UpdateProjectReq;
+  const latestRev = await dbMgr.getLatestProjectRev(
+    projectId,
+    data.branchId
+      ? {
+          branchId: brand(data.branchId),
+        }
+      : undefined
+  );
   const oldBundle = await getMigratedBundle(latestRev);
   const bundler = new Bundler();
-  const data = req.body as UpdateProjectReq;
   // Need to use superuser because our API token set probably only has access to leaf project and not dependencies
   const site = ensureKnownSite(
     (await unbundleSite(bundler, oldBundle, suMgr, latestRev)).siteOrProjectDep
