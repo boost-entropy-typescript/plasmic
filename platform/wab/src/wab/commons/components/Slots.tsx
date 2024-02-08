@@ -5,6 +5,7 @@
  * https://paper.dropbox.com/doc/Web-Dev-Tips--AZYKFaLeIhCfvd_fGevipl8BAg-ohIiFVGa3PcjyBrm8zHew#:uid=707046503510445040304251&h2=React-Portals.
  */
 
+import { ensure } from "@/wab/common";
 import React, {
   createContext,
   Dispatch,
@@ -16,7 +17,6 @@ import React, {
   useReducer,
   useState,
 } from "react";
-import { ensure } from "../../common";
 
 export interface SlotPush {
   type: "push";
@@ -48,18 +48,21 @@ export function useSlotContext() {
 
 export function SlotProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer<Reducer<SlotState, SlotAction>>(
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     (state, action) => {
       switch (action.type) {
-        case "push":
+        case "push": {
           return {
             contentMap: {
               ...state.contentMap,
               [action.id]: action.children,
             },
           };
-        case "pop":
+        }
+        case "pop": {
           const { [action.id]: content, ...rest } = state.contentMap;
           return { contentMap: rest };
+        }
       }
     },
     {

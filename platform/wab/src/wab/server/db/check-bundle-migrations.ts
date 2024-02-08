@@ -1,8 +1,8 @@
+import { arrayEq, ensure, spawn, spawnWrapper } from "@/wab/common";
 import fs from "fs";
 import { last } from "lodash";
 import path from "path";
 import yargs from "yargs";
-import { arrayEq, ensure, spawn, spawnWrapper } from "../../common";
 
 interface CheckArgs {
   files: string[];
@@ -78,6 +78,7 @@ async function checkBundleFiles({ files }: CheckArgs) {
 }
 
 export async function main() {
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   yargs
     .usage("Usage: $0 check <files...>")
     .command<CheckArgs>(

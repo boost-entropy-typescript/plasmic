@@ -1,15 +1,15 @@
-import { Tooltip } from "antd";
-import L from "lodash";
-import { default as React, useLayoutEffect, useState } from "react";
-import { filterFalsy } from "../../../common";
-import { DEVFLAGS } from "../../../devflags";
+import { Matcher } from "@/wab/client/components/view-common";
+import { XMultiSelect } from "@/wab/client/components/XMultiSelect";
+import { filterFalsy } from "@/wab/common";
+import { DEVFLAGS } from "@/wab/devflags";
 import {
   getApplicableSelectors,
   getPseudoSelector,
   oppositeSelectorDisplayName,
-} from "../../../styles";
-import { Matcher } from "../view-common";
-import { XMultiSelect } from "../XMultiSelect";
+} from "@/wab/styles";
+import { Tooltip } from "antd";
+import L from "lodash";
+import { default as React, useLayoutEffect, useState } from "react";
 
 export interface SelectorsInputProps {
   selectors: string[];
@@ -81,6 +81,7 @@ export function SelectorsInput({
         setKeepOpen(false);
         onBlur?.(e);
       }}
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       onInputValueChange={(text) => setText(text)}
       className={className}
       focusedClassName={focusedClassName}

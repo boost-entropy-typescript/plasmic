@@ -1,6 +1,7 @@
+import type { Marker, NodeMarker, StyleMarker } from "@/wab/classes";
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+import "@/wab/client/components/canvas/slate";
 import type { MakeADT } from "ts-adt/MakeADT";
-import type { Marker, NodeMarker, StyleMarker } from "../../classes";
-import "../../client/components/canvas/slate";
 
 export type NormalizedMarker = {
   position: number;
