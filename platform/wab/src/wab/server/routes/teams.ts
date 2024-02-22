@@ -41,6 +41,7 @@ import {
   ResourceId,
   ResourceType,
 } from "@/wab/shared/perms";
+import { mergeUiConfigs } from "@/wab/shared/ui-config-utils";
 import {
   createProjectUrl,
   createTeamUrl,
@@ -73,7 +74,6 @@ export function mkApiTeam(team: Team): ApiTeam {
       "name",
       "billingEmail",
       "seats",
-      "featureTier",
       "featureTierId",
       "stripeCustomerId",
       "stripeSubscriptionId",
@@ -84,9 +84,10 @@ export function mkApiTeam(team: Team): ApiTeam {
       "defaultAccessLevel",
       "whiteLabelInfo",
       "whiteLabelName",
-      "uiConfig",
     ]),
     {
+      featureTier: team.featureTier || team.parentTeam?.featureTier || null,
+      uiConfig: mergeUiConfigs(team.parentTeam?.uiConfig, team.uiConfig),
       onTrial: isTeamOnFreeTrial(team),
     }
   );
@@ -215,7 +216,9 @@ export async function getTeamMeta(req: Request, res: Response) {
 
 export async function changeResourcePermissions(req: Request, res: Response) {
   const mgr = userDbMgr(req);
-  const { grants, revokes } = uncheckedCast<GrantRevokeRequest>(req.body);
+  const { grants, revokes, requireSignUp } = uncheckedCast<GrantRevokeRequest>(
+    req.body
+  );
   const host = req.config.host;
   const resourcesById: Record<string, Team | Workspace | Project> = {};
   const emailsToSend: {
@@ -257,7 +260,8 @@ export async function changeResourcePermissions(req: Request, res: Response) {
         await mgr.grantResourcePermissionByEmail(
           taggedResourceId,
           email,
-          accessLevel
+          accessLevel,
+          requireSignUp
         );
         userAnalytics(req).track({
           event: "Share resource",

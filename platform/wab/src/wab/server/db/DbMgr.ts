@@ -133,6 +133,7 @@ import { generateSomeApiToken } from "@/wab/server/util/Tokens";
 import {
   BadRequestError,
   CopilotRateLimitExceededError,
+  GrantUserNotFoundError,
   UnauthorizedError,
 } from "@/wab/shared/ApiErrors/errors";
 import {
@@ -216,6 +217,7 @@ import {
   TaggedResourceId,
   TaggedResourceIds,
 } from "@/wab/shared/perms";
+import { isEnterprise } from "@/wab/shared/pricing/pricing-utils";
 import { ProjectSeqIdAssignment } from "@/wab/shared/seq-id-utils";
 import {
   calculateSemVer,
@@ -1078,6 +1080,7 @@ export class DbMgr implements MigrationDbMgr {
     const qb = this.teams()
       .createQueryBuilder("t")
       .leftJoinAndSelect("t.featureTier", "ft")
+      .leftJoinAndSelect("t.parentTeam", "pt")
       .where(where);
     if (!includeDeleted) {
       qb.andWhere("t.deletedAt is null");
@@ -1162,6 +1165,12 @@ export class DbMgr implements MigrationDbMgr {
       fields.billingEmail = fields.billingEmail.toLowerCase();
     }
     const team = await this.getTeamById(id);
+    if (fields.uiConfig) {
+      checkPermissions(
+        isEnterprise(team.featureTier),
+        "Must be on Enterprise plan"
+      );
+    }
     assignAllowEmpty(team, this.stampUpdate(), fields);
     return await this.entMgr.save(team);
   }
@@ -2082,6 +2091,7 @@ export class DbMgr implements MigrationDbMgr {
       .createQueryBuilder("w")
       .innerJoinAndSelect("w.team", "t")
       .leftJoinAndSelect("t.featureTier", "ft")
+      .leftJoinAndSelect("t.parentTeam", "pt")
       .where(where);
     if (!includeDeleted) {
       qb.andWhere("w.deletedAt is null and t.deletedAt is null");
@@ -5480,7 +5490,8 @@ export class DbMgr implements MigrationDbMgr {
   async grantResourcePermissionByEmail(
     taggedResourceId: TaggedResourceId,
     email: string,
-    rawLevelToGrant: GrantableAccessLevel | ForcedAccessLevel
+    rawLevelToGrant: GrantableAccessLevel | ForcedAccessLevel,
+    grantExistingUsersOnly?: boolean
   ) {
     await this._checkResourcePerms(
       taggedResourceId,
@@ -5494,6 +5505,9 @@ export class DbMgr implements MigrationDbMgr {
       ? rawLevelToGrant.force
       : ensureGrantableAccessLevel(rawLevelToGrant);
     const user = await this.tryGetUserByEmail(email);
+    if (!user && grantExistingUsersOnly) {
+      throw new GrantUserNotFoundError();
+    }
     const existingPerm = await this.permissions().findOne({
       where: {
         [taggedResourceId.type]: resource,
