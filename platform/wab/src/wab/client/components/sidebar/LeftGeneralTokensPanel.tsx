@@ -227,9 +227,14 @@ const LeftGeneralTokensPanel = observer(function LeftGeneralTokensPanel() {
       ),
     ];
 
+    const selectableTokens = makeTokensItems(studioCtx.site.styleTokens).map(
+      (t) => t.key
+    );
+
     return (
       <MultiAssetsActions
         type="token"
+        selectableAssets={selectableTokens}
         onDelete={async (selected: string[]) => {
           const tokens = studioCtx.site.styleTokens.filter((t) =>
             selected.includes(t.uuid)
@@ -262,14 +267,13 @@ const LeftGeneralTokensPanel = observer(function LeftGeneralTokensPanel() {
           }
 
           await studioCtx.change(({ success }) => {
-            tokensUsages.forEach(({ usages, token }) => {
-              usages[0].forEach((usage) => {
+            tokens.forEach((token) => {
+              const [usages, _] = extractTokenUsages(studioCtx.site, token);
+              usages.forEach((usage) => {
                 changeTokenUsage(studioCtx.site, token, usage, "inline");
               });
+              removeFromArray(studioCtx.site.styleTokens, token);
             });
-            tokens.forEach((token) =>
-              removeFromArray(studioCtx.site.styleTokens, token)
-            );
             return success();
           });
 
