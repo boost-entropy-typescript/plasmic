@@ -284,6 +284,7 @@ import { addEmptyQuery } from "@/wab/shared/TplMgr";
 import {
   getLeftTabPermission,
   LeftTabKey,
+  LeftTabUiKey,
   LEFT_TAB_PANEL_KEYS,
   mergeUiConfigs,
   UiConfig,
@@ -749,6 +750,42 @@ export class StudioCtx extends WithDbCtx {
         },
         { name: "StudioCtx.updateFocusPreference" }
       ),
+      ...(this.appCtx.appConfig.incrementalObservables
+        ? [
+            autorun(
+              () => {
+                const currentArena = this.currentArena;
+                if (!currentArena) {
+                  return;
+                }
+                console.log("running currentArena change", currentArena);
+                const componentsToObserve = isDedicatedArena(currentArena)
+                  ? [currentArena.component]
+                  : currentArena.children.map(
+                      (child) => child.container.component
+                    );
+                this.dbCtx().maybeObserveComponents(componentsToObserve);
+              },
+              { name: "StudioCtx.observeCurrentArena" }
+            ),
+            autorun(
+              () => {
+                const currentViewCtxComponent =
+                  this.focusedViewCtx()?.currentComponent();
+                if (!currentViewCtxComponent) {
+                  return;
+                }
+                console.log(
+                  "running viewCtx component change",
+                  currentViewCtxComponent
+                );
+                const componentsToObserve = [currentViewCtxComponent];
+                this.dbCtx().maybeObserveComponents(componentsToObserve);
+              },
+              { name: "StudioCtx.observeCurrentViewCtx" }
+            ),
+          ]
+        : []),
       autorun(() => {
         if (!isHostLessPackage(this.site)) {
           this.updatePkgsList(usedHostLessPkgs(this.site));
@@ -1115,6 +1152,29 @@ export class StudioCtx extends WithDbCtx {
   }
 
   async change<E = never, Result = void>(
+    f: (args: FailableArgParams<Result, E>) => IFailable<Result, E>,
+    opts: StudioChangeOpts = {}
+  ): Promise<IFailable<Result, E>> {
+    return this._change(f, opts);
+  }
+
+  /**
+   * Observes a list of component before applying the changes
+   */
+  async changeObserved<E = never, Result = void>(
+    c: () => Component[],
+    f: (args: FailableArgParams<Result, E>) => IFailable<Result, E>,
+    opts: StudioChangeOpts = {}
+  ): Promise<IFailable<Result, E>> {
+    if (!this.appCtx.appConfig.incrementalObservables) {
+      return this._change(f, opts);
+    }
+    const changedComponents = c();
+    this.dbCtx().maybeObserveComponents(changedComponents);
+    return this._change(f, opts);
+  }
+
+  async _change<E = never, Result = void>(
     f: (args: FailableArgParams<Result, E>) => IFailable<Result, E>,
     opts: StudioChangeOpts = {}
   ): Promise<IFailable<Result, E>> {
@@ -2697,7 +2757,7 @@ export class StudioCtx extends WithDbCtx {
     }
   }
 
-  getLeftTabPermission(tab: LeftTabKey) {
+  getLeftTabPermission(tab: LeftTabUiKey) {
     return getLeftTabPermission(this.getCurrentUiConfig(), tab, {
       isContentCreator: this.contentEditorMode,
     });
