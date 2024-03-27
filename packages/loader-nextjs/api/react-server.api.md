@@ -4,12 +4,48 @@
 
 ```ts
 
+/// <reference types="node" />
+/// <reference types="react" />
+
+import { CodeComponentMeta } from '@plasmicapp/loader-react';
+import { ComponentLookupSpec } from '@plasmicapp/loader-react';
 import { ComponentMeta } from '@plasmicapp/loader-react/react-server-conditional';
 import { ComponentRenderData } from '@plasmicapp/loader-react/react-server-conditional';
+import { DataCtxReader } from '@plasmicapp/loader-react';
+import { DataProvider } from '@plasmicapp/loader-react';
+import { extractPlasmicQueryData } from '@plasmicapp/loader-react';
+import { FetchComponentDataOpts as FetchComponentDataOpts_2 } from '@plasmicapp/loader-react';
+import { GlobalActionsContext } from '@plasmicapp/loader-react';
+import { GlobalActionsProvider } from '@plasmicapp/loader-react';
+import { IncomingMessage } from 'http';
 import { InitOptions } from '@plasmicapp/loader-react/react-server-conditional';
+import { InternalPlasmicComponentLoader } from '@plasmicapp/loader-react/react-server';
+import { InternalPlasmicComponentLoader as InternalPlasmicComponentLoader_2 } from '@plasmicapp/loader-react';
 import { PageMeta } from '@plasmicapp/loader-react/react-server-conditional';
 import { PageMetadata } from '@plasmicapp/loader-react/react-server-conditional';
-import { ReactServerPlasmicComponentLoader } from '@plasmicapp/loader-react/react-server';
+import { PageParamsProvider } from '@plasmicapp/loader-react';
+import { PlasmicCanvasContext } from '@plasmicapp/loader-react';
+import { PlasmicCanvasHost } from '@plasmicapp/loader-react';
+import { PlasmicComponent } from '@plasmicapp/loader-react';
+import { PlasmicComponentLoader } from '@plasmicapp/loader-react/react-server';
+import { PlasmicComponentLoader as PlasmicComponentLoader_2 } from '@plasmicapp/loader-react';
+import { plasmicPrepass } from '@plasmicapp/loader-react';
+import { PlasmicRootProvider as PlasmicRootProvider_2 } from '@plasmicapp/loader-react';
+import { PlasmicTranslator } from '@plasmicapp/loader-react';
+import { PropType } from '@plasmicapp/loader-react';
+import * as React_2 from 'react';
+import { repeatedElement } from '@plasmicapp/loader-react';
+import { ServerResponse } from 'http';
+import { TokenRegistration } from '@plasmicapp/loader-react';
+import { useDataEnv } from '@plasmicapp/loader-react';
+import { usePlasmicCanvasContext } from '@plasmicapp/loader-react';
+import { usePlasmicComponent } from '@plasmicapp/loader-react';
+import { usePlasmicQueryData } from '@plasmicapp/loader-react';
+import { useSelector } from '@plasmicapp/loader-react';
+import { useSelectors } from '@plasmicapp/loader-react';
+
+// @public (undocumented)
+export const __EXPERMIENTAL__extractPlasmicQueryData: (element: React.ReactElement, loader: ClientExports.NextJsPlasmicComponentLoader) => Promise<Record<string, any>>;
 
 export { ComponentMeta }
 
@@ -18,7 +54,7 @@ export { ComponentRenderData }
 export { InitOptions }
 
 // @public (undocumented)
-export function initPlasmicLoader(opts: NextInitOptions): ReactServerPlasmicComponentLoader;
+export function initPlasmicLoader(opts: NextInitOptions): NextJsPlasmicComponentLoader;
 
 // @public (undocumented)
 export interface NextInitOptions extends InitOptions {
@@ -30,6 +66,18 @@ export interface NextInitOptions extends InitOptions {
         useRouter: unknown;
         useSearchParams: unknown;
     };
+}
+
+// @public (undocumented)
+export class NextJsPlasmicComponentLoader extends PlasmicComponentLoader {
+    constructor(internal: InternalPlasmicComponentLoader);
+    // (undocumented)
+    getActiveVariation(opts: {
+        req?: ServerRequest;
+        res?: ServerResponse;
+        known?: Record<string, string>;
+        traits: Record<string, string | number | boolean>;
+    }): Promise<Record<string, string>>;
 }
 
 export { PageMeta }
