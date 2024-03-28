@@ -1,6 +1,12 @@
 import { defineConfig } from "@rsbuild/core";
 import { pluginReact } from "@rsbuild/plugin-react";
-import { CopyRspackPlugin, DefinePlugin, ProvidePlugin } from "@rspack/core";
+import {
+  Compiler,
+  CopyRspackPlugin,
+  DefinePlugin,
+  ProvidePlugin,
+  RspackPluginInstance,
+} from "@rspack/core";
 import { execSync } from "child_process";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import MonacoWebpackPlugin from "monaco-editor-webpack-plugin";
@@ -9,8 +15,9 @@ import { StudioHtmlPlugin } from "./tools/studio-html-plugin";
 
 const commitHash = execSync("git rev-parse HEAD").toString().slice(0, 6);
 const buildEnv = process.env.NODE_ENV ?? "production";
-const publicUrl =
-  buildEnv === "development" ? process.env.PUBLIC_URL : homepage;
+const publicUrl: string =
+  buildEnv === "development" ? (process.env.PUBLIC_URL as string) : homepage;
+const isProd = buildEnv === "production";
 const port = process.env.PORT ? +process.env.PORT : 3003;
 const backendPort = process.env.BACKEND_PORT || 3004;
 
@@ -21,6 +28,48 @@ console.log(`Starting rsbuild...
 - port: ${port}
 - backendPort: ${backendPort}
 `);
+
+/**
+ * rspack when concatenating css files doesn't properly move @import
+ * statements to the top of the file. This is a workaround for that.
+ *
+ * See https://github.com/web-infra-dev/rsbuild/issues/1912
+ */
+class FixCssImports implements RspackPluginInstance {
+  apply(compiler: Compiler) {
+    const fixCssImports = (css: string) => {
+      const re = /@import\s*(url\()?"[^"]*"\)?;/g;
+      const matches = Array.from(css.matchAll(re)).map((m) => m[0]);
+      if (matches.length > 0) {
+        css = css.replaceAll(re, "");
+        css = `${matches.join("")}${css}`;
+      }
+      return css;
+    };
+
+    compiler.hooks.compilation.tap("FixCssImports", (compilation) => {
+      compilation.hooks.processAssets.tapAsync(
+        {
+          name: "FixCssImports",
+          stage: compiler.webpack.Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE,
+        },
+        (assets, callback) => {
+          Object.keys(assets).forEach((filePath) => {
+            if (filePath.endsWith(".css")) {
+              const css = assets[filePath].source().toString();
+              const fixedCss = fixCssImports(css);
+              assets[filePath] = {
+                source: () => fixedCss,
+                size: () => fixedCss.length,
+              };
+            }
+          });
+          callback();
+        }
+      );
+    });
+  }
+}
 
 export default defineConfig({
   dev: {
@@ -39,6 +88,10 @@ export default defineConfig({
       root: "build",
     },
     charset: "utf8",
+    sourceMap: {
+      js: isProd ? "source-map" : "cheap-module-source-map",
+      css: true,
+    },
   },
   plugins: [pluginReact()],
   tools: {
@@ -82,6 +135,7 @@ export default defineConfig({
             },
           ],
         }),
+        new FixCssImports(),
         new HtmlWebpackPlugin({
           template: "../sub/public/static/host.html",
           filename: `static/host.html`,
