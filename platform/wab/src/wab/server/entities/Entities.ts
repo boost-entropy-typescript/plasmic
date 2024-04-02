@@ -48,6 +48,7 @@ import { IsEmail, IsJSON, IsOptional, validateOrReject } from "class-validator";
 import { ISession } from "connect-typeorm";
 import Cryptr from "cryptr";
 import _ from "lodash";
+import type { Opaque } from "type-fest";
 import {
   BeforeInsert,
   BeforeUpdate,
@@ -62,7 +63,6 @@ import {
   PrimaryColumn,
   Unique,
 } from "typeorm";
-import type { Brand } from "utility-types";
 
 function normalizeJson(x, mapping = { model: "json" }) {
   return _(x)
@@ -96,7 +96,7 @@ export class ExpressSession implements ISession {
 
 export abstract class Base<IdTag> {
   @PrimaryColumn({ type: "text" })
-  id: Brand<string, IdTag>;
+  id: Opaque<string, IdTag>;
 
   @Column("timestamptz") createdAt: Date;
   @Column("timestamptz") updatedAt: Date;
@@ -380,6 +380,10 @@ export class ProjectRevision extends Base<"ProjectRevisionId"> {
   data: string;
 
   @Column("integer") revision: number;
+
+  @Column("integer", { nullable: true })
+  @Index()
+  dataLength?: number | null;
 }
 
 @Entity()
@@ -599,6 +603,10 @@ export class PkgVersion extends Base<"PkgVersionId"> {
   @IsJSON()
   model: string;
 
+  @Column("integer", { nullable: true })
+  @Index()
+  modelLength?: number | null;
+
   @Column("text", { nullable: true })
   hostUrl: string | null;
 
@@ -756,7 +764,7 @@ export class TemporaryTeamApiToken extends Base<"TemporaryTeamApiTokenId"> {
   token: string;
 }
 
-export type PermissionId = Brand<string, "PermissionId">;
+export type PermissionId = Opaque<string, "PermissionId">;
 
 @Entity()
 @Check(`("userId" is not null) <> ("email" is not null)`)
@@ -1064,7 +1072,7 @@ export interface HostingHit {
   hit: boolean;
 }
 
-export type GenericKeyValueId = Brand<string, "GenericKeyValueId">;
+export type GenericKeyValueId = Opaque<string, "GenericKeyValueId">;
 
 @Entity()
 @Index(["namespace", "key"])
