@@ -212,6 +212,7 @@ import {
   getReferencedVariantGroups,
   hasStyleVariant,
   isActiveVariantSetting,
+  isArbitraryCssSelector,
   isBaseRuleVariant,
   isBaseVariant,
   isGlobalVariant,
@@ -1512,7 +1513,10 @@ export function nodeJsName(component: Component, node: TplNode) {
 export function shouldGenReactHook(vs: VariantSetting, _component: Component) {
   // Get all the triggerable StyleVariants from vs.variants
   const svs = vs.variants.filter(
-    (v) => isStyleVariant(v) && getTriggerableSelectors(v).length > 0
+    (v) =>
+      isStyleVariant(v) &&
+      !isArbitraryCssSelector(v) &&
+      getTriggerableSelectors(v).length > 0
   );
   if (svs.length === 0) {
     return false;
@@ -1977,6 +1981,14 @@ function serializeRenderFunc(
     `;
   }
 
+  const serializedArgs = serializeArgsDefaultValues(ctx);
+
+  const argsDependencyArray =
+    serializedArgs.includes("$translator") &&
+    ctx.projectFlags.usePlasmicTranslation
+      ? `[props.args, $translator]`
+      : `[props.args]`;
+
   return `
     function ${makeRenderFuncName(component)}(
       props: {
@@ -1998,10 +2010,14 @@ function serializeRenderFunc(
       }
       const {variants, overrides, forNode } = props;
 
-      const args = React.useMemo(() => Object.assign(${serializeArgsDefaultValues(
-        ctx
-      )}, props.args),
-        [props.args]
+      ${
+        ctx.projectFlags.usePlasmicTranslation
+          ? `const $translator = usePlasmicTranslator?.();`
+          : ""
+      }
+
+      const args = React.useMemo(() => Object.assign(${serializedArgs}, props.args),
+        ${argsDependencyArray}
       );
 
       ${serializeComponentLocalVars(ctx)}
@@ -2032,11 +2048,6 @@ export function serializeComponentLocalVars(ctx: SerializerBaseContext) {
       ...variants,
     };
 
-    ${
-      ctx.projectFlags.usePlasmicTranslation
-        ? `const $translator = usePlasmicTranslator?.();`
-        : ""
-    }
     ${
       ctx.exportOpts.platform === "nextjs"
         ? `const __nextRouter = useNextRouter();`

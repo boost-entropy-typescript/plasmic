@@ -16,7 +16,6 @@ import {
   AddCommentReactionRequest,
   AddCommentReactionResponse,
   AddFeatureTierResponse,
-  AddToWhitelistRequest,
   ApiAnalyticsImpressionResponse,
   ApiAnalyticsProjectMeta,
   ApiAnalyticsQueryType,
@@ -99,7 +98,6 @@ import {
   GetProjectResponse,
   GetSubscriptionResponse,
   GetTeamResponse,
-  GetWhitelistResponse,
   GetWorkspaceResponse,
   GitActionParams,
   GitBranchesResponse,
@@ -112,8 +110,6 @@ import {
   GrantRevokeResponse,
   ImageUploadRequest,
   ImageUploadResponse,
-  InviteRequest,
-  InviteResponse,
   JoinTeamRequest,
   JoinTeamResponse,
   ListAuthIntegrationsResponse,
@@ -122,7 +118,6 @@ import {
   ListDataSourceBasesResponse,
   ListDataSourcesResponse,
   ListFeatureTiersResponse,
-  ListInviteRequestsResponse,
   ListProjectsResponse,
   ListTeamProjectsResponse,
   ListTeamsResponse,
@@ -153,13 +148,13 @@ import {
   QueryCopilotFeedbackResponse,
   QueryCopilotRequest,
   QueryCopilotResponse,
-  RemoveWhitelistRequest,
   ResetPasswordRequest,
   ResetPasswordResponse,
   RevalidatePlasmicHostingRequest,
   RevalidatePlasmicHostingResponse,
   SelfResponse,
   SendCopilotFeedbackRequest,
+  SendEmailsResponse,
   SendEmailVerificationRequest,
   SendEmailVerificationResponse,
   SetCustomDomainForProjectRequest,
@@ -1044,8 +1039,16 @@ export abstract class SharedApi {
     return this.post(`/admin/reset-team-trial`, { teamId });
   }
 
-  async listTeamsForUser(userId: string): Promise<ListTeamsResponse> {
-    return this.post(`/admin/teams`, { userId });
+  async adminListTeams(
+    data:
+      | {
+          userId: string;
+        }
+      | {
+          featureTierIds: string[];
+        }
+  ): Promise<ListTeamsResponse> {
+    return this.post(`/admin/teams`, data);
   }
 
   async getTeamDiscourseInfo(teamId: TeamId): Promise<ApiTeamDiscourseInfo> {
@@ -1057,6 +1060,12 @@ export abstract class SharedApi {
     data: { slug: string; name: string }
   ): Promise<ApiTeamDiscourseInfo> {
     return this.put(`/admin/teams/${teamId}/sync-discourse-info`, data);
+  }
+
+  async sendTeamSupportWelcomeEmail(
+    teamId: TeamId
+  ): Promise<SendEmailsResponse> {
+    return this.post(`/admin/teams/${teamId}/send-support-welcome-email`);
   }
 
   async listProjectsForOwner(ownerId: string): Promise<ListProjectsResponse> {
@@ -1194,28 +1203,8 @@ export abstract class SharedApi {
     return await this.post(`/admin/reset-tutorial-db`, { sourceId });
   }
 
-  async listInviteRequests(): Promise<ListInviteRequestsResponse> {
-    return this.get(`/admin/invite-requests`);
-  }
-
-  async getWhitelist(): Promise<GetWhitelistResponse> {
-    return this.get(`/admin/whitelist`);
-  }
-
-  async addToWhitelist(args: AddToWhitelistRequest) {
-    await this.post("/admin/whitelist", args);
-  }
-
-  async removeWhitelist(args: RemoveWhitelistRequest) {
-    await this.delete("/admin/whitelist", args);
-  }
-
   async adminLoginAs(args: { email: string }): Promise<LoginResponse> {
     return this.post("/admin/login-as", args);
-  }
-
-  async invite(args: InviteRequest): Promise<InviteResponse> {
-    return this.post("/admin/invite", args);
   }
 
   async getDevFlagOverrides(): Promise<GetDevFlagOverridesResponse> {

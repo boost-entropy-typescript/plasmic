@@ -112,11 +112,6 @@ export interface ApiEntityBase<IdType extends string = string> {
   deletedById: string | null;
 }
 
-export interface ApiInviteRequest extends ApiEntityBase {
-  inviteeEmail: string;
-  projectId: string;
-}
-
 export interface ApiUser extends ApiEntityBase {
   id: UserId;
   email: string;
@@ -280,6 +275,7 @@ export enum PublicStyleSection {
   HTMLAttributes = "htmlAttributes",
   ElementStates = "elementStates",
   Mixins = "mixins",
+  ArbitrayCssSelectors = "arbitraryCssSelectors",
 
   // component-level features
   States = "states",
@@ -685,14 +681,6 @@ export interface UpdatePlayerViewRequest {
   position: PlayerPositionInfo | null;
 }
 
-export type AddToWhitelistRequest = { email: string } | { domain: string };
-export type RemoveWhitelistRequest = AddToWhitelistRequest;
-
-export interface GetWhitelistResponse {
-  emails: string[];
-  domains: string[];
-}
-
 export interface ListUsersResponse {
   users: ApiUser[];
 }
@@ -880,18 +868,6 @@ export type TryMergeResponse = MergeResult;
 export interface UpdateBranchRequest {
   name: string;
   hostUrl?: string;
-}
-
-export interface ListInviteRequestsResponse {
-  requests: ApiInviteRequest[];
-}
-
-export interface InviteRequest {
-  emails: string[];
-}
-
-export interface InviteResponse {
-  skippedEmails: string[];
 }
 
 export interface GetDevFlagOverridesResponse {
@@ -2041,4 +2017,9 @@ export type ProcessSvgResponse =
 export interface ApiTeamSupportUrls {
   publicSupportUrl: string;
   privateSupportUrl?: string;
+}
+
+export interface SendEmailsResponse {
+  sent: string[];
+  failed: string[];
 }

@@ -1,14 +1,14 @@
 import { useNonAuthCtx } from "@/wab/client/app-ctx";
 import { useAdminCtx } from "@/wab/client/components/pages/admin/AdminCtx";
-import {
-  useAsyncFnStrict,
-  useAsyncStrict,
-} from "@/wab/client/hooks/useAsyncStrict";
-import EyeIcon from "@/wab/client/plasmic/plasmic_kit/PlasmicIcon__Eye";
+import { AdminUserTable } from "@/wab/client/components/pages/admin/AdminUserTable";
+import { PublicLink } from "@/wab/client/components/PublicLink";
+import { useAsyncStrict } from "@/wab/client/hooks/useAsyncStrict";
+import { notNil } from "@/wab/common";
 import {
   ApiPermission,
   ApiTeam,
   ApiTeamDiscourseInfo,
+  ApiUser,
   TeamWhiteLabelInfo,
 } from "@/wab/shared/ApiSchema";
 import {
@@ -25,17 +25,20 @@ import {
   notification,
   Select,
   Table,
+  Tabs,
 } from "antd";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { AutoInfo, smartRender } from "./admin-util";
 import { AdminUserSelect } from "./AdminUserSelect";
 
 export function AdminTeamsView() {
   const { teamId, navigate } = useAdminCtx();
   const nonAuthCtx = useNonAuthCtx();
-  const [shouldRefetch, setShouldRefetch] = useState({});
-  const refetch = useCallback(() => setShouldRefetch({}), [setShouldRefetch]);
-  const { loading, value: data } = useAsyncStrict(async () => {
+  const {
+    loading,
+    value: data,
+    retry: refetch,
+  } = useAsyncStrict(async () => {
     if (!teamId) {
       return undefined;
     }
@@ -48,10 +51,23 @@ export function AdminTeamsView() {
       ...teamAndPerms,
       discourseInfo,
     };
-  }, [nonAuthCtx, teamId, shouldRefetch]);
+  }, [nonAuthCtx, teamId]);
   return (
     <>
-      <TeamLookup />
+      <Tabs
+        items={[
+          {
+            key: "paying",
+            label: "Paying teams",
+            children: <PayingTeamsView />,
+          },
+          {
+            key: "user",
+            label: "Lookup team by user",
+            children: <TeamLookupByUser />,
+          },
+        ]}
+      />
       {teamId && (
         <Card
           title={
@@ -85,70 +101,169 @@ export function AdminTeamsView() {
   );
 }
 
-function TeamLookup() {
+function TeamLookupByUser() {
   const nonAuthCtx = useNonAuthCtx();
-  const adminCtx = useAdminCtx();
   const [userId, setUserId] = useState<string | undefined>(undefined);
-  const [teamsResp, fetchTeams] = useAsyncFnStrict(
+  const listTeams = useAsyncStrict(
     async () =>
-      userId ? await nonAuthCtx.api.listTeamsForUser(userId) : undefined,
+      userId ? await nonAuthCtx.api.adminListTeams({ userId }) : undefined,
     [nonAuthCtx, userId]
   );
-  useAsyncStrict(fetchTeams, [nonAuthCtx, userId]);
 
   return (
     <>
       <h2>Lookup teams for user</h2>
       <AdminUserSelect onChange={(val) => setUserId(val)} />
-      <Table<ApiTeam>
-        dataSource={teamsResp.value?.teams ?? []}
-        rowKey="id"
-        columns={[
-          {
-            title: "Team",
-            dataIndex: "name",
-            render: smartRender,
-            sorter: (a, b) => (a.name < b.name ? -1 : 1),
-            defaultSortOrder: "ascend",
-          },
-          {
-            title: "Created at",
-            dataIndex: "createdAt",
-            render: smartRender,
-            sorter: (a, b) => (a.createdAt < b.createdAt ? -1 : 1),
-          },
-          {
-            title: "Modified at",
-            dataIndex: "updatedAt",
-            render: smartRender,
-            sorter: (a, b) => (a.updatedAt < b.updatedAt ? -1 : 1),
-          },
-          {
-            title: "Billing Email",
-            dataIndex: "billingEmail",
-            render: smartRender,
-            sorter: (a, b) => (a.billingEmail < b.billingEmail ? -1 : 1),
-          },
-          {
-            title: "Seats",
-            dataIndex: "seats",
-            render: smartRender,
-            sorter: (a, b) => (a.name < b.name ? -1 : 1),
-          },
-          {
-            title: "Users",
-            key: "users",
-            render: () => <EyeIcon />,
-          },
-        ]}
-        style={{ cursor: "pointer" }}
-        onRow={(record) => ({
-          onClick: () => {
-            adminCtx.navigate({ tab: "teams", id: record.id });
-          },
-        })}
+      <TeamTable
+        loading={listTeams.loading}
+        teams={listTeams.value?.teams ?? []}
       />
     </>
+  );
+}
+
+function PayingTeamsView() {
+  const nonAuthCtx = useNonAuthCtx();
+  const { listFeatureTiers } = useAdminCtx();
+  const listTeams = useAsyncStrict(
+    async () =>
+      listFeatureTiers.value
+        ? await nonAuthCtx.api.adminListTeams({
+            featureTierIds: listFeatureTiers.value.map((ft) => ft.id),
+          })
+        : undefined,
+    [nonAuthCtx, listFeatureTiers.value]
+  );
+
+  return (
+    <>
+      <h2>All customers</h2>
+      <TeamTable
+        loading={listTeams.loading}
+        teams={listTeams.value?.teams ?? []}
+      />
+    </>
+  );
+}
+
+function TeamTable(props: { loading: boolean; teams: ApiTeam[] }) {
+  const { navigate } = useAdminCtx();
+  return (
+    <Table<ApiTeam>
+      loading={props.loading}
+      dataSource={props.teams}
+      rowKey="id"
+      columns={[
+        {
+          title: "Team",
+          dataIndex: "name",
+          render: smartRender,
+          sorter: {
+            compare: (a, b) => (a.name < b.name ? -1 : 1),
+            multiple: 1,
+          },
+          defaultSortOrder: "ascend",
+        },
+        {
+          title: "Feature Tier",
+          key: "featureTier",
+          filters: [
+            {
+              text: "Enterprise",
+              value: "Enterprise",
+            },
+            {
+              text: "Team (Scale)",
+              value: "Team",
+            },
+            {
+              text: "Starter",
+              value: "Starter",
+            },
+            {
+              text: "Free",
+              value: "Free",
+            },
+          ],
+          onFilter: (value, team) => {
+            if (team.featureTier) {
+              return team.featureTier.name.includes(value as string);
+            } else {
+              return value === "Free";
+            }
+          },
+          render: (_value, team) => {
+            const ft = team.featureTier;
+            if (ft) {
+              return `${ft.name} ($${ft.monthlyBasePrice}/mo)`;
+            } else {
+              return "Free";
+            }
+          },
+          sorter: {
+            compare: (a, b) => {
+              const aft = a.featureTier;
+              const bft = b.featureTier;
+
+              if (aft === bft) {
+                return 0;
+              } else if (aft === null) {
+                return -1;
+              } else if (bft === null) {
+                return 1;
+              } else if (
+                aft.name === "Enterprise" &&
+                bft.name !== "Enterprise"
+              ) {
+                return 1;
+              } else if (
+                aft.name !== "Enterprise" &&
+                bft.name === "Enterprise"
+              ) {
+                return -1;
+              } else {
+                return (
+                  (a.featureTier?.monthlyBasePrice ?? 0) -
+                  (b.featureTier?.monthlyBasePrice ?? 0)
+                );
+              }
+            },
+            multiple: 2,
+          },
+          defaultSortOrder: "descend",
+        },
+        {
+          title: "Seats",
+          dataIndex: "seats",
+          render: smartRender,
+          sorter: (a, b) => (a.seats ?? 0) - (b.seats ?? 0),
+        },
+        {
+          title: "Billing Email",
+          dataIndex: "billingEmail",
+          render: smartRender,
+          sorter: (a, b) => a.billingEmail.localeCompare(b.billingEmail),
+        },
+        {
+          title: "Created at",
+          dataIndex: "createdAt",
+          render: smartRender,
+          sorter: (a, b) => (a.createdAt < b.createdAt ? -1 : 1),
+        },
+        {
+          title: "Modified at",
+          dataIndex: "updatedAt",
+          render: smartRender,
+          sorter: (a, b) => (a.updatedAt < b.updatedAt ? -1 : 1),
+        },
+      ]}
+      style={{ cursor: "pointer" }}
+      onRow={(record) => ({
+        onClick: () => {
+          navigate({ tab: "teams", id: record.id });
+        },
+      })}
+    />
   );
 }
 
@@ -162,101 +277,92 @@ interface TeamProps {
 function TeamDetail(props: TeamProps) {
   return (
     <div className="flex-col gap-xlg">
-      <div>
-        <h2>Actions</h2>
-        <div className="flex-row gap-m">
-          <UpgradePersonalTeam {...props} />
-          <ResetTeamTrial {...props} />
-          <ConfigureSso {...props} />
-          <GenerateTeamApiToken {...props} />
-        </div>
-      </div>
-      <div>
-        <h2>White Label</h2>
-        <div className="flex-row gap-m">
-          <UpdateWhiteLabelName {...props} />
-          <UpdateWhiteLabelJwt {...props} />
-          <UpdateWhiteLabelTeamClientCredentials {...props} />
-        </div>
-      </div>
+      <Tabs
+        items={[
+          {
+            key: "links",
+            label: "Quick Links",
+            children: <QuickLinks {...props} />,
+          },
+          {
+            key: "actions",
+            label: "Actions",
+            children: <Actions {...props} />,
+          },
+          {
+            key: "members",
+            label: "Members",
+            children: <Members {...props} />,
+          },
+          {
+            key: "discourse",
+            label: "Discourse",
+            children: <TeamDiscourseInfo {...props} />,
+          },
+          {
+            key: "white-label",
+            label: "White-label",
+            children: <WhiteLabel {...props} />,
+          },
+        ]}
+      />
       <div>
         <h2>Info</h2>
         <AutoInfo info={props.team} />
       </div>
-      <div>
-        <h2>Members</h2>
-        <Members {...props} />
-      </div>
-      <div>
-        <h2>Discourse Info</h2>
-        <div className="flex-col gap-m">
-          {props.discourseInfo ? (
-            <div className="flex-row gap-m">
-              <Button
-                href={`${BASE_URL}/c/${props.discourseInfo.categoryId}`}
-                target="_blank"
-              >
-                Discourse Support Category
-              </Button>
-              <Button
-                href={`${BASE_URL}/g/${props.discourseInfo.slug}`}
-                target="_blank"
-              >
-                Discourse Group
-              </Button>
-              <div>Use the form below to update the org's slug or name.</div>
-            </div>
-          ) : (
-            <div>
-              This org doesn't currently have a private Discourse support
-              category. They will be directed to the{" "}
-              <a
-                href={`${BASE_URL}/c/${PUBLIC_SUPPORT_CATEGORY_ID}`}
-                target="_blank"
-              >
-                public Discourse support category
-              </a>{" "}
-              instead. Use the form below to create a private Discourse support
-              category. It will only succeed if the org has a valid feature
-              tier.
-            </div>
-          )}
-          <TeamDiscourseInfoForm
-            team={props.team}
-            discourseInfo={props.discourseInfo}
-            refetch={props.refetch}
-          />
-        </div>
-      </div>
+    </div>
+  );
+}
+
+function QuickLinks({ team }: TeamProps) {
+  const links = [
+    `https://studio.plasmic.app/orgs/${team.id}`,
+    `https://studio.plasmic.app/orgs/${team.id}/settings`,
+    `https://studio.plasmic.app/orgs/${team.id}/support`,
+    team.stripeCustomerId &&
+      `https://dashboard.stripe.com/customers/${team.stripeCustomerId}`,
+    team.stripeSubscriptionId &&
+      `https://dashboard.stripe.com/subscriptions/${team.stripeSubscriptionId}`,
+  ].filter(notNil);
+  return (
+    <div className="flex-col gap-m">
+      {links.map((link) => (
+        <PublicLink href={link} target="_blank">
+          {link}
+        </PublicLink>
+      ))}
+    </div>
+  );
+}
+
+function Actions(props: TeamProps) {
+  return (
+    <div className="flex-row gap-m">
+      <UpgradePersonalTeam {...props} />
+      <ResetTeamTrial {...props} />
+      <ConfigureSso {...props} />
+      <GenerateTeamApiToken {...props} />
     </div>
   );
 }
 
 function Members({ team, perms, refetch }: TeamProps) {
   const nonAuthCtx = useNonAuthCtx();
-  const getEmail = (perm: ApiPermission) => perm.user?.email ?? perm.email;
+
+  // Each permission should already have a user,
+  // but need to check and make the types happy.
+  const items = useMemo(
+    () =>
+      perms.filter((perm) => {
+        return !!perm.user;
+      }),
+    [perms]
+  ) as (ApiPermission & { user: ApiUser })[];
+
   return (
-    <Table<ApiPermission>
-      dataSource={perms}
-      rowKey="id"
-      columns={[
-        {
-          title: "Email",
-          key: "email",
-          render: (_value, perm) => getEmail(perm),
-          sorter: {
-            compare: (a, b) =>
-              (getEmail(a) ?? "") < (getEmail(b) ?? "") ? -1 : 1,
-            multiple: 2,
-          },
-          defaultSortOrder: "ascend",
-        },
-        {
-          title: "isUser",
-          key: "isUser",
-          render: (_value, perm) => `${!!perm.user}`,
-          sorter: (a, b) => (!!a.user < !!b.user ? -1 : 1),
-        },
+    <AdminUserTable<ApiPermission & { user: ApiUser }>
+      items={items}
+      extraColumns={[
         {
           title: "Access Level",
           dataIndex: "accessLevel",
@@ -455,6 +561,16 @@ function GenerateTeamApiToken({ team, refetch }: TeamProps) {
   );
 }
 
+function WhiteLabel(props: TeamProps) {
+  return (
+    <div className="flex-row gap-m">
+      <UpdateWhiteLabelName {...props} />
+      <UpdateWhiteLabelJwt {...props} />
+      <UpdateWhiteLabelTeamClientCredentials {...props} />
+    </div>
+  );
+}
+
 function UpdateWhiteLabelName({ team, refetch }: TeamProps) {
   const nonAuthCtx = useNonAuthCtx();
   return (
@@ -637,6 +753,74 @@ function UpdateWhiteLabelTeamClientCredentials({ team, refetch }: TeamProps) {
   );
 }
 
+function TeamDiscourseInfo(props: TeamProps) {
+  const nonAuthCtx = useNonAuthCtx();
+  return (
+    <div className="flex-col gap-m">
+      {props.discourseInfo ? (
+        <div>
+          This org has a private Discourse support{" "}
+          <PublicLink
+            href={`${BASE_URL}/c/${props.discourseInfo.categoryId}`}
+            target="_blank"
+          >
+            category
+          </PublicLink>{" "}
+          and{" "}
+          <PublicLink
+            href={`${BASE_URL}/g/${props.discourseInfo.slug}`}
+            target="_blank"
+          >
+            group
+          </PublicLink>
+          . Use the form below to update the org's slug or name.
+          <Button
+            onClick={async () => {
+              console.log(
+                `Sending support welcome email to members of team ${props.team.name}`
+              );
+              const { sent, failed } =
+                await nonAuthCtx.api.sendTeamSupportWelcomeEmail(props.team.id);
+              console.log(`Sent:`, sent);
+              console.log(`Failed:`, failed);
+
+              if (failed.length > 0) {
+                notification.error({
+                  message: `Sent ${sent.length} emails, failed to send ${failed.length} emails (see console logs for emails)`,
+                });
+              } else {
+                notification.success({
+                  message: `Sent ${sent.length} emails (see console logs for emails)`,
+                });
+              }
+            }}
+          >
+            Send support welcome email
+          </Button>
+        </div>
+      ) : (
+        <div>
+          This org doesn't currently have a private Discourse support category.
+          They will be directed to the{" "}
+          <a
+            href={`${BASE_URL}/c/${PUBLIC_SUPPORT_CATEGORY_ID}`}
+            target="_blank"
+          >
+            public Discourse support category
+          </a>{" "}
+          instead. Use the form below to create a private Discourse support
+          category. It will only succeed if the org has a valid feature tier.
+        </div>
+      )}
+      <TeamDiscourseInfoForm
+        team={props.team}
+        discourseInfo={props.discourseInfo}
+        refetch={props.refetch}
+      />
+    </div>
+  );
+}
+
 function TeamDiscourseInfoForm({
   team,
   discourseInfo,
@@ -671,6 +855,9 @@ function TeamDiscourseInfoForm({
         );
         await nonAuthCtx.api.syncTeamDiscourseInfo(team.id, values);
         console.log(`Sync success`);
+        notification.success({
+          message: `Discourse info synced. Send a support welcome email when ready.`,
+        });
         await refetch();
       }}
     >

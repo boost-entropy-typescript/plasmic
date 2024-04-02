@@ -15,12 +15,9 @@ import {
   PwnedPasswordError,
   WeakPasswordError,
 } from "@/wab/server/db/DbMgr";
-import {
-  sendBlockedSignupAdminEmail,
-  sendEmailVerificationToUser,
-  sendResetPasswordEmail,
-  sendWelcomeEmail,
-} from "@/wab/server/emails/Emails";
+import { sendResetPasswordEmail } from "@/wab/server/emails/reset-password-email";
+import { sendEmailVerificationToUser } from "@/wab/server/emails/verification-email";
+import { sendWelcomeEmail } from "@/wab/server/emails/welcome-email";
 import { OauthTokenProvider, User } from "@/wab/server/entities/Entities";
 import "@/wab/server/extensions";
 import {
@@ -36,6 +33,7 @@ import {
   ConfirmEmailRequest,
   ConfirmEmailResponse,
   ForgotPasswordResponse,
+  GetEmailVerificationTokenRequest,
   GetEmailVerificationTokenResponse,
   ListAuthIntegrationsResponse,
   LoginResponse,
@@ -135,13 +133,6 @@ export async function createUserFull({
     authorizationPath: string;
   };
 }) {
-  if (!req.devflags.allowAllSignups) {
-    const whitelisted = await mgr.isUserWhitelisted(email);
-    if (!whitelisted) {
-      await sendBlockedSignupAdminEmail(req, email, firstName, lastName);
-      return undefined;
-    }
-  }
   const signUpPromotionCode = getPromotionCodeCookie(req);
   const user = await mgr.createUser({
     email,
@@ -160,7 +151,7 @@ export async function createUserFull({
 
   const emailVerificationToken = password
     ? await mgr.createEmailVerificationForUser(user)
-    : "";
+    : null;
 
   if (!noWelcomeEmailAndSurvey) {
     if (!appInfo) {
@@ -171,7 +162,7 @@ export async function createUserFull({
       await sendEmailVerificationToUser(
         req,
         email,
-        emailVerificationToken,
+        emailVerificationToken ?? "",
         appInfo.authorizationPath,
         appInfo.appName
       );
@@ -530,7 +521,7 @@ export async function getEmailVerificationToken(req: Request, res: Response) {
     throw new UnauthorizedError("Unauthorized API request.");
   }
 
-  const { email } = req.body;
+  const { email } = uncheckedCast<GetEmailVerificationTokenRequest>(req.body);
 
   const mgr = userDbMgr(req, { allowUnverifiedEmail: true });
   const user = await mgr.tryGetUserByEmail(email);
