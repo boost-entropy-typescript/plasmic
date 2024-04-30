@@ -111,6 +111,10 @@ import {
   flattenComponent,
 } from "@/wab/shared/cached-selectors";
 import {
+  isBuiltinCodeComponent,
+  isBuiltinCodeComponentImportPath,
+} from "@/wab/shared/code-components/builtin-code-components";
+import {
   paramToVarName,
   toVarName,
   validJsIdentifierChars,
@@ -180,6 +184,7 @@ import type {
   PlasmicElement,
   PropType,
   StateSpec,
+  TokenRegistration,
 } from "@plasmicapp/host";
 import type {
   CodeComponentElement,
@@ -225,10 +230,6 @@ import {
   mapMultiple,
 } from "ts-failable";
 import type { Opaque } from "type-fest";
-import {
-  isBuiltinCodeComponent,
-  isBuiltinCodeComponentImportPath,
-} from "./builtin-code-components";
 
 export type VariablePropType<P> = PropTypeBaseDefault<P, VarRef> & {
   type: "variable";
@@ -3997,13 +3998,6 @@ export function checkForCyclesInSlotsDefaultValue(ctx: SiteCtx) {
       return success();
     }
   );
-}
-
-export interface TokenRegistration {
-  name: string;
-  displayName?: string;
-  value: string;
-  type: string;
 }
 
 function registeredTypeToTokenType(type: string) {

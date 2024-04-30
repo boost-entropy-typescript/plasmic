@@ -123,6 +123,68 @@ import {
   makePictureImports,
   toReactAttr,
 } from "@/wab/shared/codegen/image-assets";
+import { optimizeGeneratedCodeForHostlessPackages } from "@/wab/shared/codegen/react-p/optimize-hostless-packages";
+import { ReactHookSpec } from "@/wab/shared/codegen/react-p/react-hook-spec";
+import {
+  defaultStyleCssFileName,
+  getExportedComponentName,
+  getHostNamedImportsForRender,
+  getHostNamedImportsForSkeleton,
+  getImportedCodeComponentHelperName,
+  getImportedComponentName,
+  getNormalizedComponentName,
+  getPlatformImportComponents,
+  getReactWebNamedImportsForRender,
+  getSkeletonModuleFileName,
+  isPageAwarePlatform,
+  makeArgPropsName,
+  makeArgsTypeName,
+  makeCodeComponentHelperSkeletonIdFileName,
+  makeComponentCssIdFileName,
+  makeComponentRenderIdFileName,
+  makeComponentSkeletonIdFileName,
+  makeCssFileName,
+  makeCssProjectFileName,
+  makeCssProjectIdFileName,
+  makeCssProjectImportName,
+  makeDefaultExternalPropsName,
+  makeDefaultInlineClassName,
+  makeDefaultStyleClassNameBase,
+  makeDefaultStyleCompWrapperClassName,
+  makeDescendantsName,
+  makeGlobalContextPropName,
+  makeGlobalContextsImport,
+  makeGlobalGroupImports,
+  makeGlobalVariantsTypeName,
+  makeImportedPictureRef,
+  makeNodeComponentName,
+  makeOverridesTypeName,
+  makePictureRefToken,
+  makePlasmicComponentName,
+  makePlasmicDefaultStylesClassName,
+  makePlasmicIsPreviewRootComponent,
+  makePlasmicMixinsClassName,
+  makePlasmicSuperContextName,
+  makePlasmicTokensClassName,
+  makePlatformImports,
+  makeRenderFuncName,
+  makeRootResetClassName,
+  makeStylesImports,
+  makeTriggerStateTypeName,
+  makeUseClient,
+  makeVariantMembersTypeName,
+  makeVariantPropsName,
+  makeVariantsArgTypeName,
+  makeWabHtmlTextClassName,
+  makeWabInstanceClassName,
+  makeWabTextClassName,
+  maybeMakePlasmicImgSrc,
+  NodeNamer,
+  shortPlasmicPrefix,
+  wrapGlobalContexts,
+  wrapGlobalProvider,
+  wrapGlobalProviderWithCustomValue,
+} from "@/wab/shared/codegen/react-p/utils";
 import { exportActiveSplitsConfig } from "@/wab/shared/codegen/splits";
 import {
   extractUsedGlobalVariantCombosForTokens,
@@ -291,68 +353,6 @@ import { getIntegrationsUrl, getPublicUrl } from "@/wab/urls";
 import L, { groupBy, sortBy } from "lodash";
 import memoizeOne from "memoize-one";
 import type { SetRequired } from "type-fest";
-import { optimizeGeneratedCodeForHostlessPackages } from "./optimize-hostless-packages";
-import { ReactHookSpec } from "./react-hook-spec";
-import {
-  defaultStyleCssFileName,
-  getExportedComponentName,
-  getHostNamedImportsForRender,
-  getHostNamedImportsForSkeleton,
-  getImportedCodeComponentHelperName,
-  getImportedComponentName,
-  getNormalizedComponentName,
-  getPlatformImportComponents,
-  getReactWebNamedImportsForRender,
-  getSkeletonModuleFileName,
-  isPageAwarePlatform,
-  makeArgPropsName,
-  makeArgsTypeName,
-  makeCodeComponentHelperSkeletonIdFileName,
-  makeComponentCssIdFileName,
-  makeComponentRenderIdFileName,
-  makeComponentSkeletonIdFileName,
-  makeCssFileName,
-  makeCssProjectFileName,
-  makeCssProjectIdFileName,
-  makeCssProjectImportName,
-  makeDefaultExternalPropsName,
-  makeDefaultInlineClassName,
-  makeDefaultStyleClassNameBase,
-  makeDefaultStyleCompWrapperClassName,
-  makeDescendantsName,
-  makeGlobalContextPropName,
-  makeGlobalContextsImport,
-  makeGlobalGroupImports,
-  makeGlobalVariantsTypeName,
-  makeImportedPictureRef,
-  makeNodeComponentName,
-  makeOverridesTypeName,
-  makePictureRefToken,
-  makePlasmicComponentName,
-  makePlasmicDefaultStylesClassName,
-  makePlasmicIsPreviewRootComponent,
-  makePlasmicMixinsClassName,
-  makePlasmicSuperContextName,
-  makePlasmicTokensClassName,
-  makePlatformImports,
-  makeRenderFuncName,
-  makeRootResetClassName,
-  makeStylesImports,
-  makeTriggerStateTypeName,
-  makeUseClient,
-  makeVariantMembersTypeName,
-  makeVariantPropsName,
-  makeVariantsArgTypeName,
-  makeWabHtmlTextClassName,
-  makeWabInstanceClassName,
-  makeWabTextClassName,
-  maybeMakePlasmicImgSrc,
-  NodeNamer,
-  shortPlasmicPrefix,
-  wrapGlobalContexts,
-  wrapGlobalProvider,
-  wrapGlobalProviderWithCustomValue,
-} from "./utils";
 
 export const nodeNameBackwardsCompatibility = {
   textInput: "textbox",
@@ -414,7 +414,7 @@ export function exportProjectConfig(
     allImageAssets(site, { includeDeps: "all" }),
     site.activeTheme,
     {
-      useCssVariables: DEVFLAGS.variantedStyles,
+      useCssVariables: true,
     }
   );
   const rootResetClass = makeRootResetClassName(projectId, {
@@ -499,9 +499,9 @@ export function exportProjectConfig(
     cssFileName,
     cssRules: `
       ${fontsCss}
-      ${DEVFLAGS.variantedStyles ? cssTokenVarsRules : ""}
+      ${cssTokenVarsRules}
       ${layoutVarsRules}
-      ${DEVFLAGS.variantedStyles ? defaultTagStylesVarsRules : ""}
+      ${defaultTagStylesVarsRules}
       ${cssMixinPropVarsRules}
       ${
         // If we're using CSS modules, defaultcss should be generated inside
@@ -2567,11 +2567,9 @@ function serializeComponentRootResetClasses(
     );
   }
 
-  if (DEVFLAGS.variantedStyles) {
-    const tokenClassExprs = makeCssClassExprsForVariantedTokens(ctx);
-    unconditionalClassExprs.push(...tokenClassExprs.unconditionalClassExprs);
-    conditionalClassExprs.push(...tokenClassExprs.conditionalClassExprs);
-  }
+  const tokenClassExprs = makeCssClassExprsForVariantedTokens(ctx);
+  unconditionalClassExprs.push(...tokenClassExprs.unconditionalClassExprs);
+  conditionalClassExprs.push(...tokenClassExprs.conditionalClassExprs);
 
   return {
     conditionalClassExprs,
