@@ -432,6 +432,8 @@ export function cloneCodeComponentMeta(
         displayName: codeMeta.displayName,
         importName: codeMeta.importName,
         description: codeMeta.description,
+        section: codeMeta.section,
+        thumbnailUrl: codeMeta.thumbnailUrl,
         defaultStyles:
           codeMeta.defaultStyles && cloneRuleSet(codeMeta.defaultStyles),
         defaultDisplay: codeMeta.defaultDisplay,
@@ -2120,6 +2122,14 @@ export function isFrameComponent(component: Component) {
 
 export function isPlasmicComponent(component: Component) {
   return !isFrameComponent(component) && !isCodeComponent(component);
+}
+
+export function isCodeComponentWithSection(
+  component: Component
+): component is CodeComponent & {
+  codeComponentMeta: CodeComponentMeta & { section: string };
+} {
+  return isCodeComponent(component) && !!component.codeComponentMeta.section;
 }
 
 export function isReusableComponent(component: Component) {

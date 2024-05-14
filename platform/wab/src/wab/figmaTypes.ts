@@ -653,8 +653,20 @@ export interface ComponentProperties {
 
 export interface InstanceNode extends DefaultFrameMixin {
   readonly type: "INSTANCE";
-  mainComponent?: string;
+  // We have to use a string here to keep backwards compatibility with the Figma Plugin API
+  // Version <= 30 uses a string, and Version >= 31 uses a { id: string, name: string } object
+  mainComponent?:
+    | string
+    | {
+        id: string;
+        name: string;
+      };
   componentProperties?: ComponentProperties;
+  componentPropertyReferences:
+    | {
+        [nodeProperty in "visible" | "characters" | "mainComponent"]?: string;
+      }
+    | null;
   exposedInstances?: [InstanceNode];
   scaleFactor: number;
 }
