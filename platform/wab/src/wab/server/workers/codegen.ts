@@ -80,6 +80,8 @@ interface CodegenOpts {
   componentIdOrNames?: string[];
   maybeVersionOrTag?: string;
   existingChecksums?: ChecksumBundle;
+  // if we are generating code for the loader, we don't need the checksums
+  skipChecksums?: boolean;
   // indirect=true means that projectId was not directly synced, but is
   // imported by a project that was synced. It is used to avoid generating
   // pages for such projects.
@@ -119,7 +121,7 @@ export async function doGenCode(
   } = opts;
   const project = await mgr.getProjectById(projectId);
   const bundler = new Bundler();
-  const { site, unbundledAs, model, revisionNumber, revisionId, version } =
+  const { site, unbundledAs, revisionNumber, revisionId, version } =
     await mgr.tryGetPkgVersionByProjectVersionOrTag(
       bundler,
       projectId,
@@ -156,7 +158,9 @@ export async function doGenCode(
           data: image.dataUri,
         });
         const imageChecksum = md5(JSON.stringify(i));
-        imageAssetChecksums.push([i.id, imageChecksum]);
+        if (!opts.skipChecksums) {
+          imageAssetChecksums.push([i.id, imageChecksum]);
+        }
         // Note that when image scheme is "inlined", we always need to
         // download images from S3 in order to inline them in the code.
         if (
@@ -268,13 +272,15 @@ export async function doGenCode(
 
     const existingChecksums = opts.existingChecksums ?? emptyChecksumBundle();
     const newChecksums = emptyChecksumBundle();
-    newChecksums.imageChecksums = imageAssetChecksums;
-    filterAndUpdateChecksums(
-      output,
-      existingChecksums,
-      newChecksums,
-      imagesToFilter
-    );
+    if (!opts.skipChecksums) {
+      newChecksums.imageChecksums = imageAssetChecksums;
+      filterAndUpdateChecksums(
+        output,
+        existingChecksums,
+        newChecksums,
+        imagesToFilter
+      );
+    }
 
     const componentRefs: ComponentReference[] = site.components.map((c) => {
       return {
@@ -298,10 +304,18 @@ export async function doGenCode(
       !(global as any).badExport
     ) {
       (global as any).badExport = { bundler, site };
-      fs.writeFileSync(
-        `/tmp/corrupt-unbundle-${projectId}--${unbundledAs}.json`,
-        JSON.stringify(JSON.parse(model), undefined, 2)
+      const { model } = await mgr.tryGetPkgVersionByProjectVersionOrTag(
+        bundler,
+        projectId,
+        maybeVersionOrTag,
+        true
       );
+      if (model) {
+        fs.writeFileSync(
+          `/tmp/corrupt-unbundle-${projectId}--${unbundledAs}.json`,
+          JSON.stringify(JSON.parse(model), undefined, 2)
+        );
+      }
     }
     throw error;
   }
