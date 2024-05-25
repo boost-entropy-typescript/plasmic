@@ -13607,12 +13607,12 @@ emittery@^0.13.1:
   resolved "https://registry.yarnpkg.com/emittery/-/emittery-0.13.1.tgz#c04b8c3457490e0847ae51fced3af52d338e3dad"
   integrity sha512-DeWwawk6r5yR9jFgnDKYt4sLS0LmHJJi3ZOnb5/JdbYwj3nW+FxQnHIjhBKz8YLC7oRNPVM9NQ47I3CVx34eqQ==
 
-emoji-picker-react@^4.3.0:
-  version "4.3.0"
-  resolved "https://registry.yarnpkg.com/emoji-picker-react/-/emoji-picker-react-4.3.0.tgz#b8bb551b56fc031251688eff9d58506adf079fef"
-  integrity sha512-vzjzDRuvjzy0uLQAHSGiW0P9jiFmdZDeHO0jEWzoerv7HYQ33TiAW9GZCM45/l0ePkHWBoFpbjuFan4+5njLVg==
+emoji-picker-react@^4.9.3:
+  version "4.9.3"
+  resolved "https://registry.yarnpkg.com/emoji-picker-react/-/emoji-picker-react-4.9.3.tgz#ea6b87fd93021922a1787ddfdded581d755d950f"
+  integrity sha512-1O38tt6Yty8MiAB/3BWBpjyKr6sKVIl7Uc/fcATBxgz43fN31j1gVAsbY0+S2Yolaxgro838tFd2iADV2Ot2nA==
   dependencies:
-    clsx "^1.2.1"
+    flairup "0.0.38"
 
 emoji-regex@^7.0.1:
   version "7.0.3"
@@ -14734,6 +14734,11 @@ fkill@^8.1.0:
     process-exists "^4.1.0"
     ps-list "^7.2.0"
     taskkill "^4.0.0"
+
+flairup@0.0.38:
+  version "0.0.38"
+  resolved "https://registry.yarnpkg.com/flairup/-/flairup-0.0.38.tgz#62216990a8317a1b07d1d816033624c5b2130f31"
+  integrity sha512-W9QA5TM7eYNlGoBYwfVn/o6v4yWBCxfq4+EJ5w774oFeyWvVWnYq6Dgt4CJltjG9y/lPwbOqz3jSSr8K66ToGg==
 
 flat-cache@^3.0.4:
   version "3.0.4"
