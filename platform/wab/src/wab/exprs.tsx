@@ -530,13 +530,23 @@ const _asCode = maybeComputedFn(
             // If TemplatedString contains only a single code chip and nothing
             // else, then let TemplatedString evaluate to whatever the code chip
             // evaluates to, instead of always coercing to string
-            return asCode(part, exprCtx);
+            const codeExpr = asCode(part, exprCtx);
+            return code(
+              stripParensAndMaybeConvertToIife(codeExpr.code, {
+                addParens: true,
+              }),
+              codeExpr.fallback
+            );
           }
         } else {
           return code(
             `\`${expr.text
               .map((t) =>
-                isString(t) ? t : `\${ ${asCode(t, exprCtx).code} }`
+                isString(t)
+                  ? t
+                  : `\${ ${stripParensAndMaybeConvertToIife(
+                      asCode(t, exprCtx).code
+                    )} }`
               )
               .join("")}\``
           );
@@ -683,8 +693,8 @@ const _asCode = maybeComputedFn(
         // bodyExpr is valid
         const functionCode = `(${expr.argNames.join(", ")}) => {
           return (
-            ${maybeConvertToIife(
-              stripParens(asCode(expr.bodyExpr, exprCtx).code)
+            ${stripParensAndMaybeConvertToIife(
+              asCode(expr.bodyExpr, exprCtx).code
             )}
           );
       }`;
@@ -796,11 +806,15 @@ export function stripParens(text: string) {
   return text.replace(/^\((([\S\s])*)\)$/g, "$1");
 }
 
-export function stripParensAndMaybeConvertToIife(text: string): string {
+export function stripParensAndMaybeConvertToIife(
+  text: string,
+  opts?: { addParens?: boolean }
+): string {
   if (!text.startsWith("(")) {
     return text;
   }
-  return maybeConvertToIife(stripParens(text));
+  const result = maybeConvertToIife(stripParens(text));
+  return opts?.addParens ? `(${result})` : result;
 }
 
 export function extractReferencedParam(component: Component, expr: Expr) {
