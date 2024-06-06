@@ -6,7 +6,7 @@ import {
   TplNode,
 } from "@/wab/classes";
 import { mkProjectLocation, openNewTab } from "@/wab/client/cli-routes";
-import { isStyleClip } from "@/wab/client/clipboard";
+import { isStyleClip } from "@/wab/client/clipboard/local";
 import { makeFrameMenu } from "@/wab/client/components/frame-menu";
 import {
   MenuBuilder,
@@ -356,7 +356,7 @@ export function makeTplMenu(
       !isTplColumn(tpl) &&
       !isInsideRichText &&
       !contentEditorMode
-    )
+    ) {
       pushEdit(
         <Menu.Item
           key="ungroup"
@@ -365,6 +365,7 @@ export function makeTplMenu(
           Ungroup
         </Menu.Item>
       );
+    }
 
     if (
       isTplComponent(tpl) &&

@@ -14,6 +14,7 @@ const testFiles = [
   "**/*.spec.tsx",
   "**/*-spec.ts",
   "**/*-spec.tsx",
+  "**/*.stories.tsx",
   "**/*.test.ts",
   "**/*.test.tsx",
   "**/test/**/*",
@@ -39,6 +40,7 @@ module.exports = {
     "platform/wab/src/wab/client/sandboxes/",
   ],
   rules: {
+    curly: "error",
     // Maybe not needed, from public-packages
     // "@typescript-eslint/no-empty-interface": "off",
     // "@typescript-eslint/ban-ts-comment": "off",
@@ -249,15 +251,7 @@ module.exports = {
         "import/no-extraneous-dependencies": [
           "error",
           {
-            devDependencies: [
-              "**/*.spec.ts",
-              "**/*.spec.tsx",
-              "**/*-spec.ts",
-              "**/*-spec.tsx",
-              "**/*.stories.tsx",
-              "**/*.test.ts",
-              "**/*.test.tsx",
-            ],
+            devDependencies: testFiles,
           },
         ],
         "no-relative-import-paths/no-relative-import-paths": [
