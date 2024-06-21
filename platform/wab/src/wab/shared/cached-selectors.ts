@@ -95,7 +95,10 @@ import {
 import { VariantedStylesHelper } from "@/wab/shared/VariantedStylesHelper";
 import {
   isPrivateStyleVariant,
+  isStyleVariant,
+  isTplRootWithCCInteractionVariants,
   isVariantSettingEmpty,
+  StyleVariant,
   VariantCombo,
   variantComboKey,
 } from "@/wab/shared/Variants";
@@ -1063,6 +1066,20 @@ export const findSplitsUsingVariantGroup = maybeComputedFn(
   }
 );
 
+export const findStyleTokensUsingVariantGroup = maybeComputedFn(
+  function findStyleTokensUsingVariantGroup(
+    site: Site,
+    variantGroup: VariantGroup
+  ) {
+    const groupVariants = new Set(variantGroup.variants);
+    return site.styleTokens.filter((token) =>
+      token.variantedValues.some((value) =>
+        value.variants.some((variant) => groupVariants.has(variant))
+      )
+    );
+  }
+);
+
 /**
  * Returns true if the argument tpl slot belonging to component
  * is visible when the `variants` are active.
@@ -1139,5 +1156,36 @@ export const siteToUsedDataSources = maybeComputedFn(
     const entries = [...dataSourceCount.entries()];
     entries.sort((a, b) => b[1] - a[1]);
     return entries.map((entry) => entry[0]);
+  }
+);
+
+const componentCCInteractionStyleVariantsToDisplayNames = maybeComputedFn(
+  function ccStyleVariantToDisplayNames(component: Component) {
+    const tplRoot = component.tplTree;
+    if (isTplRootWithCCInteractionVariants(tplRoot)) {
+      const interactionVariantMeta =
+        tplRoot.component.codeComponentMeta.interactionVariantMeta;
+      return component.variants
+        .filter(isStyleVariant)
+        .map((variant): [StyleVariant, string[]] => {
+          return [
+            variant,
+            variant.selectors.map(
+              (selector) => interactionVariantMeta[selector].displayName
+            ),
+          ];
+        });
+    }
+    return [];
+  }
+);
+
+export const siteCCInteractionStyleVariantsToDisplayNames = maybeComputedFn(
+  function ccStyleVariantToDisplayNames(site: Site) {
+    return new Map<StyleVariant, string[]>(
+      site.components.flatMap((comp) =>
+        componentCCInteractionStyleVariantsToDisplayNames(comp)
+      )
+    );
   }
 );
