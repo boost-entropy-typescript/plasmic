@@ -7,13 +7,13 @@ import {
   TplNode,
   TplSlot,
   TplTag,
-} from "@/wab/classes";
+} from "@/wab/shared/model/classes";
 
-import { switchType } from "@/wab/common";
-import { isCodeComponent } from "@/wab/components";
+import { switchType } from "@/wab/shared/common";
+import { isCodeComponent } from "@/wab/shared/core/components";
 import {
-  AncestorInfo,
   ANCESTOR_INFO_KEYS,
+  AncestorInfo,
   findInvalidAncestorForTag,
   getInvalidAncestor,
   updatedAncestorInfo,
@@ -22,7 +22,7 @@ import { InvalidTplNestingLintIssue } from "@/wab/shared/linting/lint-types";
 import { lintIssuesEquals } from "@/wab/shared/linting/lint-utils";
 import { maybeComputedFn } from "@/wab/shared/mobx-util";
 import { getSlotArgs } from "@/wab/shared/SlotUtils";
-import { isTplTag, walkTpls } from "@/wab/tpls";
+import { isTplTag, walkTpls } from "@/wab/shared/core/tpls";
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { comparer } from "mobx";
 

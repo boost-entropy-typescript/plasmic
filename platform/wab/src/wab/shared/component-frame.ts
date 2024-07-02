@@ -1,11 +1,4 @@
 import {
-  ArenaFrame,
-  Site,
-  TplComponent,
-  Variant,
-  VariantGroup,
-} from "@/wab/classes";
-import {
   arrayEqIgnoreOrder,
   filterMapKeys,
   mapsEq,
@@ -17,10 +10,17 @@ import {
   replaceObj,
   tuple,
   withoutNils,
-} from "@/wab/common";
-import { allComponentVariants } from "@/wab/components";
+} from "@/wab/shared/common";
+import { allComponentVariants } from "@/wab/shared/core/components";
 import { ensureValidCombo, isPrivateStyleVariant } from "@/wab/shared/Variants";
-import { allGlobalVariants } from "@/wab/sites";
+import {
+  ArenaFrame,
+  Site,
+  TplComponent,
+  Variant,
+  VariantGroup,
+} from "@/wab/shared/model/classes";
+import { allGlobalVariants } from "@/wab/shared/core/sites";
 import L from "lodash";
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { computed, observable } from "mobx";

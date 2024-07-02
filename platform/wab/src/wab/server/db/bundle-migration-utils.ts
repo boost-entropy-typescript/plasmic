@@ -1,12 +1,6 @@
-import {
-  ensureKnownProjectDependency,
-  isKnownSite,
-  ProjectDependency,
-  Site,
-} from "@/wab/classes";
-import { assert, ensure, ensureInstance } from "@/wab/common";
-import { DEVFLAGS } from "@/wab/devflags";
-import { upgradeProjectDeps, walkDependencyTree } from "@/wab/project-deps";
+import { assert, ensure, ensureInstance } from "@/wab/shared/common";
+import { DEVFLAGS } from "@/wab/shared/devflags";
+import { upgradeProjectDeps, walkDependencyTree } from "@/wab/shared/core/project-deps";
 import { updateHostlessPackage } from "@/wab/server/code-components/code-components";
 import {
   getMigratedBundle,
@@ -18,9 +12,15 @@ import { PkgVersion, ProjectRevision } from "@/wab/server/entities/Entities";
 import { ensureDevFlags } from "@/wab/server/workers/worker-utils";
 import { Bundler } from "@/wab/shared/bundler";
 import { UnsafeBundle } from "@/wab/shared/bundles";
+import {
+  ensureKnownProjectDependency,
+  isKnownSite,
+  ProjectDependency,
+  Site,
+} from "@/wab/shared/model/classes";
 import { InvariantError } from "@/wab/shared/site-invariants";
-import { isHostLessPackage } from "@/wab/sites";
-import { trackComponentRoot, trackComponentSite } from "@/wab/tpls";
+import { isHostLessPackage } from "@/wab/shared/core/sites";
+import { trackComponentRoot, trackComponentSite } from "@/wab/shared/core/tpls";
 import semver from "semver";
 
 export async function unbundleSite(

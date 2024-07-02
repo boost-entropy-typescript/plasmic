@@ -1,22 +1,4 @@
 /** @format */
-import {
-  Component,
-  CustomCode,
-  ensureKnownFunctionType,
-  EventHandler,
-  Expr,
-  FunctionExpr,
-  Interaction,
-  isKnownClassNamePropType,
-  isKnownEventHandler,
-  isKnownFunctionType,
-  ObjectPath,
-  Param,
-  State,
-  TplComponent,
-  TplRef,
-  TplTag,
-} from "@/wab/classes";
 import { WithContextMenu } from "@/wab/client/components/ContextMenu";
 import { TextAndShortcut } from "@/wab/client/components/menu-builder";
 import { reactPrompt } from "@/wab/client/components/quick-modals";
@@ -65,29 +47,47 @@ import {
 } from "@/wab/client/state-management/preview-steps";
 import { StudioCtx, useStudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
 import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
-import { assert, ensure, hackyCast, maybe, spawn } from "@/wab/common";
+import { assert, ensure, hackyCast, maybe, spawn } from "@/wab/shared/common";
 import {
   getComponentDisplayName,
   getRealParams,
   isCodeComponent,
   isHostLessCodeComponent,
   isPlumeComponent,
-} from "@/wab/components";
+} from "@/wab/shared/core/components";
 import {
   createExprForDataPickerValue,
   ExprCtx,
   extractValueSavedFromDataPicker,
-} from "@/wab/exprs";
-import { ComponentPropOrigin } from "@/wab/lang";
+} from "@/wab/shared/core/exprs";
+import { ComponentPropOrigin } from "@/wab/shared/core/lang";
 import {
   HighlightInteractionRequest,
   isAdvancedProp,
   StudioPropType,
 } from "@/wab/shared/code-components/code-components";
 import { getExportedComponentName } from "@/wab/shared/codegen/react-p/utils";
-import { wabToTsType } from "@/wab/shared/core/model-util";
 import { DataSourceType } from "@/wab/shared/data-sources-meta/data-source-registry";
 import { VARIABLE_LOWER } from "@/wab/shared/Labels";
+import {
+  Component,
+  CustomCode,
+  ensureKnownFunctionType,
+  EventHandler,
+  Expr,
+  FunctionExpr,
+  Interaction,
+  isKnownClassNamePropType,
+  isKnownEventHandler,
+  isKnownFunctionType,
+  ObjectPath,
+  Param,
+  State,
+  TplComponent,
+  TplRef,
+  TplTag,
+} from "@/wab/shared/model/classes";
+import { wabToTsType } from "@/wab/shared/model/model-util";
 import { isValidJavaScriptCode } from "@/wab/shared/parser-utils";
 import { getPlumeEditorPlugin } from "@/wab/shared/plume/plume-registry";
 import { TplMgr } from "@/wab/shared/TplMgr";
@@ -95,7 +95,7 @@ import {
   addComponentState,
   getStateVarName,
   StateVariableType,
-} from "@/wab/states";
+} from "@/wab/shared/core/states";
 import {
   EventHandlerKeyType,
   getDisplayNameOfEventHandlerKey,
@@ -106,15 +106,15 @@ import {
   isTplNamable,
   summarizeUnnamedTpl,
   tplHasRef,
-} from "@/wab/tpls";
+} from "@/wab/shared/core/tpls";
 import { Dropdown, Input, Menu, notification, Tooltip } from "antd";
 import L, { defer, isArray, sortBy } from "lodash";
 import { autorun } from "mobx";
 import { observer } from "mobx-react";
 import React from "react";
-import { flattenComponent } from "src/wab/shared/cached-selectors";
-import { paramToVarName } from "src/wab/shared/codegen/util";
-import { DefinedIndicatorType } from "src/wab/shared/defined-indicator";
+import { flattenComponent } from "@/wab/shared/cached-selectors";
+import { paramToVarName } from "@/wab/shared/codegen/util";
+import { DefinedIndicatorType } from "@/wab/shared/defined-indicator";
 
 export const ComponentPropsSection = observer(
   function ComponentPropsSection(props: {
@@ -1011,7 +1011,7 @@ export const TplComponentNameSection = observer(TplComponentNameSection_);
 function TplComponentNameSection_(props: {
   tpl: TplComponent;
   viewCtx: ViewCtx;
-  menuOptions?: { label: string; onClick: () => void }[];
+  menuOptions: { label: string; onClick: () => void }[];
 }) {
   const { tpl, viewCtx, menuOptions } = props;
   const studioCtx = viewCtx.studioCtx;
@@ -1057,7 +1057,7 @@ function TplComponentNameSection_(props: {
         )}
         subtitle={subtitle}
         description={tpl.component.codeComponentMeta?.description ?? undefined}
-        suffix={menuOptions && <ApplyMenu items={menuOptions} />}
+        suffix={menuOptions.length > 0 && <ApplyMenu items={menuOptions} />}
       />
     </SidebarSection>
   );
@@ -1068,7 +1068,7 @@ export const TplTagNameSection = observer(TplTagNameSection_);
 function TplTagNameSection_(props: {
   tpl: TplTag;
   viewCtx: ViewCtx;
-  menuOptions?: { label: string; onClick: () => void }[];
+  menuOptions: { label: string; onClick: () => void }[];
 }) {
   const { viewCtx, tpl, menuOptions } = props;
   const vtm = viewCtx.variantTplMgr();
@@ -1085,7 +1085,7 @@ function TplTagNameSection_(props: {
           viewCtx.change(() => viewCtx.getViewOps().renameTpl(name, tpl))
         }
         placeholder={summarizeUnnamedTpl(tpl, effectiveVs.rsh())}
-        suffix={menuOptions && <ApplyMenu items={menuOptions} />}
+        suffix={menuOptions.length > 0 && <ApplyMenu items={menuOptions} />}
       />
     </SidebarSection>
   );

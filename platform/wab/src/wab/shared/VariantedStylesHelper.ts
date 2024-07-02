@@ -1,4 +1,13 @@
 import {
+  arrayEqIgnoreOrder,
+  ensure,
+  ensureArray,
+  last,
+  remove,
+} from "@/wab/shared/common";
+import { TokenValue } from "@/wab/commons/StyleToken";
+import { DeepReadonly } from "@/wab/commons/types";
+import {
   isKnownStyleToken,
   Mixin,
   RuleSet,
@@ -7,22 +16,13 @@ import {
   Variant,
   VariantedRuleSet,
   VariantedValue,
-} from "@/wab/classes";
-import {
-  arrayEqIgnoreOrder,
-  ensure,
-  ensureArray,
-  last,
-  remove,
-} from "@/wab/common";
-import { TokenValue } from "@/wab/commons/StyleToken";
-import { DeepReadonly } from "@/wab/commons/types";
+} from "@/wab/shared/model/classes";
 import { RuleSetHelpers } from "@/wab/shared/RuleSetHelpers";
 import {
   isAncestorCombo,
   makeGlobalVariantComboSorter,
 } from "@/wab/shared/variant-sort";
-import { cloneRuleSet } from "@/wab/styles";
+import { cloneRuleSet } from "@/wab/shared/core/styles";
 
 export class VariantedStylesHelper {
   constructor(

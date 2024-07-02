@@ -1,3 +1,31 @@
+import { InsertRelLoc } from "@/wab/client/components/canvas/view-ops";
+import {
+  createAddHostLessComponent,
+  HostLessComponentExtraInfo,
+} from "@/wab/client/components/studio/add-drawer/AddDrawer";
+import {
+  AddTplItem,
+  INSERTABLES_MAP,
+} from "@/wab/client/definitions/insertables";
+import { addGetManyQuery, StudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
+import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
+import { StudioTutorialStep } from "@/wab/client/tours/tutorials/tutorials-types";
+import { ensure, ensureArray, waitUntil } from "@/wab/shared/common";
+import { ComponentType, isPageComponent } from "@/wab/shared/core/components";
+import { DEVFLAGS } from "@/wab/shared/devflags";
+import {
+  code,
+  deserCompositeExprMaybe,
+  serCompositeExprMaybe,
+  tryExtractJson,
+} from "@/wab/shared/core/exprs";
+import { AddItemKey } from "@/wab/shared/add-item-keys";
+import {
+  ALL_QUERIES,
+  dataSourceTemplateToString,
+  mkDataSourceTemplate,
+} from "@/wab/shared/data-sources-meta/data-sources";
+import { DATA_SOURCE_LOWER } from "@/wab/shared/Labels";
 import {
   DataSourceOpExpr,
   DataSourceTemplate,
@@ -12,44 +40,16 @@ import {
   TemplatedString,
   TplComponent,
   TplNode,
-} from "@/wab/classes";
-import { InsertRelLoc } from "@/wab/client/components/canvas/view-ops";
-import {
-  createAddHostLessComponent,
-  HostLessComponentExtraInfo,
-} from "@/wab/client/components/studio/add-drawer/AddDrawer";
-import {
-  AddTplItem,
-  INSERTABLES_MAP,
-} from "@/wab/client/definitions/insertables";
-import { addGetManyQuery, StudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
-import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
-import { StudioTutorialStep } from "@/wab/client/tours/tutorials/tutorials-types";
-import { ensure, ensureArray, waitUntil } from "@/wab/common";
-import { ComponentType, isPageComponent } from "@/wab/components";
-import { DEVFLAGS } from "@/wab/devflags";
-import {
-  code,
-  deserCompositeExprMaybe,
-  serCompositeExprMaybe,
-  tryExtractJson,
-} from "@/wab/exprs";
-import { AddItemKey } from "@/wab/shared/add-item-keys";
-import {
-  ALL_QUERIES,
-  dataSourceTemplateToString,
-  mkDataSourceTemplate,
-} from "@/wab/shared/data-sources-meta/data-sources";
-import { DATA_SOURCE_LOWER } from "@/wab/shared/Labels";
+} from "@/wab/shared/model/classes";
 import { getTplComponentArg } from "@/wab/shared/TplMgr";
 import { $$$ } from "@/wab/shared/TplQuery";
-import { mkInteraction } from "@/wab/states";
+import { mkInteraction } from "@/wab/shared/core/states";
 import {
   filterTpls,
   flattenTpls,
   isTplComponent,
   tryGetTplOwnerComponent,
-} from "@/wab/tpls";
+} from "@/wab/shared/core/tpls";
 import { capitalize, isEqual, mapValues } from "lodash";
 
 export const ONBOARDING_TUTORIALS_META = {

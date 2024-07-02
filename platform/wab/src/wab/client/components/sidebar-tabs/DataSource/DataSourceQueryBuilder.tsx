@@ -1,9 +1,3 @@
-import {
-  CustomCode,
-  isKnownTemplatedString,
-  ObjectPath,
-  TemplatedString,
-} from "@/wab/classes";
 import S from "@/wab/client/components/QueryBuilder/QueryBuilder.module.scss";
 import "@/wab/client/components/QueryBuilder/QueryBuilder.scss";
 import {
@@ -14,10 +8,16 @@ import { DataPickerTypesSchema } from "@/wab/client/components/sidebar-tabs/Data
 import { DataPickerWidgetFactory } from "@/wab/client/components/sidebar-tabs/DataSource/DataPickerWidgetFactory";
 import { mkBindingId } from "@/wab/client/components/sidebar-tabs/DataSource/DataSourceOpPicker";
 import { TemplatedTextWidget } from "@/wab/client/components/sidebar-tabs/DataSource/TemplatedTextWidget";
-import { arrayEq, ensure } from "@/wab/common";
-import { ExprCtx } from "@/wab/exprs";
+import { arrayEq, ensure } from "@/wab/shared/common";
+import { ExprCtx } from "@/wab/shared/core/exprs";
 import { Filters } from "@/wab/shared/data-sources-meta/data-sources";
 import { isDynamicValue } from "@/wab/shared/dynamic-bindings";
+import {
+  CustomCode,
+  isKnownTemplatedString,
+  ObjectPath,
+  TemplatedString,
+} from "@/wab/shared/model/classes";
 import {
   BaseWidgetProps,
   Config,
@@ -27,9 +27,9 @@ import {
   JsonGroup,
   JsonItem,
   JsonTree,
+  Utils as QbUtils,
   Query,
   TextWidgetProps,
-  Utils as QbUtils,
 } from "@react-awesome-query-builder/antd";
 import cn from "classnames";
 import { isNil, isString, merge, pick } from "lodash";

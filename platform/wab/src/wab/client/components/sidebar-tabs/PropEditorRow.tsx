@@ -1,42 +1,4 @@
 //@ts-ignore
-import {
-  CollectionExpr,
-  CompositeExpr,
-  CustomCode,
-  DataSourceOpExpr,
-  EventHandler,
-  Expr,
-  FunctionArg,
-  FunctionExpr,
-  GenericEventHandler,
-  ImageAssetRef,
-  isKnownCustomCode,
-  isKnownExpr,
-  isKnownFunctionExpr,
-  isKnownFunctionType,
-  isKnownObjectPath,
-  isKnownQueryData,
-  isKnownRenderExpr,
-  isKnownTemplatedString,
-  isKnownVarRef,
-  MapExpr,
-  ObjectPath,
-  PageHref,
-  Param,
-  QueryInvalidationExpr,
-  RawText,
-  RenderExpr,
-  StrongFunctionArg,
-  StyleExpr,
-  StyleTokenRef,
-  TemplatedString,
-  TplComponent,
-  TplRef,
-  TplTag,
-  Type,
-  VariantsRef,
-  VarRef,
-} from "@/wab/classes";
 import ContextMenuIndicator from "@/wab/client/components/ContextMenuIndicator/ContextMenuIndicator";
 import { ComponentPropModal } from "@/wab/client/components/modals/ComponentPropModal";
 import { DataPickerEditor } from "@/wab/client/components/sidebar-tabs/ComponentProps/DataPickerEditor";
@@ -79,7 +41,7 @@ import {
   swallow,
   switchType,
   tuple,
-} from "@/wab/common";
+} from "@/wab/shared/common";
 import { HighlightBlinker } from "@/wab/commons/components/HighlightBlinker";
 import { DeepReadonly } from "@/wab/commons/types";
 import {
@@ -92,7 +54,7 @@ import {
   isPageComponent,
   isPlainComponent,
   isPlumeComponent,
-} from "@/wab/components";
+} from "@/wab/shared/core/components";
 import {
   asCode,
   clone,
@@ -111,7 +73,7 @@ import {
   renderable,
   summarizeExpr,
   tryExtractLit,
-} from "@/wab/exprs";
+} from "@/wab/shared/core/exprs";
 import { getLinkedCodeProps } from "@/wab/shared/cached-selectors";
 import {
   ensurePropTypeToWabType,
@@ -127,16 +89,54 @@ import {
 } from "@/wab/shared/code-components/code-components";
 import { getContextDependentValue } from "@/wab/shared/context-dependent-value";
 import {
-  isRenderableType,
-  typeFactory,
-  typesEqual,
-} from "@/wab/shared/core/model-util";
-import {
   computeDefinedIndicator,
   DefinedIndicatorType,
 } from "@/wab/shared/defined-indicator";
 import { tryEvalExpr } from "@/wab/shared/eval";
 import { getInputTypeOptions } from "@/wab/shared/html-utils";
+import {
+  CollectionExpr,
+  CompositeExpr,
+  CustomCode,
+  DataSourceOpExpr,
+  EventHandler,
+  Expr,
+  FunctionArg,
+  FunctionExpr,
+  GenericEventHandler,
+  ImageAssetRef,
+  isKnownCustomCode,
+  isKnownExpr,
+  isKnownFunctionExpr,
+  isKnownFunctionType,
+  isKnownObjectPath,
+  isKnownQueryData,
+  isKnownRenderExpr,
+  isKnownTemplatedString,
+  isKnownVarRef,
+  MapExpr,
+  ObjectPath,
+  PageHref,
+  Param,
+  QueryInvalidationExpr,
+  RawText,
+  RenderExpr,
+  StrongFunctionArg,
+  StyleExpr,
+  StyleTokenRef,
+  TemplatedString,
+  TplComponent,
+  TplRef,
+  TplTag,
+  Type,
+  VariantsRef,
+  VarRef,
+} from "@/wab/shared/model/classes";
+import {
+  isRenderableType,
+  typeFactory,
+  typesEqual,
+} from "@/wab/shared/model/model-util";
 import { hashExpr } from "@/wab/shared/site-diffs";
 import { getTplComponentArg, unsetTplComponentArg } from "@/wab/shared/TplMgr";
 import { $$$ } from "@/wab/shared/TplQuery";
@@ -147,7 +147,7 @@ import {
   isTplRawString,
   isTplTag,
   TplTagCodeGenType,
-} from "@/wab/tpls";
+} from "@/wab/shared/core/tpls";
 import { Menu } from "antd";
 import { capitalize, isString, keyBy } from "lodash";
 import { observer } from "mobx-react";

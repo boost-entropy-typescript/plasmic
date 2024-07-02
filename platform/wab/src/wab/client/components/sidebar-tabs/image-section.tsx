@@ -1,21 +1,3 @@
-import {
-  Component,
-  CustomCode,
-  ensureKnownTplTag,
-  Expr,
-  ImageAssetRef,
-  isKnownCustomCode,
-  isKnownImageAsset,
-  isKnownImageAssetRef,
-  isKnownObjectPath,
-  isKnownVarRef,
-  ObjectPath,
-  TplSlot,
-  TplTag,
-  Var,
-  VariantSetting,
-  VarRef,
-} from "@/wab/classes";
 import { WithContextMenu } from "@/wab/client/components/ContextMenu";
 import ContextMenuIndicator from "@/wab/client/components/ContextMenuIndicator/ContextMenuIndicator";
 import { MenuBuilder } from "@/wab/client/components/menu-builder";
@@ -39,8 +21,8 @@ import { Icon } from "@/wab/client/components/widgets/Icon";
 import PlusIcon from "@/wab/client/plasmic/plasmic_kit/PlasmicIcon__Plus";
 import { StudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
 import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
-import { assert, ensureInstance } from "@/wab/common";
-import { getRealParams } from "@/wab/components";
+import { assert, ensureInstance } from "@/wab/shared/common";
+import { getRealParams } from "@/wab/shared/core/components";
 import {
   clone,
   codeLit,
@@ -50,21 +32,39 @@ import {
   isFallbackSet,
   isRealCodeExpr,
   tryExtractLit,
-} from "@/wab/exprs";
-import { ImageAssetType } from "@/wab/image-asset-type";
-import { getTagAttrForImageAsset } from "@/wab/image-assets";
-import { mkParam } from "@/wab/lang";
-import { isImageType, typeFactory } from "@/wab/shared/core/model-util";
+} from "@/wab/shared/core/exprs";
+import { ImageAssetType } from "@/wab/shared/core/image-asset-type";
+import { getTagAttrForImageAsset } from "@/wab/shared/core/image-assets";
+import { mkParam } from "@/wab/shared/core/lang";
 import { typographyCssProps } from "@/wab/shared/core/style-props";
 import {
   computeDefinedIndicator,
   DefinedIndicatorType,
 } from "@/wab/shared/defined-indicator";
+import {
+  Component,
+  CustomCode,
+  ensureKnownTplTag,
+  Expr,
+  ImageAssetRef,
+  isKnownCustomCode,
+  isKnownImageAsset,
+  isKnownImageAssetRef,
+  isKnownObjectPath,
+  isKnownVarRef,
+  ObjectPath,
+  TplSlot,
+  TplTag,
+  Var,
+  VariantSetting,
+  VarRef,
+} from "@/wab/shared/model/classes";
+import { isImageType, typeFactory } from "@/wab/shared/model/model-util";
 import { isCodeComponentSlot } from "@/wab/shared/SlotUtils";
 import { unsetTplVariantableAttr } from "@/wab/shared/TplMgr";
 import { $$$ } from "@/wab/shared/TplQuery";
 import { ensureVariantSetting, isGlobalVariant } from "@/wab/shared/Variants";
-import { getTplComponentsInSite } from "@/wab/tpls";
+import { getTplComponentsInSite } from "@/wab/shared/core/tpls";
 import { Alert, Menu, Tooltip } from "antd";
 import { observer } from "mobx-react";
 import React from "react";

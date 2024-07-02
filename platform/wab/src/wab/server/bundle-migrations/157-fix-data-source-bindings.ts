@@ -1,21 +1,21 @@
-import {
-  CustomCode,
-  DataSourceTemplate,
-  isKnownDataSourceOpExpr,
-  isKnownTemplatedString,
-} from "@/wab/classes";
-import { randUint16 } from "@/wab/common";
+import { randUint16 } from "@/wab/shared/common";
+import { UnbundledMigrationFn } from "@/wab/server/db/BundleMigrator";
 import {
   BundleMigrationType,
   unbundleSite,
 } from "@/wab/server/db/bundle-migration-utils";
-import { UnbundledMigrationFn } from "@/wab/server/db/BundleMigrator";
 import { Bundler } from "@/wab/shared/bundler";
 import {
   getDynamicStringSegments,
   isDynamicValue,
 } from "@/wab/shared/dynamic-bindings";
-import { findExprsInComponent } from "@/wab/tpls";
+import {
+  CustomCode,
+  DataSourceTemplate,
+  isKnownDataSourceOpExpr,
+  isKnownTemplatedString,
+} from "@/wab/shared/model/classes";
+import { findExprsInComponent } from "@/wab/shared/core/tpls";
 
 function mkBindingId() {
   return `{{${randUint16().toString()}}}`;

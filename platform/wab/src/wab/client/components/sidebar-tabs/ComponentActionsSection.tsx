@@ -1,19 +1,22 @@
-import { isKnownNamedState, isKnownRenderExpr } from "@/wab/classes";
+import {
+  isKnownNamedState,
+  isKnownRenderExpr,
+} from "@/wab/shared/model/classes";
 /** @format */
-import { TplComponent } from "@/wab/classes";
+import { reportError } from "@/wab/client/ErrorNotifications";
 import { ConnectToDBTableModal } from "@/wab/client/components/sidebar-tabs/DataSource/ConnectToDBTable";
 import { updateOrCreateExpr } from "@/wab/client/components/sidebar-tabs/PropEditorRow";
 import { TplExpsProvider } from "@/wab/client/components/style-controls/StyleComponent";
 import Button from "@/wab/client/components/widgets/Button";
-import { reportError } from "@/wab/client/ErrorNotifications";
 import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
-import { ensure, hackyCast, maybe } from "@/wab/common";
-import { isCodeComponent } from "@/wab/components";
+import { ensure, hackyCast, maybe } from "@/wab/shared/common";
+import { isCodeComponent } from "@/wab/shared/core/components";
 import { BadRequestError } from "@/wab/shared/ApiErrors/errors";
-import { elementSchemaToTpl } from "@/wab/shared/code-components/code-components";
 import { getSlotParams } from "@/wab/shared/SlotUtils";
 import { $$$ } from "@/wab/shared/TplQuery";
-import { SlotSelection } from "@/wab/slots";
+import { elementSchemaToTpl } from "@/wab/shared/code-components/code-components";
+import { TplComponent } from "@/wab/shared/model/classes";
+import { SlotSelection } from "@/wab/shared/core/slots";
 import { Action, ActionProps, PlasmicElement } from "@plasmicapp/host";
 import { notification } from "antd";
 import domAlign from "dom-align";

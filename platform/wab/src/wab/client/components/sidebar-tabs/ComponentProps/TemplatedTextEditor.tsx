@@ -1,11 +1,3 @@
-import {
-  Component,
-  CustomCode,
-  isKnownCustomCode,
-  isKnownObjectPath,
-  ObjectPath,
-  TemplatedString,
-} from "@/wab/classes";
 import { resetNodes as doResetNodes } from "@/wab/client/components/canvas/slate";
 import { ContextMenuContext } from "@/wab/client/components/ContextMenuIndicator/ContextMenuIndicator";
 import CopilotCodePrompt from "@/wab/client/components/CopilotCodePrompt";
@@ -22,7 +14,7 @@ import {
   randUint16,
   spawn,
   xSetDefault,
-} from "@/wab/common";
+} from "@/wab/shared/common";
 import { useSignalListener } from "@/wab/commons/components/use-signal-listener";
 import { DropFirst } from "@/wab/commons/types";
 import {
@@ -35,12 +27,20 @@ import {
   extractValueSavedFromDataPicker,
   isRealCodeExpr,
   summarizeExpr,
-} from "@/wab/exprs";
+} from "@/wab/shared/core/exprs";
 import {
   getDynamicBindings,
   isDynamicValue,
 } from "@/wab/shared/dynamic-bindings";
 import { tryEvalExpr } from "@/wab/shared/eval";
+import {
+  Component,
+  CustomCode,
+  isKnownCustomCode,
+  isKnownObjectPath,
+  ObjectPath,
+  TemplatedString,
+} from "@/wab/shared/model/classes";
 import { DataSourceSchema } from "@plasmicapp/data-sources";
 import { Popover, Tooltip } from "antd";
 import { debounce } from "lodash";
@@ -59,11 +59,11 @@ import { usePrevious } from "react-use";
 import {
   BasePoint,
   createEditor,
-  Descendant as SlateDescendant,
   Editor,
-  Element as SlateElement,
   Node,
   Range,
+  Descendant as SlateDescendant,
+  Element as SlateElement,
   Text,
   Transforms,
 } from "slate";

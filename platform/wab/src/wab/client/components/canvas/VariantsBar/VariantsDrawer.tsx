@@ -1,4 +1,3 @@
-import { Component, isKnownVariant, Variant } from "@/wab/classes";
 import VariantRow from "@/wab/client/components/canvas/VariantsBar/VariantRow";
 import styles from "@/wab/client/components/canvas/VariantsBar/VariantsDrawer.module.scss";
 import VariantsGroupLabel from "@/wab/client/components/canvas/VariantsBar/VariantsGroupLabel";
@@ -12,8 +11,9 @@ import {
   PlasmicVariantsDrawer,
 } from "@/wab/client/plasmic/plasmic_kit_variants_bar/PlasmicVariantsDrawer";
 import { useStudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
-import { mod, partitions, spawn, xGroupBy } from "@/wab/common";
+import { mod, partitions, spawn, xGroupBy } from "@/wab/shared/common";
 import { VARIANTS_LOWER } from "@/wab/shared/Labels";
+import { Component, isKnownVariant, Variant } from "@/wab/shared/model/classes";
 import {
   getAllVariantsForTpl,
   isComponentStyleVariant,
@@ -24,7 +24,7 @@ import {
   isStyleVariant,
   makeVariantName,
 } from "@/wab/shared/Variants";
-import { isTplTag } from "@/wab/tpls";
+import { isTplTag } from "@/wab/shared/core/tpls";
 import { observer } from "mobx-react";
 import * as React from "react";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";

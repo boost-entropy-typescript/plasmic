@@ -1,14 +1,14 @@
-import { isKnownTplTag, TplNode } from "@/wab/classes";
+import { isKnownTplTag, TplNode } from "@/wab/shared/model/classes";
 // TODO clean up this require cycle
-import { Mixin, RuleSet } from "@/wab/classes";
-import { assert } from "@/wab/common";
+import { assert } from "@/wab/shared/common";
 import { DeepReadonly } from "@/wab/commons/types";
-import * as css from "@/wab/css";
+import * as css from "@/wab/shared/css";
 import * as cssPegParser from "@/wab/gen/cssPegParser";
 import {
   getAllDefinedStyles,
   typographyCssProps,
 } from "@/wab/shared/core/style-props";
+import { Mixin, RuleSet } from "@/wab/shared/model/classes";
 import {
   makeReadonlySizeAwareExpProxy,
   makeSizeAwareExpProxy,

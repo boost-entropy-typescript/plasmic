@@ -1,11 +1,10 @@
-import { modelSchemaHash } from "@/wab/classes-metas";
-import { Dict } from "@/wab/collections";
+import { Dict } from "@/wab/shared/collections";
 import {
   assert,
   ensureType,
   NotImplementedError,
   omitNils,
-} from "@/wab/common";
+} from "@/wab/shared/common";
 import { toOpaque } from "@/wab/commons/types";
 import { AuthError } from "@/wab/shared/ApiErrors/errors";
 import {
@@ -193,6 +192,7 @@ import { OperationTemplate } from "@/wab/shared/data-sources-meta/data-sources";
 import { CodeSandboxInfo } from "@/wab/shared/db-json-blobs";
 import { GrantableAccessLevel } from "@/wab/shared/EntUtil";
 import { LowerHttpMethod } from "@/wab/shared/HttpClientUtil";
+import { modelSchemaHash } from "@/wab/shared/model/classes-metas";
 import { UiConfig } from "@/wab/shared/ui-config-utils";
 import { executePlasmicDataOp } from "@plasmicapp/data-sources";
 import L, { pick, uniq } from "lodash";

@@ -11,21 +11,21 @@
 //      pressed: boolean
 //    }
 
-import { Component, TplNode, Variant } from "@/wab/classes";
-import { ensure } from "@/wab/common";
-import { tryExtractLit } from "@/wab/exprs";
-import { NodeNamer } from "@/wab/shared/codegen/react-p/utils";
-import { jsLiteral } from "@/wab/shared/codegen/util";
+import { ensure } from "@/wab/shared/common";
+import { tryExtractLit } from "@/wab/shared/core/exprs";
 import {
   isPrivateStyleVariant,
   tryGetBaseVariantSetting,
 } from "@/wab/shared/Variants";
+import { NodeNamer } from "@/wab/shared/codegen/react-p/utils";
+import { jsLiteral } from "@/wab/shared/codegen/util";
+import { Component, TplNode, Variant } from "@/wab/shared/model/classes";
 import {
-  getTriggerableSelectors,
   PseudoSelectorOption,
   TriggerCondition,
-} from "@/wab/styles";
-import { flattenTpls, isTplTag } from "@/wab/tpls";
+  getTriggerableSelectors,
+} from "@/wab/shared/core/styles";
+import { flattenTpls, isTplTag } from "@/wab/shared/core/tpls";
 import L from "lodash";
 
 // The usage of the hook, however, should check if all ancestors are active.

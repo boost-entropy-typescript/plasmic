@@ -1,20 +1,20 @@
-import { TplTag } from "@/wab/classes";
 import S from "@/wab/client/components/canvas/HoverBox/Controls/GapCanvasControls.module.scss";
 import { prefixSum } from "@/wab/client/components/sidebar-tabs/ResponsiveColumns/tpl-columns-utils";
 import { getContentOnlyRect, getMarginRect } from "@/wab/client/dom";
 import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
 import { useForceUpdate } from "@/wab/client/useForceUpdate";
-import { ensure, parsePx } from "@/wab/common";
-import { useSignalListener } from "@/wab/commons/components/use-signal-listener";
+import { ensure, parsePx } from "@/wab/shared/common";
 import { XDraggable } from "@/wab/commons/components/XDraggable";
-import { parseCssNumericNew } from "@/wab/css";
+import { useSignalListener } from "@/wab/commons/components/use-signal-listener";
+import { parseCssNumericNew } from "@/wab/shared/css";
 import {
   ContainerLayoutType,
   getRshContainerType,
 } from "@/wab/shared/layoututils";
-import { allImageAssets, allMixins, allStyleTokens } from "@/wab/sites";
-import { CssVarResolver, hasGapStyle } from "@/wab/styles";
-import { isTplColumns, isTplTag } from "@/wab/tpls";
+import { TplTag } from "@/wab/shared/model/classes";
+import { allImageAssets, allMixins, allStyleTokens } from "@/wab/shared/core/sites";
+import { CssVarResolver, hasGapStyle } from "@/wab/shared/core/styles";
+import { isTplColumns, isTplTag } from "@/wab/shared/core/tpls";
 import cn from "classnames";
 import $ from "jquery";
 import { observer } from "mobx-react";

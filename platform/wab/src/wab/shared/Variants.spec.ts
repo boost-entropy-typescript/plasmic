@@ -1,12 +1,12 @@
-import { StateParam } from "@/wab/classes";
-import { ComponentType, mkComponent } from "@/wab/components";
+import { ComponentType, mkComponent } from "@/wab/shared/core/components";
 import {
   ensureValidCombo,
   mkBaseVariant,
   mkComponentVariantGroup,
   mkVariant,
 } from "@/wab/shared/Variants";
-import { mkTplTagX } from "@/wab/tpls";
+import { StateParam } from "@/wab/shared/model/classes";
+import { mkTplTagX } from "@/wab/shared/core/tpls";
 
 function getComponentWithVariantGroups() {
   const singleChoiceVariants = [0, 1, 2].map((i) => {

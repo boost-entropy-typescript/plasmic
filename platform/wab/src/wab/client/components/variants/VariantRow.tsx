@@ -1,4 +1,3 @@
-import { Variant } from "@/wab/classes";
 import { useContextMenu } from "@/wab/client/components/ContextMenu";
 import { PlumyIcon } from "@/wab/client/components/plume/plume-markers";
 import {
@@ -13,16 +12,17 @@ import {
 } from "@/wab/client/plasmic/plasmic_kit_variants/PlasmicVariantRow";
 import { StudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
 import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
-import { maybe } from "@/wab/common";
-import { getEffectiveVariantSetting } from "@/wab/shared/effective-variant-setting";
+import { maybe } from "@/wab/shared/common";
 import { VariantPinState } from "@/wab/shared/PinManager";
-import { PlumeVariantDef } from "@/wab/shared/plume/plume-registry";
 import {
   isBaseVariant,
   isVariantSettingEmpty,
   tryGetVariantSetting,
 } from "@/wab/shared/Variants";
-import { isTplVariantable, summarizeTpl } from "@/wab/tpls";
+import { getEffectiveVariantSetting } from "@/wab/shared/effective-variant-setting";
+import { Variant } from "@/wab/shared/model/classes";
+import { PlumeVariantDef } from "@/wab/shared/plume/plume-registry";
+import { isTplVariantable, summarizeTpl } from "@/wab/shared/core/tpls";
 import { observer } from "mobx-react";
 import * as React from "react";
 import { DraggableProvidedDragHandleProps } from "react-beautiful-dnd";

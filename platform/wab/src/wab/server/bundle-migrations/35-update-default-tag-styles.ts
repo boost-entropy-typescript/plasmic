@@ -1,5 +1,4 @@
-import { isKnownTplTag, TplTag } from "@/wab/classes";
-import { ensure } from "@/wab/common";
+import { ensure } from "@/wab/shared/common";
 import {
   BundleMigrationType,
   unbundleSite,
@@ -8,9 +7,10 @@ import { DbMgr } from "@/wab/server/db/DbMgr";
 import { PkgVersion, ProjectRevision } from "@/wab/server/entities/Entities";
 import { Bundler } from "@/wab/shared/bundler";
 import { UnsafeBundle } from "@/wab/shared/bundles";
-import { createDefaultTheme } from "@/wab/sites";
-import { cloneMixin, cloneThemeStyle } from "@/wab/styles";
-import { flattenTpls } from "@/wab/tpls";
+import { isKnownTplTag, TplTag } from "@/wab/shared/model/classes";
+import { createDefaultTheme } from "@/wab/shared/core/sites";
+import { cloneMixin, cloneThemeStyle } from "@/wab/shared/core/styles";
+import { flattenTpls } from "@/wab/shared/core/tpls";
 
 const defaultTagStyles = createDefaultTheme().styles;
 

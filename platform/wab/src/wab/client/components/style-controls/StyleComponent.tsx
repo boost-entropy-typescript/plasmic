@@ -1,15 +1,4 @@
 import {
-  ensureKnownTplTag,
-  isKnownTplTag,
-  Mixin,
-  RuleSet,
-  StyleToken,
-  TplComponent,
-  TplSlot,
-  TplTag,
-  Variant,
-} from "@/wab/classes";
-import {
   maybeShowContextMenu,
   WithContextMenu,
 } from "@/wab/client/components/ContextMenu";
@@ -36,7 +25,7 @@ import {
   mapify,
   tuple,
   unexpected,
-} from "@/wab/common";
+} from "@/wab/shared/common";
 import {
   withConsumer,
   withProvider,
@@ -51,7 +40,7 @@ import {
   tokenTypeLabel,
 } from "@/wab/commons/StyleToken";
 import { isEmptyReactNode } from "@/wab/commons/ViewUtil";
-import { isCodeComponent } from "@/wab/components";
+import { isCodeComponent } from "@/wab/shared/core/components";
 import {
   colorProps,
   filterExtractableStyles,
@@ -69,11 +58,11 @@ import {
 } from "@/wab/shared/defined-indicator";
 import { makeExpProxy, makeMergedExpProxy } from "@/wab/shared/exprs";
 import {
-  MIXINS_CAP,
   MIXIN_CAP,
   MIXIN_LOWER,
-  TOKENS_CAP,
+  MIXINS_CAP,
   TOKEN_CAP,
+  TOKENS_CAP,
   VARIANTS_CAP,
 } from "@/wab/shared/Labels";
 import {
@@ -82,6 +71,17 @@ import {
   getRshContainerType,
   PositionLayoutType,
 } from "@/wab/shared/layoututils";
+import {
+  ensureKnownTplTag,
+  isKnownTplTag,
+  Mixin,
+  RuleSet,
+  StyleToken,
+  TplComponent,
+  TplSlot,
+  TplTag,
+  Variant,
+} from "@/wab/shared/model/classes";
 import {
   IRuleSetHelpers,
   IRuleSetHelpersX,
@@ -99,13 +99,13 @@ import {
   VariantCombo,
 } from "@/wab/shared/Variants";
 import { VariantTplMgr } from "@/wab/shared/VariantTplMgr";
-import { allStyleTokens } from "@/wab/sites";
+import { allStyleTokens } from "@/wab/shared/core/sites";
 import {
   isComponentRoot,
   isTplComponent,
   isTplTagOrComponent,
   isTplTextBlock,
-} from "@/wab/tpls";
+} from "@/wab/shared/core/tpls";
 import { Menu, Tooltip } from "antd";
 import SubMenu from "antd/lib/menu/SubMenu";
 import classNames from "classnames";

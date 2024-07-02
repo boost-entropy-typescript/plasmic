@@ -1,17 +1,11 @@
-import {
-  ensureKnownPropParam,
-  HostLessPackageInfo,
-  Param,
-  Site,
-} from "@/wab/classes";
-import { assert, ensure } from "@/wab/common";
+import { assert, ensure } from "@/wab/shared/common";
 import { removeFromArray } from "@/wab/commons/collections";
 import {
   CodeComponent,
   isCodeComponent,
   isContextCodeComponent,
   isHostLessCodeComponent,
-} from "@/wab/components";
+} from "@/wab/shared/core/components";
 import {
   getBuiltinComponentRegistrations,
   isBuiltinCodeComponent,
@@ -29,11 +23,17 @@ import {
   mkCodeComponent,
   syncCodeComponents,
 } from "@/wab/shared/code-components/code-components";
+import {
+  ensureKnownPropParam,
+  HostLessPackageInfo,
+  Param,
+  Site,
+} from "@/wab/shared/model/classes";
 import { isSlot } from "@/wab/shared/SlotUtils";
 import { TplMgr } from "@/wab/shared/TplMgr";
-import { createSite, writeable } from "@/wab/sites";
-import { addComponentState } from "@/wab/states";
-import { mkTplComponent } from "@/wab/tpls";
+import { createSite, writeable } from "@/wab/shared/core/sites";
+import { addComponentState } from "@/wab/shared/core/states";
+import { mkTplComponent } from "@/wab/shared/core/tpls";
 import {
   ComponentMeta,
   ComponentRegistration,

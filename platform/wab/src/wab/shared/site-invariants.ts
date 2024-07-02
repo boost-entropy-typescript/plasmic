@@ -1,3 +1,28 @@
+import { describeValueOrType, ensure, partitions, pathGet } from "@/wab/shared/common";
+import { isTokenRef, tryParseTokenRef } from "@/wab/commons/StyleToken";
+import {
+  allComponentVariants,
+  getComponentDisplayName,
+  isCodeComponent,
+  isContextCodeComponent,
+  isFrameComponent,
+  isPageComponent,
+  isPlumeComponent,
+  tryGetVariantGroupValueFromArg,
+} from "@/wab/shared/core/components";
+import * as cssPegParser from "@/wab/gen/cssPegParser";
+import { ParamExportType } from "@/wab/shared/core/lang";
+import { ImportableObject } from "@/wab/shared/core/project-deps";
+import { AnyArena, getArenaFrames, isMixedArena } from "@/wab/shared/Arenas";
+import {
+  componentToUsedImageAssets,
+  componentToUsedMixins,
+  componentToUsedTokens,
+  flattenComponent,
+} from "@/wab/shared/cached-selectors";
+import { isValidStyleProp } from "@/wab/shared/core/style-props";
+import { MIXIN_LOWER } from "@/wab/shared/Labels";
+import { maybeComputedFn } from "@/wab/shared/mobx-util";
 import {
   ArenaFrame,
   Component,
@@ -12,38 +37,13 @@ import {
   StyleToken,
   TplNode,
   Variant,
-} from "@/wab/classes";
-import { meta } from "@/wab/classes-metas";
-import { describeValueOrType, ensure, partitions, pathGet } from "@/wab/common";
-import { isTokenRef, tryParseTokenRef } from "@/wab/commons/StyleToken";
-import {
-  allComponentVariants,
-  getComponentDisplayName,
-  isCodeComponent,
-  isContextCodeComponent,
-  isFrameComponent,
-  isPageComponent,
-  isPlumeComponent,
-  tryGetVariantGroupValueFromArg,
-} from "@/wab/components";
-import * as cssPegParser from "@/wab/gen/cssPegParser";
-import { ParamExportType } from "@/wab/lang";
-import { ImportableObject } from "@/wab/project-deps";
-import { AnyArena, getArenaFrames, isMixedArena } from "@/wab/shared/Arenas";
-import {
-  componentToUsedImageAssets,
-  componentToUsedMixins,
-  componentToUsedTokens,
-  flattenComponent,
-} from "@/wab/shared/cached-selectors";
-import { instUtil } from "@/wab/shared/core/InstUtil";
+} from "@/wab/shared/model/classes";
+import { meta } from "@/wab/shared/model/classes-metas";
+import { instUtil } from "@/wab/shared/model/InstUtil";
 import {
   createNodeCtx,
   walkModelTree,
-} from "@/wab/shared/core/model-tree-util";
-import { isValidStyleProp } from "@/wab/shared/core/style-props";
-import { MIXIN_LOWER } from "@/wab/shared/Labels";
-import { maybeComputedFn } from "@/wab/shared/mobx-util";
+} from "@/wab/shared/model/model-tree-util";
 import { modelConflictsMeta } from "@/wab/shared/site-diffs/model-conflicts-meta";
 import { getTplSlot, isSlot } from "@/wab/shared/SlotUtils";
 import {
@@ -64,9 +64,9 @@ import {
   allMixins,
   allStyleTokens,
   getSiteArenas,
-} from "@/wab/sites";
-import { isPrivateState } from "@/wab/states";
-import { parseCssValue } from "@/wab/styles";
+} from "@/wab/shared/core/sites";
+import { isPrivateState } from "@/wab/shared/core/states";
+import { parseCssValue } from "@/wab/shared/core/styles";
 import {
   ancestorsUp,
   isTplComponent,
@@ -74,7 +74,7 @@ import {
   isTplTag,
   isTplVariantable,
   tplChildren,
-} from "@/wab/tpls";
+} from "@/wab/shared/core/tpls";
 import L, { uniqBy } from "lodash";
 
 export class InvariantError extends Error {

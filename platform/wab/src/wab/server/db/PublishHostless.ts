@@ -1,6 +1,5 @@
-import { ensureKnownProjectDependency, Site } from "@/wab/classes";
-import { assert, ensure, spawn } from "@/wab/common";
-import { DEVFLAGS } from "@/wab/devflags";
+import { assert, ensure, spawn } from "@/wab/shared/common";
+import { DEVFLAGS } from "@/wab/shared/devflags";
 import { updateHostlessPackage } from "@/wab/server/code-components/code-components";
 import { DEFAULT_DATABASE_URI } from "@/wab/server/config";
 import { unbundleSite } from "@/wab/server/db/bundle-migration-utils";
@@ -18,6 +17,7 @@ import { DbMgr, SUPER_USER } from "@/wab/server/db/DbMgr";
 import { ensureDevFlags } from "@/wab/server/workers/worker-utils";
 import { ProjectId } from "@/wab/shared/ApiSchema";
 import { Bundler } from "@/wab/shared/bundler";
+import { ensureKnownProjectDependency, Site } from "@/wab/shared/model/classes";
 import { assertSiteInvariants } from "@/wab/shared/site-invariants";
 import fs from "fs";
 import path from "path";

@@ -1,4 +1,3 @@
-import { TplNode, Variant } from "@/wab/classes";
 import { useCanvasForceUpdate } from "@/wab/client/components/canvas/canvas-hooks";
 import { mkUseCanvasObserver } from "@/wab/client/components/canvas/canvas-observer";
 import {
@@ -11,8 +10,8 @@ import {
 } from "@/wab/client/components/variants/ClientPinManager";
 import { globalHookCtx } from "@/wab/client/react-global-hook/globalHook";
 import {
-  getRenderState,
   RenderState,
+  getRenderState,
 } from "@/wab/client/studio-ctx/renderState";
 import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
 import {
@@ -23,8 +22,9 @@ import {
   tuple,
   undefinedToDefault,
   xOmitNils,
-} from "@/wab/common";
-import { allComponentVariants, isContextCodeComponent } from "@/wab/components";
+} from "@/wab/shared/common";
+import { allComponentVariants, isContextCodeComponent } from "@/wab/shared/core/components";
+import { getImplicitlyActivatedStyleVariants } from "@/wab/shared/Variants";
 import { ContextFactory } from "@/wab/shared/code-components/context-factory";
 import {
   ComponentVariantFrame,
@@ -32,9 +32,9 @@ import {
 } from "@/wab/shared/component-frame";
 import { wrapWithContext } from "@/wab/shared/contexts";
 import { ValState } from "@/wab/shared/eval/val-state";
-import { getImplicitlyActivatedStyleVariants } from "@/wab/shared/Variants";
-import { allGlobalVariants } from "@/wab/sites";
-import { ValComponent, ValNode } from "@/wab/val-nodes";
+import { TplNode, Variant } from "@/wab/shared/model/classes";
+import { allGlobalVariants } from "@/wab/shared/core/sites";
+import { ValComponent, ValNode } from "@/wab/shared/core/val-nodes";
 import { autorun, observable } from "mobx";
 import React from "react";
 import defer = setTimeout;

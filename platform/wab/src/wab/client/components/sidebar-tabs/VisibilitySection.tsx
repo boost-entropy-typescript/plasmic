@@ -1,9 +1,3 @@
-import {
-  CustomCode,
-  ensureKnownCustomCode,
-  ObjectPath,
-  TplNode,
-} from "@/wab/classes";
 import { isTplCodeComponentStyleable } from "@/wab/client/code-components/code-components";
 import { useAppRoles } from "@/wab/client/components/app-auth/app-auth-contexts";
 import ContextMenuIndicator from "@/wab/client/components/ContextMenuIndicator/ContextMenuIndicator";
@@ -32,7 +26,7 @@ import {
   makeVariantedStylesHelperFromCurrentCtx,
 } from "@/wab/client/utils/style-utils";
 import { getVisibilityChoicesForTpl } from "@/wab/client/utils/tpl-client-utils";
-import { ensureInstance } from "@/wab/common";
+import { ensureInstance } from "@/wab/shared/common";
 import { isTokenRef, TokenType } from "@/wab/commons/StyleToken";
 import {
   clone,
@@ -41,8 +35,14 @@ import {
   extractValueSavedFromDataPicker,
   isFallbackSet,
   tryExtractJson,
-} from "@/wab/exprs";
+} from "@/wab/shared/core/exprs";
 import { computeDefinedIndicator } from "@/wab/shared/defined-indicator";
+import {
+  CustomCode,
+  ensureKnownCustomCode,
+  ObjectPath,
+  TplNode,
+} from "@/wab/shared/model/classes";
 import {
   isPrivateStyleVariant,
   tryGetVariantSetting,
@@ -54,7 +54,7 @@ import {
   hasVisibilitySetting,
   TplVisibility,
 } from "@/wab/shared/visibility-utils";
-import { isTplCodeComponent } from "@/wab/tpls";
+import { isTplCodeComponent } from "@/wab/shared/core/tpls";
 import { Menu } from "antd";
 import cn from "classnames";
 import { observer } from "mobx-react";

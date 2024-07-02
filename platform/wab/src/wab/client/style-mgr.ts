@@ -1,11 +1,3 @@
-import {
-  Component,
-  isKnownTplTag,
-  Mixin,
-  ProjectDependency,
-  TplNode,
-  VariantSetting,
-} from "@/wab/classes";
 import { StudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
 import {
   assert,
@@ -14,13 +6,19 @@ import {
   tuple,
   withoutNils,
   xSetDefault,
-} from "@/wab/common";
+} from "@/wab/shared/common";
 import {
   getComponentDisplayName,
   isCodeComponent,
   isContextCodeComponent,
-} from "@/wab/components";
-import { ChangeSummary, CssVarsChangeType } from "@/wab/model-change-util";
+} from "@/wab/shared/core/components";
+import { $$$ } from "@/wab/shared/TplQuery";
+import {
+  VariantCombo,
+  isActiveVariantSetting,
+  isBaseVariant,
+  tryGetBaseVariantSetting,
+} from "@/wab/shared/Variants";
 import {
   componentToDeepReferenced,
   extractComponentVariantSettings,
@@ -30,18 +28,23 @@ import {
   ComponentGenHelper,
   SiteGenHelper,
 } from "@/wab/shared/codegen/codegen-helpers";
-import { $$$ } from "@/wab/shared/TplQuery";
+import {
+  Component,
+  Mixin,
+  ProjectDependency,
+  TplNode,
+  VariantSetting,
+  isKnownTplTag,
+} from "@/wab/shared/model/classes";
+import {
+  ChangeSummary,
+  CssVarsChangeType,
+} from "@/wab/shared/model/model-change-util";
 import {
   getDependentVariantSettings,
   makeVariantComboSorter,
   sortedVariantSettings,
 } from "@/wab/shared/variant-sort";
-import {
-  isActiveVariantSetting,
-  isBaseVariant,
-  tryGetBaseVariantSetting,
-  VariantCombo,
-} from "@/wab/shared/Variants";
 import {
   allComponents,
   allImageAssets,
@@ -49,7 +52,7 @@ import {
   allStyleTokens,
   isFrameRootTplComponent,
   isTplAttachedToSite,
-} from "@/wab/sites";
+} from "@/wab/shared/core/sites";
 import {
   CssVarResolver,
   genCanvasRules,
@@ -58,14 +61,14 @@ import {
   mkCssVarsRuleForCanvas,
   studioDefaultStylesClassNameBase,
   tplMatchThemeStyle,
-} from "@/wab/styles";
+} from "@/wab/shared/core/styles";
 import {
   isComponentRoot,
   isTplComponent,
   isTplTag,
   isTplVariantable,
   tplChildren,
-} from "@/wab/tpls";
+} from "@/wab/shared/core/tpls";
 import { sortBy } from "lodash";
 
 // @ts-ignore

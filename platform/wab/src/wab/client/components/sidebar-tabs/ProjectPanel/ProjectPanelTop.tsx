@@ -1,13 +1,3 @@
-import {
-  Component,
-  ComponentArena,
-  ExprText,
-  isKnownArena,
-  isKnownComponentArena,
-  isKnownPageArena,
-  ObjectPath,
-  PageArena,
-} from "@/wab/classes";
 import { apiKey } from "@/wab/client/api";
 import { SEARCH_PARAM_BRANCH, UU } from "@/wab/client/cli-routes";
 import {
@@ -76,7 +66,7 @@ import {
   spawnWrapper,
   swallow,
   withoutNils,
-} from "@/wab/common";
+} from "@/wab/shared/common";
 import { valueAsString } from "@/wab/commons/values";
 import {
   ComponentType,
@@ -85,13 +75,13 @@ import {
   isPageComponent,
   isReusableComponent,
   PageComponent,
-} from "@/wab/components";
+} from "@/wab/shared/core/components";
 import {
   asCode,
   code,
   codeLit,
   mkTemplatedStringOfOneDynExpr,
-} from "@/wab/exprs";
+} from "@/wab/shared/core/exprs";
 import {
   ApiBranch,
   BranchId,
@@ -120,10 +110,20 @@ import {
 import { tryEvalExpr } from "@/wab/shared/eval";
 import { pathToString } from "@/wab/shared/eval/expression-parser";
 import {
+  ARENA_LOWER,
   ARENAS_CAP,
   ARENAS_DESCRIPTION,
-  ARENA_LOWER,
 } from "@/wab/shared/Labels";
+import {
+  Component,
+  ComponentArena,
+  ExprText,
+  isKnownArena,
+  isKnownComponentArena,
+  isKnownPageArena,
+  ObjectPath,
+  PageArena,
+} from "@/wab/shared/model/classes";
 import { tryGetMainContentSlotTarget } from "@/wab/shared/SlotUtils";
 import { addEmptyQuery } from "@/wab/shared/TplMgr";
 import { $$$ } from "@/wab/shared/TplQuery";
@@ -134,7 +134,7 @@ import {
   isTplTextBlock,
   mkTplComponentX,
   mkTplInlinedText,
-} from "@/wab/tpls";
+} from "@/wab/shared/core/tpls";
 import { TableSchema } from "@plasmicapp/data-sources";
 import { executePlasmicDataOp } from "@plasmicapp/react-web/lib/data-sources";
 import { Dropdown, Menu, notification, Tooltip } from "antd";
@@ -146,9 +146,9 @@ import React, { ReactNode, useRef, useState } from "react";
 import { FocusScope } from "react-aria";
 import { useDebounce } from "react-use";
 import { FixedSizeList } from "react-window";
-import { Modal } from "src/wab/client/components/widgets/Modal";
-import { isCoreTeamEmail } from "src/wab/shared/devflag-utils";
-import { InsertableTemplateComponentExtraInfo } from "src/wab/shared/insertable-templates/types";
+import { Modal } from "@/wab/client/components/widgets/Modal";
+import { isCoreTeamEmail } from "@/wab/shared/devflag-utils";
+import { InsertableTemplateComponentExtraInfo } from "@/wab/shared/insertable-templates/types";
 import useSWR, { mutate } from "swr";
 
 const enum SiteItemType {

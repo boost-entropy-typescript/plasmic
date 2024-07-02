@@ -1,18 +1,18 @@
+import { ensure, remove } from "@/wab/shared/common";
+import { extractReferencedParam, isRealCodeExpr } from "@/wab/shared/core/exprs";
+import { UnbundledMigrationFn } from "@/wab/server/db/BundleMigrator";
+import {
+  BundleMigrationType,
+  unbundleSite,
+} from "@/wab/server/db/bundle-migration-utils";
+import { Bundler } from "@/wab/shared/bundler";
 import {
   Expr,
   isKnownEventHandler,
   isKnownFunctionType,
   isKnownVarRef,
-} from "@/wab/classes";
-import { ensure, remove } from "@/wab/common";
-import { extractReferencedParam, isRealCodeExpr } from "@/wab/exprs";
-import {
-  BundleMigrationType,
-  unbundleSite,
-} from "@/wab/server/db/bundle-migration-utils";
-import { UnbundledMigrationFn } from "@/wab/server/db/BundleMigrator";
-import { Bundler } from "@/wab/shared/bundler";
-import { flattenTpls, isAttrEventHandler } from "@/wab/tpls";
+} from "@/wab/shared/model/classes";
+import { flattenTpls, isAttrEventHandler } from "@/wab/shared/core/tpls";
 
 export const migrate: UnbundledMigrationFn = async (bundle, db, entity) => {
   const bundler = new Bundler();

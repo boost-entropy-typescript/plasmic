@@ -1,11 +1,14 @@
-import { isKnownDataSourceOpExpr, TemplatedString } from "@/wab/classes";
 import {
   BundleMigrationType,
   unbundleSite,
 } from "@/wab/server/db/bundle-migration-utils";
 import { UnbundledMigrationFn } from "@/wab/server/db/BundleMigrator";
 import { Bundler } from "@/wab/shared/bundler";
-import { flattenTpls, isTplCodeComponent } from "@/wab/tpls";
+import {
+  isKnownDataSourceOpExpr,
+  TemplatedString,
+} from "@/wab/shared/model/classes";
+import { flattenTpls, isTplCodeComponent } from "@/wab/shared/core/tpls";
 import { formComponentName } from "@plasmicpkgs/antd5";
 
 export const migrate: UnbundledMigrationFn = async (bundle, db, entity) => {

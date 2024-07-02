@@ -1,15 +1,3 @@
-import {
-  CustomCode,
-  ensureKnownVariantsRef,
-  isKnownCustomCode,
-  isKnownObjectPath,
-  isKnownVariantsRef,
-  ObjectPath,
-  TplComponent,
-  Variant,
-  VariantGroup,
-  VariantsRef,
-} from "@/wab/classes";
 import ContextMenuIndicator from "@/wab/client/components/ContextMenuIndicator/ContextMenuIndicator";
 import { DataPickerEditor } from "@/wab/client/components/sidebar-tabs/ComponentProps/DataPickerEditor";
 import { FallbackEditor } from "@/wab/client/components/sidebar-tabs/ComponentPropsSection";
@@ -29,19 +17,31 @@ import { XMultiSelect } from "@/wab/client/components/XMultiSelect";
 import { useViewCtx } from "@/wab/client/contexts/StudioContexts";
 import { useStudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
 import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
-import { assert, ensure, ensureInstance } from "@/wab/common";
-import { mkVariantGroupArgExpr } from "@/wab/components";
+import { assert, ensure, ensureInstance } from "@/wab/shared/common";
+import { mkVariantGroupArgExpr } from "@/wab/shared/core/components";
 import {
   clone,
   createExprForDataPickerValue,
   extractValueSavedFromDataPicker,
   isFallbackSet,
   isRealCodeExpr,
-} from "@/wab/exprs";
+} from "@/wab/shared/core/exprs";
 import { VARIANTS_CAP } from "@/wab/shared/Labels";
+import {
+  CustomCode,
+  ensureKnownVariantsRef,
+  isKnownCustomCode,
+  isKnownObjectPath,
+  isKnownVariantsRef,
+  ObjectPath,
+  TplComponent,
+  Variant,
+  VariantGroup,
+  VariantsRef,
+} from "@/wab/shared/model/classes";
 import { getPlumeEditorPlugin } from "@/wab/shared/plume/plume-registry";
 import { isStandaloneVariantGroup } from "@/wab/shared/Variants";
-import { tryGetTplOwnerComponent } from "@/wab/tpls";
+import { tryGetTplOwnerComponent } from "@/wab/shared/core/tpls";
 import { Menu } from "antd";
 import L from "lodash";
 import { observer } from "mobx-react";

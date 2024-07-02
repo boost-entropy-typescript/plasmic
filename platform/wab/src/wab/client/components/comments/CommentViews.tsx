@@ -1,4 +1,3 @@
-import { ObjInst } from "@/wab/classes";
 import { apiKey } from "@/wab/client/api";
 import CommentPost from "@/wab/client/components/comments/CommentPost";
 import { getCommentsWithModelMetadata } from "@/wab/client/components/comments/utils";
@@ -20,15 +19,16 @@ import {
   mkUuid,
   spawn,
   xGroupBy,
-} from "@/wab/common";
+} from "@/wab/shared/common";
 import {
   ApiComment,
   CommentData,
   CommentThreadId,
 } from "@/wab/shared/ApiSchema";
 import { fullName } from "@/wab/shared/ApiSchemaUtil";
+import { ObjInst } from "@/wab/shared/model/classes";
 import { mkSemVerSiteElement } from "@/wab/shared/site-diffs";
-import { isTplNamable } from "@/wab/tpls";
+import { isTplNamable } from "@/wab/shared/core/tpls";
 import { Menu, Tooltip } from "antd";
 import { Emoji } from "emoji-picker-react";
 import { groupBy, sortBy } from "lodash";

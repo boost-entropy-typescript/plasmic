@@ -1,3 +1,9 @@
+import { ensure, withoutNils, xAddAll } from "@/wab/shared/common";
+import {
+  extractAllReferencedTokenIds,
+  tryParseTokenRef,
+} from "@/wab/commons/StyleToken";
+import { makeTokenValueResolver } from "@/wab/shared/cached-selectors";
 import {
   Component,
   isKnownStyleExpr,
@@ -7,13 +13,7 @@ import {
   StyleToken,
   TplNode,
   Variant,
-} from "@/wab/classes";
-import { ensure, withoutNils, xAddAll } from "@/wab/common";
-import {
-  extractAllReferencedTokenIds,
-  tryParseTokenRef,
-} from "@/wab/commons/StyleToken";
-import { makeTokenValueResolver } from "@/wab/shared/cached-selectors";
+} from "@/wab/shared/model/classes";
 import {
   ReadonlyIRuleSetHelpersX,
   readonlyRSH,
@@ -21,9 +21,9 @@ import {
 } from "@/wab/shared/RuleSetHelpers";
 import { VariantedStylesHelper } from "@/wab/shared/VariantedStylesHelper";
 import { VariantCombo } from "@/wab/shared/Variants";
-import { allStyleTokens, localStyleTokens } from "@/wab/sites";
-import { expandRuleSets } from "@/wab/styles";
-import { flattenTpls } from "@/wab/tpls";
+import { allStyleTokens, localStyleTokens } from "@/wab/shared/core/sites";
+import { expandRuleSets } from "@/wab/shared/core/styles";
+import { flattenTpls } from "@/wab/shared/core/tpls";
 import L from "lodash";
 
 export interface TheoToken {

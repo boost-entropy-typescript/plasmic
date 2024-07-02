@@ -1,4 +1,3 @@
-import { Expr, isKnownTplNode, isKnownTplSlot, TplNode } from "@/wab/classes";
 import {
   getPreferredInsertLocs,
   InsertRelLoc,
@@ -34,8 +33,8 @@ import {
   LINK_ICON,
   PASSWORD_INPUT_ICON,
   SLOT_ICON,
-  TEXTAREA_ICON,
   TEXT_ICON,
+  TEXTAREA_ICON,
   VERT_STACK_ICON,
 } from "@/wab/client/icons";
 import { renderCantAddMsg } from "@/wab/client/messages/parenting-msgs";
@@ -50,15 +49,15 @@ import {
   canSetDisplayNone,
   getSlotSelectionDisplayName,
 } from "@/wab/client/utils/tpl-client-utils";
-import { assert, ensure, maybe, unexpected } from "@/wab/common";
+import { assert, ensure, maybe, unexpected } from "@/wab/shared/common";
 import {
   swallowingClick,
   useChanged,
   useForwardedRef,
 } from "@/wab/commons/components/ReactUtil";
-import { isCodeComponent } from "@/wab/components";
-import { tryExtractLit } from "@/wab/exprs";
-import { Selectable } from "@/wab/selection";
+import { isCodeComponent } from "@/wab/shared/core/components";
+import { tryExtractLit } from "@/wab/shared/core/exprs";
+import { Selectable } from "@/wab/shared/core/selection";
 import { AnyArena } from "@/wab/shared/Arenas";
 import { EffectiveVariantSetting } from "@/wab/shared/effective-variant-setting";
 import { CanvasEnv } from "@/wab/shared/eval";
@@ -66,6 +65,12 @@ import {
   ContainerLayoutType,
   getRshContainerType,
 } from "@/wab/shared/layoututils";
+import {
+  Expr,
+  isKnownTplNode,
+  isKnownTplSlot,
+  TplNode,
+} from "@/wab/shared/model/classes";
 import {
   canAddChildrenAndWhy,
   canAddSiblingsAndWhy,
@@ -85,18 +90,18 @@ import {
 import { $$$ } from "@/wab/shared/TplQuery";
 import { isBaseVariant, isVariantSettingEmpty } from "@/wab/shared/Variants";
 import { TplVisibility } from "@/wab/shared/visibility-utils";
-import { SlotSelection } from "@/wab/slots";
+import { SlotSelection } from "@/wab/shared/core/slots";
 import { selectionControlsColor } from "@/wab/styles/css-variables";
-import * as Tpls from "@/wab/tpls";
+import * as Tpls from "@/wab/shared/core/tpls";
 import {
   clone,
   getTplOwnerComponent,
   isCodeComponentRoot,
   isTplTagOrComponent,
   isTplVariantable,
-} from "@/wab/tpls";
-import { bestValForTpl, ValComponent, ValNode, ValSlot } from "@/wab/val-nodes";
-import { asTpl } from "@/wab/vals";
+} from "@/wab/shared/core/tpls";
+import { bestValForTpl, ValComponent, ValNode, ValSlot } from "@/wab/shared/core/val-nodes";
+import { asTpl } from "@/wab/shared/core/vals";
 import { notification, Tooltip } from "antd";
 import cx from "classnames";
 import $ from "jquery";

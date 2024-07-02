@@ -1,4 +1,3 @@
-import { Component, isKnownTplNode, TplComponent, TplTag } from "@/wab/classes";
 import { MenuBuilder } from "@/wab/client/components/menu-builder";
 import { PlumyIcon } from "@/wab/client/components/plume/plume-markers";
 import { getContextDependentValuesForImplicitState } from "@/wab/client/components/sidebar-tabs/DataBinding/DataPickerUtil";
@@ -11,10 +10,16 @@ import {
 } from "@/wab/client/plasmic/plasmic_kit_state_management/PlasmicImplicitVariablesSection";
 import { StudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
 import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
-import { ensure, spawn } from "@/wab/common";
+import { ensure, spawn } from "@/wab/shared/common";
+import {
+  Component,
+  isKnownTplNode,
+  TplComponent,
+  TplTag,
+} from "@/wab/shared/model/classes";
 import { getPlumeElementDef } from "@/wab/shared/plume/plume-registry";
 import { purpleDark8 } from "@/wab/styles/_tokens";
-import { isTplTagOrComponent } from "@/wab/tpls";
+import { isTplTagOrComponent } from "@/wab/shared/core/tpls";
 import { HTMLElementRefOf } from "@plasmicapp/react-web";
 import { Menu } from "antd";
 import assert from "assert";

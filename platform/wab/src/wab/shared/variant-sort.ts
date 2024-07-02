@@ -1,21 +1,14 @@
 import {
-  Component,
-  Site,
-  Variant,
-  VariantGroup,
-  VariantSetting,
-} from "@/wab/classes";
-import {
   assert,
   ensure,
   partitions,
   sortByKeys,
   xIndexMap,
-} from "@/wab/common";
-import { getSuperComponents } from "@/wab/components";
-import { parseScreenSpec } from "@/wab/shared/Css";
-import { maybeComputedFn } from "@/wab/shared/mobx-util";
+} from "@/wab/shared/common";
+import { getSuperComponents } from "@/wab/shared/core/components";
+import { parseScreenSpec } from "@/wab/shared/css-size";
 import {
+  VariantCombo,
   getBaseVariant,
   getOrderedScreenVariants,
   isBaseVariant,
@@ -24,8 +17,15 @@ import {
   isScreenVariant,
   isScreenVariantGroup,
   isStyleVariant,
-  VariantCombo,
 } from "@/wab/shared/Variants";
+import { maybeComputedFn } from "@/wab/shared/mobx-util";
+import {
+  Component,
+  Site,
+  Variant,
+  VariantGroup,
+  VariantSetting,
+} from "@/wab/shared/model/classes";
 import L from "lodash";
 
 // See https://coda.io/d/Plasmic-Wiki_dHQygjmQczq/Targeting-Multiple-Component-Variants_suH6g#_luNNY

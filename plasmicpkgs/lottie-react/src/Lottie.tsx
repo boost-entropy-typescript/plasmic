@@ -3,6 +3,20 @@ import registerComponent from "@plasmicapp/host/registerComponent";
 import Lottie from "lottie-react";
 import React, { useContext } from "react";
 
+const isBrowser = typeof window !== "undefined";
+
+const useIsomorphicLayoutEffect = isBrowser
+  ? React.useLayoutEffect
+  : React.useEffect;
+
+function useIsClient() {
+  const [loaded, setLoaded] = React.useState(false);
+  useIsomorphicLayoutEffect(() => {
+    setLoaded(true);
+  }, []);
+  return loaded;
+}
+
 export const CheckExample = {
   v: "4.10.1",
   fr: 30,
@@ -420,16 +434,22 @@ export function LottieWrapper({
   preview = false,
 }: LottieWrapperProps) {
   const inEditor = useContext(PlasmicCanvasContext);
+  const isClient = useIsClient();
+  if (!isClient) {
+    return null;
+  }
   if (!animationData) {
     throw new Error("animationData is required");
   }
   return (
-    <Lottie
-      className={className}
-      animationData={animationData}
-      loop={loop}
-      autoplay={inEditor ? preview : autoplay}
-    />
+    <React.Suspense fallback={<></>}>
+      <Lottie
+        className={className}
+        animationData={animationData}
+        loop={loop}
+        autoplay={inEditor ? preview : autoplay}
+      />
+    </React.Suspense>
   );
 }
 
@@ -482,6 +502,10 @@ export function AsyncLottieWrapper({
       );
     }
   }, [animationUrl]);
+  const isClient = useIsClient();
+  if (!isClient) {
+    return null;
+  }
   if (!animationUrl) {
     throw new Error("animationUrl is required");
   }

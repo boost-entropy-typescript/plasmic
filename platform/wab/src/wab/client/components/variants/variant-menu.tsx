@@ -1,3 +1,18 @@
+import { MenuBuilder } from "@/wab/client/components/menu-builder";
+import DataPicker from "@/wab/client/components/sidebar-tabs/DataBinding/DataPicker";
+import { getExpectedValuesForVariantGroup } from "@/wab/client/components/sidebar-tabs/DataBinding/DataPickerUtil";
+import { ClickStopper } from "@/wab/client/components/widgets";
+import { StudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
+import { ensure, spawn } from "@/wab/shared/common";
+import {
+  allComponentStyleVariants,
+  allPrivateStyleVariants,
+} from "@/wab/shared/core/components";
+import {
+  createExprForDataPickerValue,
+  extractValueSavedFromDataPicker,
+} from "@/wab/shared/core/exprs";
+import { VARIANT_GROUP_LOWER } from "@/wab/shared/Labels";
 import {
   Component,
   ComponentVariantGroup,
@@ -6,22 +21,7 @@ import {
   isKnownObjectPath,
   Variant,
   VariantGroup,
-} from "@/wab/classes";
-import { MenuBuilder } from "@/wab/client/components/menu-builder";
-import DataPicker from "@/wab/client/components/sidebar-tabs/DataBinding/DataPicker";
-import { getExpectedValuesForVariantGroup } from "@/wab/client/components/sidebar-tabs/DataBinding/DataPickerUtil";
-import { ClickStopper } from "@/wab/client/components/widgets";
-import { StudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
-import { ensure, spawn } from "@/wab/common";
-import {
-  allComponentStyleVariants,
-  allPrivateStyleVariants,
-} from "@/wab/components";
-import {
-  createExprForDataPickerValue,
-  extractValueSavedFromDataPicker,
-} from "@/wab/exprs";
-import { VARIANT_GROUP_LOWER } from "@/wab/shared/Labels";
+} from "@/wab/shared/model/classes";
 import {
   getBaseVariant,
   isBaseVariant,
@@ -32,9 +32,9 @@ import {
 } from "@/wab/shared/Variants";
 import {
   getAccessTypeDisplayName,
-  StateAccessType,
   STATE_ACCESS_TYPES,
-} from "@/wab/states";
+  StateAccessType,
+} from "@/wab/shared/core/states";
 import { Menu, Popover } from "antd";
 import React from "react";
 

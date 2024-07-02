@@ -1,15 +1,4 @@
-import { BackgroundLayer } from "@/wab/bg-styles";
-import {
-  Expr,
-  isKnownCustomCode,
-  isKnownExprText,
-  isKnownImageAssetRef,
-  isKnownRawText,
-  Site,
-  TplNode,
-  Variant,
-  VariantSetting,
-} from "@/wab/classes";
+import { BackgroundLayer } from "@/wab/shared/core/bg-styles";
 import { MenuBuilder } from "@/wab/client/components/menu-builder";
 import { resolvedBackgroundImageCss } from "@/wab/client/components/sidebar-tabs/background-section";
 import { EditMixinButton } from "@/wab/client/components/sidebar/MixinControls";
@@ -34,12 +23,12 @@ import TokenIcon from "@/wab/client/plasmic/plasmic_kit/PlasmicIcon__Token";
 import VariantGroupIcon from "@/wab/client/plasmic/plasmic_kit/PlasmicIcon__VariantGroup";
 import { useStudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
 import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
-import { cx, ensure, ensureArray, swallow } from "@/wab/common";
+import { cx, ensure, ensureArray, swallow } from "@/wab/shared/common";
 import { removeFromArray } from "@/wab/commons/collections";
 import { joinReactNodes } from "@/wab/commons/components/ReactUtil";
 import { derefTokenRefs, tryParseTokenRef } from "@/wab/commons/StyleToken";
-import { getComponentDisplayName } from "@/wab/components";
-import { ExprCtx, summarizeExpr, tryExtractLit } from "@/wab/exprs";
+import { getComponentDisplayName } from "@/wab/shared/core/components";
+import { ExprCtx, summarizeExpr, tryExtractLit } from "@/wab/shared/core/exprs";
 import * as cssPegParser from "@/wab/gen/cssPegParser";
 import {
   computedProjectFlags,
@@ -52,13 +41,24 @@ import {
   VariantSettingSourceStack,
 } from "@/wab/shared/defined-indicator";
 import {
-  MIXINS_CAP,
   MIXIN_CAP,
   MIXIN_LOWER,
+  MIXINS_CAP,
   SLOT_CAP,
-  VARIANTS_LOWER,
   VARIANT_LOWER,
+  VARIANTS_LOWER,
 } from "@/wab/shared/Labels";
+import {
+  Expr,
+  isKnownCustomCode,
+  isKnownExprText,
+  isKnownImageAssetRef,
+  isKnownRawText,
+  Site,
+  TplNode,
+  Variant,
+  VariantSetting,
+} from "@/wab/shared/model/classes";
 import { RSH, splitCssValue } from "@/wab/shared/RuleSetHelpers";
 import { Chroma } from "@/wab/shared/utils/color-utils";
 import { VariantedStylesHelper } from "@/wab/shared/VariantedStylesHelper";
@@ -76,9 +76,9 @@ import {
   getVariantSettingVisibility,
   getVisibilityLabel,
 } from "@/wab/shared/visibility-utils";
-import { allStyleTokens } from "@/wab/sites";
-import { sourceMatchThemeStyle } from "@/wab/styles";
-import { isTplComponent, isTplTag } from "@/wab/tpls";
+import { allStyleTokens } from "@/wab/shared/core/sites";
+import { sourceMatchThemeStyle } from "@/wab/shared/core/styles";
+import { isTplComponent, isTplTag } from "@/wab/shared/core/tpls";
 import { Alert, Menu, Popover, Tooltip } from "antd";
 import classNames from "classnames";
 import L from "lodash";

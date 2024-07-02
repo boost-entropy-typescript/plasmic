@@ -1,8 +1,8 @@
-import { ProjectDependency, Site } from "@/wab/classes";
-import { ensure, removeWhere } from "@/wab/common";
+import { ensure, removeWhere } from "@/wab/shared/common";
 import { lt, sortAsc } from "@/wab/commons/semver";
-import { upgradeProjectDeps } from "@/wab/project-deps";
+import { upgradeProjectDeps } from "@/wab/shared/core/project-deps";
 import { Bundler } from "@/wab/shared/bundler";
+import { ProjectDependency, Site } from "@/wab/shared/model/classes";
 
 export function fixProjectDependencies(
   ancestor: Site,

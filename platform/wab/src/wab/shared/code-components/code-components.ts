@@ -3,7 +3,85 @@ import {
   BackgroundLayer,
   ColorFill,
   NoneBackground,
-} from "@/wab/bg-styles";
+} from "@/wab/shared/core/bg-styles";
+import {
+  CustomError,
+  assert,
+  ensure,
+  ensureArray,
+  hackyCast,
+  isArrayOfStrings,
+  isNumeric,
+  maybe,
+  mkShortId,
+  objsEq,
+  removeWhere,
+  switchType,
+  tuple,
+  uncheckedCast,
+  unexpected,
+  withoutNils,
+  xDifference,
+} from "@/wab/shared/common";
+import { TokenType } from "@/wab/commons/StyleToken";
+import { removeFromArray } from "@/wab/commons/collections";
+import {
+  CodeComponent,
+  ComponentType,
+  getCodeComponentImportName,
+  getComponentDisplayName,
+  getDefaultComponent,
+  getDependencyComponents,
+  getRealParams,
+  isCodeComponent,
+  isContextCodeComponent,
+  isHostLessCodeComponent,
+  isPlainComponent,
+  isPlumeComponent,
+  mkComponent,
+  removeComponentParam,
+} from "@/wab/shared/core/components";
+import { getCssInitial, normProp, parseCssShorthand } from "@/wab/shared/css";
+import { ExprCtx, asCode } from "@/wab/shared/core/exprs";
+import * as cssPegParser from "@/wab/gen/cssPegParser";
+import { standardCorners, standardSides } from "@/wab/shared/geom";
+import { ParamExportType, mkParam, mkParamsForState } from "@/wab/shared/core/lang";
+import { walkDependencyTree } from "@/wab/shared/core/project-deps";
+import { RSH } from "@/wab/shared/RuleSetHelpers";
+import { getSlotParams, isSlot } from "@/wab/shared/SlotUtils";
+import { TplMgr } from "@/wab/shared/TplMgr";
+import { $$$ } from "@/wab/shared/TplQuery";
+import { ensureBaseVariantSetting } from "@/wab/shared/VariantTplMgr";
+import { ensureVariantSetting, mkBaseVariant } from "@/wab/shared/Variants";
+import { AddItemKey } from "@/wab/shared/add-item-keys";
+import {
+  allCustomFunctions,
+  componentToReferencers,
+  componentToTplComponents,
+  computedProjectFlags,
+  flattenComponent,
+} from "@/wab/shared/cached-selectors";
+import {
+  isBuiltinCodeComponent,
+  isBuiltinCodeComponentImportPath,
+} from "@/wab/shared/code-components/builtin-code-components";
+import {
+  ensureOnlyValidInteractiveVariantsInComponent,
+  getInvalidInteractiveVariantsInComponent,
+} from "@/wab/shared/code-components/interaction-variants";
+import {
+  paramToVarName,
+  toVarName,
+  validJsIdentifierChars,
+} from "@/wab/shared/codegen/util";
+import {
+  CONTENT_LAYOUT_FULL_BLEED,
+  CONTENT_LAYOUT_WIDE,
+  isValidStyleProp,
+} from "@/wab/shared/core/style-props";
+import { AddItemPrefs, getDefaultStyles } from "@/wab/shared/default-styles";
+import { convertSelfContainerType } from "@/wab/shared/layoututils";
+import { instUtil } from "@/wab/shared/model/InstUtil";
 import {
   AnyType,
   ArgType,
@@ -22,8 +100,6 @@ import {
   DateRangeStrings,
   DateString,
   DefaultStylesClassNamePropType,
-  ensureKnownPropParam,
-  ensureKnownTplTag,
   EventHandler,
   Expr,
   FigmaComponentMapping,
@@ -32,11 +108,6 @@ import {
   HrefType,
   Img,
   Interaction,
-  isKnownClassNamePropType,
-  isKnownPropParam,
-  isKnownStateParam,
-  isKnownStyleExpr,
-  isKnownVirtualRenderExpr,
   ClassNamePropType as ModelClassNamePropType,
   StyleScopeClassNamePropType as ModelStyleScopeClassNamePropType,
   NamedState,
@@ -56,111 +127,45 @@ import {
   TplTag,
   Type,
   Var,
+  VarRef,
   Variant,
   VariantsRef,
-  VarRef,
-} from "@/wab/classes";
-import {
-  assert,
-  CustomError,
-  ensure,
-  ensureArray,
-  hackyCast,
-  isArrayOfStrings,
-  isNumeric,
-  maybe,
-  mkShortId,
-  objsEq,
-  removeWhere,
-  switchType,
-  tuple,
-  uncheckedCast,
-  unexpected,
-  withoutNils,
-  xDifference,
-} from "@/wab/common";
-import { removeFromArray } from "@/wab/commons/collections";
-import { TokenType } from "@/wab/commons/StyleToken";
-import {
-  CodeComponent,
-  ComponentType,
-  getCodeComponentImportName,
-  getComponentDisplayName,
-  getDefaultComponent,
-  getDependencyComponents,
-  getRealParams,
-  isCodeComponent,
-  isContextCodeComponent,
-  isHostLessCodeComponent,
-  isPlainComponent,
-  isPlumeComponent,
-  mkComponent,
-  removeComponentParam,
-} from "@/wab/components";
-import { getCssInitial, normProp, parseCssShorthand } from "@/wab/css";
-import { asCode, ExprCtx } from "@/wab/exprs";
-import * as cssPegParser from "@/wab/gen/cssPegParser";
-import { standardCorners, standardSides } from "@/wab/geom";
-import { mkParam, mkParamsForState, ParamExportType } from "@/wab/lang";
-import { walkDependencyTree } from "@/wab/project-deps";
-import { AddItemKey } from "@/wab/shared/add-item-keys";
-import {
-  allCustomFunctions,
-  componentToReferencers,
-  componentToTplComponents,
-  computedProjectFlags,
-  flattenComponent,
-} from "@/wab/shared/cached-selectors";
-import {
-  isBuiltinCodeComponent,
-  isBuiltinCodeComponentImportPath,
-} from "@/wab/shared/code-components/builtin-code-components";
-import {
-  paramToVarName,
-  toVarName,
-  validJsIdentifierChars,
-} from "@/wab/shared/codegen/util";
-import { instUtil } from "@/wab/shared/core/InstUtil";
+  ensureKnownPropParam,
+  ensureKnownTplTag,
+  isKnownClassNamePropType,
+  isKnownPropParam,
+  isKnownStateParam,
+  isKnownStyleExpr,
+  isKnownVirtualRenderExpr,
+} from "@/wab/shared/model/classes";
 import {
   convertTsToWabType,
   typeFactory,
   typesEqual,
-} from "@/wab/shared/core/model-util";
-import {
-  CONTENT_LAYOUT_FULL_BLEED,
-  CONTENT_LAYOUT_WIDE,
-  isValidStyleProp,
-} from "@/wab/shared/core/style-props";
-import { AddItemPrefs, getDefaultStyles } from "@/wab/shared/default-styles";
-import { convertSelfContainerType } from "@/wab/shared/layoututils";
+} from "@/wab/shared/model/model-util";
 import { getPlumeEditorPlugin } from "@/wab/shared/plume/plume-registry";
 import { canComponentTakeRef } from "@/wab/shared/react-utils";
 import { CodeLibraryRegistration } from "@/wab/shared/register-library";
-import { RSH } from "@/wab/shared/RuleSetHelpers";
-import { getSlotParams, isSlot } from "@/wab/shared/SlotUtils";
-import { TplMgr } from "@/wab/shared/TplMgr";
-import { $$$ } from "@/wab/shared/TplQuery";
 import { validJsIdentifierRegex } from "@/wab/shared/utils/regex-valid-js-identifier";
-import { ensureVariantSetting, mkBaseVariant } from "@/wab/shared/Variants";
-import { ensureBaseVariantSetting } from "@/wab/shared/VariantTplMgr";
-import { allComponents, isHostLessPackage, writeable } from "@/wab/sites";
+import { allComponents, isHostLessPackage, writeable } from "@/wab/shared/core/sites";
 import {
+  StateAccessType,
+  StateVariableType,
   addComponentState,
   mkNamedState,
   removeComponentStateOnly,
-  StateAccessType,
-  StateVariableType,
   updateStateAccessType,
-} from "@/wab/states";
+} from "@/wab/shared/core/states";
 import {
   changeTokenUsage,
   extractTokenUsages,
   mkRuleSet,
   parseCssValue,
-} from "@/wab/styles";
+} from "@/wab/shared/core/styles";
 import {
-  cloneType,
   EventHandlerKeyType,
+  TplTagType,
+  cloneType,
   findAllInstancesOfComponent,
   flattenTpls,
   getTplComponentsInSite,
@@ -173,8 +178,7 @@ import {
   mkTplComponentX,
   mkTplInlinedText,
   mkTplTagX,
-  TplTagType,
-} from "@/wab/tpls";
+} from "@/wab/shared/core/tpls";
 import type {
   ComponentMeta,
   ComponentRegistration,
@@ -224,10 +228,10 @@ import React, { CSSProperties } from "react";
 import semver from "semver";
 import stripCssComments from "strip-css-comments";
 import {
-  failable,
   FailableArgParams,
-  failableAsync,
   IFailable,
+  failable,
+  failableAsync,
   mapMultiple,
 } from "ts-failable";
 import type { Opaque } from "type-fest";
@@ -605,6 +609,9 @@ export interface CodeComponentSyncCallbackFns {
     updatedLibraries: CodeLibrary[];
     removedLibraries: CodeLibrary[];
   }) => void;
+  confirmRemovedInteractiveVariants?: (
+    removedSelectorsByComponent: [Component, string[]][]
+  ) => Promise<IFailable<void, never>>;
 }
 
 export class DuplicateCodeComponentError extends CustomError {
@@ -662,8 +669,13 @@ export async function syncCodeComponents(
     run(checkUniqueCodeComponentNames(ctx));
     run(checkWhitespacesInImportNames(ctx, fns));
     const newComponents = run(await addNewRegisteredComponents(ctx, fns));
+    // The order here is important. We first sync interactions variants so that
+    // model operations like remove component and swap component can be applied
+    // based on the latest interaction variants.
+    run(await syncCodeComponentsInteractionVariants(ctx));
     run(await fixMissingCodeComponents(ctx, fns));
     run(await fixMissingDefaultComponents(ctx, fns));
+    run(await fixCodeComponentsInteractionVariants(ctx, fns));
 
     // At this point, we've added all the new components and removed
     // all the removed components.
@@ -1139,6 +1151,89 @@ export async function fixMissingCodeComponents(
   });
 }
 
+// Update interaction variants meta for all the code components in the site,
+// this is done separately from the other code component metas because we need
+// special handling for model elements that depend on it
+async function syncCodeComponentsInteractionVariants(ctx: SiteCtx) {
+  return failableAsync<void, never>(async ({ success, run }) => {
+    run(
+      await ctx.change(
+        ({ success: syncedInteractionVariantMeta }) => {
+          ctx.site.components.forEach((c) => {
+            if (isCodeComponent(c)) {
+              const meta = ctx.codeComponentsRegistry
+                .getRegisteredComponentsAndContextsMap()
+                .get(c.name)?.meta;
+              const interactionVariants = meta
+                ? mkCodeComponentInteractionVariantsFromMeta(meta)
+                : {};
+              if (
+                !instUtil.deepEquals(
+                  c.codeComponentMeta.interactionVariantMeta,
+                  interactionVariants,
+                  true
+                )
+              ) {
+                c.codeComponentMeta.interactionVariantMeta =
+                  interactionVariants;
+              }
+            }
+          });
+          return syncedInteractionVariantMeta();
+        },
+        { noUndoRecord: true }
+      )
+    );
+
+    return success();
+  });
+}
+
+async function fixCodeComponentsInteractionVariants(
+  ctx: SiteCtx,
+  fns: CodeComponentSyncCallbackFns
+) {
+  return failableAsync<void, never>(async ({ success, run }) => {
+    const removedSelectorsByComponent: [Component, string[]][] = [];
+
+    const componentsToObserve: Component[] = [];
+
+    ctx.site.components.forEach((c) => {
+      if (!isCodeComponent(c)) {
+        const { unregisterdSelectors } =
+          getInvalidInteractiveVariantsInComponent(c);
+
+        if (unregisterdSelectors.length > 0) {
+          removedSelectorsByComponent.push([c, unregisterdSelectors]);
+          componentsToObserve.push(c);
+        }
+      }
+    });
+
+    if (removedSelectorsByComponent.length > 0) {
+      await fns.confirmRemovedInteractiveVariants?.(
+        removedSelectorsByComponent
+      );
+    }
+
+    ctx.observeComponents(componentsToObserve);
+
+    run(
+      await ctx.change(
+        ({ success: removedInvalidInteractionVariants }) => {
+          componentsToObserve.forEach((c) => {
+            ensureOnlyValidInteractiveVariantsInComponent(ctx.site, c);
+          });
+          return removedInvalidInteractionVariants();
+        },
+        { noUndoRecord: true }
+      )
+    );
+
+    return success();
+  });
+}
+
 async function refreshCodeComponentMetas(
   ctx: SiteCtx,
   fns: CodeComponentSyncCallbackFns
@@ -1233,21 +1328,6 @@ function refreshCodeComponentMeta(
         mustBeNamed = true;
       }
       c.codeComponentMeta.hasRef = !!(meta as any).refActions;
-
-      if (meta.interactionVariants) {
-        const interactionVariants =
-          mkCodeComponentInteractionVariantsFromMeta(meta);
-        if (
-          !c.codeComponentMeta.interactionVariantMeta ||
-          !instUtil.deepEquals(
-            c.codeComponentMeta.interactionVariantMeta,
-            interactionVariants,
-            true
-          )
-        ) {
-          c.codeComponentMeta.interactionVariantMeta = interactionVariants;
-        }
-      }
 
       // Explicitly not handling defaultSlotContents, which is handled by
       // refreshDefaultSlotContents()
@@ -3599,7 +3679,10 @@ export function mkCodeComponentInteractionVariantsFromMeta(
 
   return Object.fromEntries(
     Object.entries(meta.interactionVariants).map(
-      ([selector, { cssSelector, displayName }]) => [
+      ([selector, { cssSelector, displayName }]): [
+        string,
+        CodeComponentInteractionVariantMeta
+      ] => [
         selector,
         new CodeComponentInteractionVariantMeta({ cssSelector, displayName }),
       ]

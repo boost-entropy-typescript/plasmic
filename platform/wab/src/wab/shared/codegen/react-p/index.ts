@@ -1,103 +1,5 @@
-import {
-  CodeLibrary,
-  Component,
-  ComponentDataQuery,
-  ComponentVariantGroup,
-  CustomFunction,
-  ensureKnownNamedState,
-  ensureKnownVariantGroup,
-  Expr,
-  ImageAsset,
-  ImageAssetRef,
-  isKnownColorPropType,
-  isKnownCustomCode,
-  isKnownDefaultStylesClassNamePropType,
-  isKnownDefaultStylesPropType,
-  isKnownEventHandler,
-  isKnownExprText,
-  isKnownFunctionType,
-  isKnownGlobalVariantSplitContent,
-  isKnownImageAssetRef,
-  isKnownNamedState,
-  isKnownObjectPath,
-  isKnownRawText,
-  isKnownRenderExpr,
-  isKnownRenderFuncType,
-  isKnownStateParam,
-  isKnownStyleExpr,
-  isKnownStyleScopeClassNamePropType,
-  isKnownStyleTokenRef,
-  isKnownTplComponent,
-  isKnownTplSlot,
-  isKnownTplTag,
-  isKnownVirtualRenderExpr,
-  PageMeta,
-  Param,
-  RichText,
-  Site,
-  State,
-  StyleToken,
-  TplComponent,
-  TplNode,
-  TplSlot,
-  TplTag,
-  Variant,
-  VariantGroup,
-  VariantSetting,
-} from "@/wab/classes";
-import {
-  arrayEq,
-  assert,
-  ensure,
-  ensureArray,
-  isNonNil,
-  strict,
-  tuple,
-  UnexpectedTypeError,
-  uniqueName,
-  withDefault,
-  withDefaultFunc,
-  withoutNils,
-} from "@/wab/common";
 import { arrayReversed } from "@/wab/commons/collections";
 import { DeepMap } from "@/wab/commons/deep-map";
-import {
-  findVariantGroupForParam,
-  getCodeComponentHelperImportName,
-  getComponentDisplayName,
-  getNonVariantParams,
-  getRealParams,
-  getRepetitionElementName,
-  getRepetitionIndexName,
-  getSuperComponents,
-  getSuperComponentVariantToComponent,
-  getVariantParams,
-  isCodeComponent,
-  isHostLessCodeComponent,
-  isPageComponent,
-  PageComponent,
-  tryGetVariantGroupValueFromArg,
-} from "@/wab/components";
-import { getCssRulesFromRs, tryGetBrowserCssInitial } from "@/wab/css";
-import {
-  applyPlasmicUserDevFlagOverrides,
-  DEVFLAGS,
-  DevFlagsType,
-  getProjectFlags,
-} from "@/wab/devflags";
-import {
-  codeLit,
-  ExprCtx,
-  extractReferencedParam,
-  getCodeExpressionWithFallback,
-  getRawCode,
-  jsonLit,
-  removeFallbackFromDataSourceOp,
-  code as toCode,
-  tryExtractJson,
-} from "@/wab/exprs";
-import { ImageAssetType } from "@/wab/image-asset-type";
-import { ParamExportType } from "@/wab/lang";
 import { AppAuthProvider, ProjectId } from "@/wab/shared/ApiSchema";
 import {
   allCustomFunctions,
@@ -114,6 +16,10 @@ import {
   customFunctionId,
   isCodeComponentWithHelpers,
 } from "@/wab/shared/code-components/code-components";
+import {
+  isTplRootWithCodeComponentInteractionVariants,
+  withoutInteractionVariantPrefix,
+} from "@/wab/shared/code-components/interaction-variants";
 import { ComponentGenHelper } from "@/wab/shared/codegen/codegen-helpers";
 import {
   extractUsedFontsFromComponents,
@@ -228,67 +134,54 @@ import {
   serializeVariantGroupMembersType,
   serializeVariantsArgsTypeContent,
 } from "@/wab/shared/codegen/variants";
-import { isImageType, wabToTsType } from "@/wab/shared/core/model-util";
+import {
+  arrayEq,
+  assert,
+  ensure,
+  ensureArray,
+  isNonNil,
+  strict,
+  tuple,
+  UnexpectedTypeError,
+  uniqueName,
+  withDefault,
+  withDefaultFunc,
+  withoutNils,
+} from "@/wab/shared/common";
+import {
+  findVariantGroupForParam,
+  getCodeComponentHelperImportName,
+  getComponentDisplayName,
+  getNonVariantParams,
+  getRealParams,
+  getRepetitionElementName,
+  getRepetitionIndexName,
+  getSuperComponents,
+  getSuperComponentVariantToComponent,
+  getVariantParams,
+  isCodeComponent,
+  isHostLessCodeComponent,
+  isPageComponent,
+  PageComponent,
+  tryGetVariantGroupValueFromArg,
+} from "@/wab/shared/core/components";
+import {
+  codeLit,
+  ExprCtx,
+  extractReferencedParam,
+  getCodeExpressionWithFallback,
+  getRawCode,
+  jsonLit,
+  removeFallbackFromDataSourceOp,
+  code as toCode,
+  tryExtractJson,
+} from "@/wab/shared/core/exprs";
+import { ImageAssetType } from "@/wab/shared/core/image-asset-type";
+import { ParamExportType } from "@/wab/shared/core/lang";
 import {
   isTagInline,
   normalizeMarkers,
 } from "@/wab/shared/core/rich-text-util";
-import {
-  plasmicImgAttrStyles,
-  TPL_COMPONENT_PROPS,
-} from "@/wab/shared/core/style-props";
-import { exprUsesCtxOrFreeVars } from "@/wab/shared/eval/expression-parser";
-import {
-  extractAllVariantCombosForText,
-  genLocalizationString,
-  isLocalizableTextBlock,
-  LOCALIZABLE_HTML_ATTRS,
-  LocalizableStringSource,
-  LocalizationConfig,
-  makeLocalizationStringKey,
-} from "@/wab/shared/localization";
-import {
-  getPlumeCodegenPlugin,
-  PlumeType,
-} from "@/wab/shared/plume/plume-registry";
-import { RSH } from "@/wab/shared/RuleSetHelpers";
-import {
-  deriveSizeStyleValue,
-  getPageComponentSizeType,
-} from "@/wab/shared/sizingutils";
-import {
-  getSlotParams,
-  isDescendantOfVirtualRenderExpr,
-  isPlainTextArgNode,
-  isStyledTplSlot,
-  isTplPlainText,
-} from "@/wab/shared/SlotUtils";
-import { ensureBaseVariant } from "@/wab/shared/TplMgr";
-import { $$$ } from "@/wab/shared/TplQuery";
-import {
-  makeGlobalVariantComboSorter,
-  makeVariantComboSorter,
-  sortedVariantCombos,
-  sortedVariantSettings,
-  VariantComboSorter,
-} from "@/wab/shared/variant-sort";
-import { VariantedStylesHelper } from "@/wab/shared/VariantedStylesHelper";
-import {
-  getBaseVariant,
-  getReferencedVariantGroups,
-  hasStyleVariant,
-  isActiveVariantSetting,
-  isArbitraryCssSelector,
-  isBaseRuleVariant,
-  isBaseVariant,
-  isGlobalVariant,
-  isScreenVariant,
-  isStandaloneVariantGroup,
-  isStyleVariant,
-  isTplRootWithCCInteractionVariants,
-  VariantCombo,
-  VariantGroupType,
-} from "@/wab/shared/Variants";
 import {
   allImageAssets,
   allImportedStyleTokensWithProjectInfo,
@@ -297,8 +190,8 @@ import {
   allStyleTokensDict,
   CssProjectDependencies,
   isHostLessPackage,
-} from "@/wab/sites";
-import { SplitStatus } from "@/wab/splits";
+} from "@/wab/shared/core/sites";
+import { SplitStatus } from "@/wab/shared/core/splits";
 import {
   DATA_SOURCE_ACTIONS,
   getLastPartOfImplicitStateName,
@@ -311,7 +204,11 @@ import {
   isReadonlyState,
   isWritableState,
   LOGIN_ACTIONS,
-} from "@/wab/states";
+} from "@/wab/shared/core/states";
+import {
+  plasmicImgAttrStyles,
+  TPL_COMPONENT_PROPS,
+} from "@/wab/shared/core/style-props";
 import {
   CssVarResolver,
   defaultStyleClassNames,
@@ -333,7 +230,7 @@ import {
   mkThemeStyleRule,
   showSimpleCssRuleSet,
   tryAugmentRulesWithScreenVariant,
-} from "@/wab/styles";
+} from "@/wab/shared/core/styles";
 import {
   ancestorsUp,
   findVariantSettingsUnderTpl,
@@ -354,8 +251,114 @@ import {
   TplTagType,
   TplTextTag,
   walkTpls,
-} from "@/wab/tpls";
-import { getIntegrationsUrl, getPublicUrl } from "@/wab/urls";
+} from "@/wab/shared/core/tpls";
+import { getCssRulesFromRs, tryGetBrowserCssInitial } from "@/wab/shared/css";
+import {
+  applyPlasmicUserDevFlagOverrides,
+  DEVFLAGS,
+  DevFlagsType,
+  getProjectFlags,
+} from "@/wab/shared/devflags";
+import { exprUsesCtxOrFreeVars } from "@/wab/shared/eval/expression-parser";
+import {
+  extractAllVariantCombosForText,
+  genLocalizationString,
+  isLocalizableTextBlock,
+  LOCALIZABLE_HTML_ATTRS,
+  LocalizableStringSource,
+  LocalizationConfig,
+  makeLocalizationStringKey,
+} from "@/wab/shared/localization";
+import {
+  CodeLibrary,
+  Component,
+  ComponentDataQuery,
+  ComponentVariantGroup,
+  CustomFunction,
+  ensureKnownNamedState,
+  ensureKnownVariantGroup,
+  Expr,
+  ImageAsset,
+  ImageAssetRef,
+  isKnownColorPropType,
+  isKnownCustomCode,
+  isKnownDefaultStylesClassNamePropType,
+  isKnownDefaultStylesPropType,
+  isKnownEventHandler,
+  isKnownExprText,
+  isKnownFunctionType,
+  isKnownGlobalVariantSplitContent,
+  isKnownImageAssetRef,
+  isKnownNamedState,
+  isKnownObjectPath,
+  isKnownRawText,
+  isKnownRenderExpr,
+  isKnownRenderFuncType,
+  isKnownStateParam,
+  isKnownStyleExpr,
+  isKnownStyleScopeClassNamePropType,
+  isKnownStyleTokenRef,
+  isKnownTplComponent,
+  isKnownTplSlot,
+  isKnownTplTag,
+  isKnownVirtualRenderExpr,
+  PageMeta,
+  Param,
+  RichText,
+  Site,
+  State,
+  StyleToken,
+  TplComponent,
+  TplNode,
+  TplSlot,
+  TplTag,
+  Variant,
+  VariantGroup,
+  VariantSetting,
+} from "@/wab/shared/model/classes";
+import { isImageType, wabToTsType } from "@/wab/shared/model/model-util";
+import {
+  getPlumeCodegenPlugin,
+  PlumeType,
+} from "@/wab/shared/plume/plume-registry";
+import { RSH } from "@/wab/shared/RuleSetHelpers";
+import {
+  deriveSizeStyleValue,
+  getPageComponentSizeType,
+} from "@/wab/shared/sizingutils";
+import {
+  getSlotParams,
+  isDescendantOfVirtualRenderExpr,
+  isPlainTextArgNode,
+  isStyledTplSlot,
+  isTplPlainText,
+} from "@/wab/shared/SlotUtils";
+import { ensureBaseVariant } from "@/wab/shared/TplMgr";
+import { $$$ } from "@/wab/shared/TplQuery";
+import { getIntegrationsUrl, getPublicUrl } from "@/wab/shared/urls";
+import {
+  makeGlobalVariantComboSorter,
+  makeVariantComboSorter,
+  sortedVariantCombos,
+  sortedVariantSettings,
+  VariantComboSorter,
+} from "@/wab/shared/variant-sort";
+import { VariantedStylesHelper } from "@/wab/shared/VariantedStylesHelper";
+import {
+  getBaseVariant,
+  getReferencedVariantGroups,
+  hasStyleVariant,
+  isActiveVariantSetting,
+  isArbitraryCssSelector,
+  isBaseRuleVariant,
+  isBaseVariant,
+  isGlobalVariant,
+  isScreenVariant,
+  isStandaloneVariantGroup,
+  isStyleVariant,
+  VariantCombo,
+  VariantGroupType,
+} from "@/wab/shared/Variants";
 import L, { groupBy, sortBy } from "lodash";
 import memoizeOne from "memoize-one";
 import type { SetRequired } from "type-fest";
@@ -415,6 +418,11 @@ export function exportProjectConfig(
   const fontsCss =
     exportOpts?.fontOpts?.scheme === "none" ? "" : makeCssImports(fontUsages);
 
+  // For loader, infix the css variables from the default styles with the project id.
+  // This is to make sure each project uses the default style specified for it and not
+  // get it overwritten by another project.
+  const shortProjectId = projectId.slice(0, 5);
+
   const resolver = new CssVarResolver(
     allStyleTokens(site, { includeDeps: "all" }),
     allMixins(site, { includeDeps: "all" }),
@@ -422,6 +430,7 @@ export function exportProjectConfig(
     site.activeTheme,
     {
       useCssVariables: true,
+      cssVariableInfix: shortProjectId,
     }
   );
   const rootResetClass = makeRootResetClassName(projectId, {
@@ -444,6 +453,7 @@ export function exportProjectConfig(
         getProjectFlags(site).useWhitespaceNormal
           ? "normal"
           : "enforce",
+      cssVariableInfix: shortProjectId,
     }
   );
 
@@ -1321,10 +1331,12 @@ export function makeVariantComboChecker(
   const variantChecker = (variant: Variant) => {
     if (isStyleVariant(variant)) {
       const tplRoot = component.tplTree;
-      if (isTplRootWithCCInteractionVariants(tplRoot)) {
+      if (isTplRootWithCodeComponentInteractionVariants(tplRoot)) {
         return variant.selectors
           .map((sel) => {
-            return `$ccInteractions[${jsString(sel)}]`;
+            return `$ccInteractions[${jsString(
+              withoutInteractionVariantPrefix(sel)
+            )}]`;
           })
           .join(" && ");
       }
@@ -2213,7 +2225,7 @@ export function serializeLocalStyleTriggers(ctx: SerializerBaseContext) {
 }
 
 export function serializeInteractionVariantsTriggers(tplRoot: TplNode) {
-  if (!isTplRootWithCCInteractionVariants(tplRoot)) {
+  if (!isTplRootWithCodeComponentInteractionVariants(tplRoot)) {
     return "";
   }
 
@@ -2659,7 +2671,7 @@ export function getOrderedExplicitVSettings(
       shouldGenVariantSetting(ctx, vs) &&
       (!hasStyleVariant(vs.variants) ||
         shouldGenReactHook(vs, ctx.component) ||
-        isTplRootWithCCInteractionVariants(ctx.component.tplTree))
+        isTplRootWithCodeComponentInteractionVariants(ctx.component.tplTree))
   );
   if (interpreterMeta) {
     interpreterMeta.nodeUuidToOrderedVsettings[node.uuid] =
@@ -3592,7 +3604,7 @@ function serializeTplComponent(ctx: SerializerBaseContext, node: TplComponent) {
     ] = `(ref) => { $refs[${jsLiteral(nodeName)}] = ref; }`;
   }
 
-  if (isRoot && isTplRootWithCCInteractionVariants(node)) {
+  if (isRoot && isTplRootWithCodeComponentInteractionVariants(node)) {
     attrs["updateInteractionVariant"] = `updateInteractionVariant`;
   }
 

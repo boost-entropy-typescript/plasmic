@@ -1,18 +1,22 @@
-import { isKnownCustomCode, isKnownObjectPath, Site } from "@/wab/classes";
-import { ensure } from "@/wab/common";
-import { ComponentType, mkComponent } from "@/wab/components";
+import { ensure } from "@/wab/shared/common";
+import { ComponentType, mkComponent } from "@/wab/shared/core/components";
 import { Bundle, Bundler } from "@/wab/shared/bundler";
 import { cloneCopyState } from "@/wab/shared/insertable-templates";
-import { CopyElementsReference } from "@/wab/shared/insertable-templates/types";
 import copyAndPasteBundle from "@/wab/shared/insertable-templates/__tests__/bundles/copy-and-paste.json";
+import { CopyElementsReference } from "@/wab/shared/insertable-templates/types";
+import {
+  isKnownCustomCode,
+  isKnownObjectPath,
+  Site,
+} from "@/wab/shared/model/classes";
 import { mkBaseVariant } from "@/wab/shared/Variants";
-import { createSite } from "@/wab/sites";
+import { createSite } from "@/wab/shared/core/sites";
 import {
   findExprsInTree,
   flattenTpls,
   isTplNamable,
   mkTplTag,
-} from "@/wab/tpls";
+} from "@/wab/shared/core/tpls";
 
 describe("cloneCopyState", () => {
   const getBundleSite = async (projectBundle: Bundle) => {

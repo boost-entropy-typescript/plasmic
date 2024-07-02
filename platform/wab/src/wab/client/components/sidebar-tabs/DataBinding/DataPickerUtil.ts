@@ -1,35 +1,35 @@
+import { ControlExtras } from "@/wab/client/components/sidebar-tabs/PropEditorRow";
+import { PlasmicDataPickerColumnItem__VariantMembers } from "@/wab/client/plasmic/plasmic_kit_data_binding/PlasmicDataPickerColumnItem";
+import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
+import { assert, ensure, isNonNil, isPrefixArray } from "@/wab/shared/common";
+import {
+  getRealParams,
+  isCodeComponent,
+  isPlumeComponent,
+} from "@/wab/shared/core/components";
+import { alwaysOmitKeys, flattenedKeys, omittedKeysIfEmpty } from "@/wab/shared/core/exprs";
+import { toVarName } from "@/wab/shared/codegen/util";
+import { getContextDependentValue } from "@/wab/shared/context-dependent-value";
+import { tryEvalExpr } from "@/wab/shared/eval";
+import { pathToString } from "@/wab/shared/eval/expression-parser";
 import {
   Component,
   isKnownNamedState,
   State,
   TplNode,
   VariantGroup,
-} from "@/wab/classes";
-import { ControlExtras } from "@/wab/client/components/sidebar-tabs/PropEditorRow";
-import { PlasmicDataPickerColumnItem__VariantMembers } from "@/wab/client/plasmic/plasmic_kit_data_binding/PlasmicDataPickerColumnItem";
-import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
-import { assert, ensure, isNonNil, isPrefixArray } from "@/wab/common";
-import {
-  getRealParams,
-  isCodeComponent,
-  isPlumeComponent,
-} from "@/wab/components";
-import { alwaysOmitKeys, flattenedKeys, omittedKeysIfEmpty } from "@/wab/exprs";
-import { toVarName } from "@/wab/shared/codegen/util";
-import { getContextDependentValue } from "@/wab/shared/context-dependent-value";
+} from "@/wab/shared/model/classes";
 import {
   UNINITIALIZED_BOOLEAN,
   UNINITIALIZED_NUMBER,
   UNINITIALIZED_OBJECT,
   UNINITIALIZED_STRING,
-} from "@/wab/shared/core/model-util";
-import { tryEvalExpr } from "@/wab/shared/eval";
-import { pathToString } from "@/wab/shared/eval/expression-parser";
+} from "@/wab/shared/model/model-util";
 import { getPlumeEditorPlugin } from "@/wab/shared/plume/plume-registry";
 import { getAncestorTplSlot } from "@/wab/shared/SlotUtils";
 import { isStandaloneVariantGroup } from "@/wab/shared/Variants";
-import { findStateIn$State } from "@/wab/states";
-import { isTplComponent } from "@/wab/tpls";
+import { findStateIn$State } from "@/wab/shared/core/states";
+import { isTplComponent } from "@/wab/shared/core/tpls";
 import { DataMeta, mkMetaName } from "@plasmicapp/host";
 import { isArray, isPlainObject, partition } from "lodash";
 

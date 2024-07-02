@@ -1,15 +1,3 @@
-import {
-  ArenaFrame,
-  ArenaFrameRow,
-  Component,
-  ComponentArena,
-  ensureKnownComponentVariantGroup,
-  ensureMaybeKnownVariantGroup,
-  isKnownVariantGroup,
-  PageArena,
-  Site,
-  VariantGroup,
-} from "@/wab/classes";
 import { CanvasCtx } from "@/wab/client/components/canvas/canvas-ctx";
 import { maybeShowContextMenu } from "@/wab/client/components/ContextMenu";
 import ExperimentCanvasButton from "@/wab/client/components/splits/ExperimentCanvasButton";
@@ -28,12 +16,12 @@ import {
 import { useRefMap } from "@/wab/client/hooks/useRefMap";
 import { useResponsiveBreakpoints } from "@/wab/client/hooks/useResponsiveBreakpoints";
 import { StudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
-import { maybe, spawn } from "@/wab/common";
+import { maybe, spawn } from "@/wab/shared/common";
 import { MaybeWrap } from "@/wab/commons/components/ReactUtil";
 import {
   allComponentVariants,
   getSuperComponentVariantGroupToComponent,
-} from "@/wab/components";
+} from "@/wab/shared/core/components";
 import {
   ensureCustomFrameForActivatedVariants,
   getFrameHeight,
@@ -42,9 +30,21 @@ import { getComponentArenaRowLabel } from "@/wab/shared/component-arenas";
 import {
   COMBINATIONS_CAP,
   FRAME_LOWER,
-  VARIANTS_LOWER,
   VARIANT_CAP,
+  VARIANTS_LOWER,
 } from "@/wab/shared/Labels";
+import {
+  ArenaFrame,
+  ArenaFrameRow,
+  Component,
+  ComponentArena,
+  ensureKnownComponentVariantGroup,
+  ensureMaybeKnownVariantGroup,
+  isKnownVariantGroup,
+  PageArena,
+  Site,
+  VariantGroup,
+} from "@/wab/shared/model/classes";
 import { VariantOptionsType } from "@/wab/shared/TplMgr";
 import {
   canHaveInteractionVariant,
@@ -53,7 +53,7 @@ import {
   isStandaloneVariantGroup,
   VariantCombo,
 } from "@/wab/shared/Variants";
-import { allGlobalVariantGroups } from "@/wab/sites";
+import { allGlobalVariantGroups } from "@/wab/shared/core/sites";
 import { Button, Form, Menu, Popover } from "antd";
 import cn from "classnames";
 import { observer } from "mobx-react";

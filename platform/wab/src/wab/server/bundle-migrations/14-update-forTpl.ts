@@ -1,10 +1,4 @@
-import {
-  ensureKnownVariant,
-  isKnownSite,
-  ProjectDependency,
-  Site,
-} from "@/wab/classes";
-import { ensureInstance } from "@/wab/common";
+import { ensureInstance } from "@/wab/shared/common";
 import * as migration15 from "@/wab/server/bundle-migrations/15-remove-override";
 import { BundleMigrationType } from "@/wab/server/db/bundle-migration-utils";
 import { loadDepPackages } from "@/wab/server/db/DbBundleLoader";
@@ -12,6 +6,12 @@ import { DbMgr } from "@/wab/server/db/DbMgr";
 import { PkgVersion, ProjectRevision } from "@/wab/server/entities/Entities";
 import { Bundler } from "@/wab/shared/bundler";
 import { UnsafeBundle } from "@/wab/shared/bundles";
+import {
+  ensureKnownVariant,
+  isKnownSite,
+  ProjectDependency,
+  Site,
+} from "@/wab/shared/model/classes";
 import { TplMgr } from "@/wab/shared/TplMgr";
 
 export async function migrate(

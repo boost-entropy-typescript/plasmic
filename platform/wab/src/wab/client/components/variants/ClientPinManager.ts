@@ -1,14 +1,14 @@
-import { Variant } from "@/wab/classes";
 import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
-import { ensure, mergeMaps, partitions, xpickBy } from "@/wab/common";
+import { ensure, mergeMaps, partitions, xpickBy } from "@/wab/shared/common";
+import { PinManager, PinState, PinStateManager } from "@/wab/shared/PinManager";
+import { isGlobalVariant } from "@/wab/shared/Variants";
 import { toVarName } from "@/wab/shared/codegen/util";
 import {
   ComponentVariantFrame,
   GlobalVariantFrame,
 } from "@/wab/shared/component-frame";
-import { PinManager, PinState, PinStateManager } from "@/wab/shared/PinManager";
-import { isGlobalVariant } from "@/wab/shared/Variants";
-import { ValComponent } from "@/wab/val-nodes";
+import { Variant } from "@/wab/shared/model/classes";
+import { ValComponent } from "@/wab/shared/core/val-nodes";
 import L from "lodash";
 import { computed } from "mobx";
 

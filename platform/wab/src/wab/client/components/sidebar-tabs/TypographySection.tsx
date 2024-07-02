@@ -1,16 +1,3 @@
-import {
-  CustomCode,
-  ensureKnownTplTag,
-  ExprText,
-  isKnownCustomCode,
-  isKnownExprText,
-  isKnownRawText,
-  ObjectPath,
-  RawText,
-  RichText,
-  TplSlot,
-  TplTag,
-} from "@/wab/classes";
 import ContextMenuIndicator from "@/wab/client/components/ContextMenuIndicator/ContextMenuIndicator";
 import { DataPickerEditor } from "@/wab/client/components/sidebar-tabs/ComponentProps/DataPickerEditor";
 import { StringPropEditor } from "@/wab/client/components/sidebar-tabs/ComponentProps/StringPropEditor";
@@ -32,7 +19,7 @@ import { Typography } from "@/wab/client/components/style-controls/Typography";
 import { LabelWithDetailedTooltip } from "@/wab/client/components/widgets/LabelWithDetailedTooltip";
 import { useStudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
 import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
-import { assert, cx, ensureInstance } from "@/wab/common";
+import { assert, cx, ensureInstance } from "@/wab/shared/common";
 import { MaybeWrap } from "@/wab/commons/components/ReactUtil";
 import {
   asCode,
@@ -43,19 +30,32 @@ import {
   extractValueSavedFromDataPicker,
   isFallbackSet,
   tryExtractJson,
-} from "@/wab/exprs";
+} from "@/wab/shared/core/exprs";
 import {
   inheritableTypographyCssProps,
   typographyCssProps,
 } from "@/wab/shared/core/style-props";
 import { computeDefinedIndicator } from "@/wab/shared/defined-indicator";
 import {
+  CustomCode,
+  ensureKnownTplTag,
+  ExprText,
+  isKnownCustomCode,
+  isKnownExprText,
+  isKnownRawText,
+  ObjectPath,
+  RawText,
+  RichText,
+  TplSlot,
+  TplTag,
+} from "@/wab/shared/model/classes";
+import {
   isCodeComponentSlot,
   isPlainTextTplSlot,
 } from "@/wab/shared/SlotUtils";
 import { VariantedStylesHelper } from "@/wab/shared/VariantedStylesHelper";
 import { isBaseVariant } from "@/wab/shared/Variants";
-import { getRichTextContent, isTplTextBlock } from "@/wab/tpls";
+import { getRichTextContent, isTplTextBlock } from "@/wab/shared/core/tpls";
 import { Alert, Menu, Tooltip } from "antd";
 import { observer } from "mobx-react";
 import React from "react";
