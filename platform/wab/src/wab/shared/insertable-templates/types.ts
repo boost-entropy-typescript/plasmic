@@ -1,16 +1,16 @@
 import {
+  InsertableTemplateComponentResolution,
+  InsertableTemplateTokenResolution,
+} from "@/wab/shared/devflags";
+import { PkgInfo } from "@/wab/shared/SharedApi";
+import { VariantCombo } from "@/wab/shared/Variants";
+import {
   Arena,
   Component,
   ProjectDependency,
   Site,
   Variant,
-} from "@/wab/classes";
-import {
-  InsertableTemplateComponentResolution,
-  InsertableTemplateTokenResolution,
-} from "@/wab/devflags";
-import { PkgInfo } from "@/wab/shared/SharedApi";
-import { VariantCombo } from "@/wab/shared/Variants";
+} from "@/wab/shared/model/classes";
 
 export type HostLessDependencies = Record<
   string,

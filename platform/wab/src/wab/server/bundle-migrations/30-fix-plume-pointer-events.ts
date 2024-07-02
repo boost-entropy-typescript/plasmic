@@ -1,12 +1,12 @@
-import { TplNode } from "@/wab/classes";
+import { UnbundledMigrationFn } from "@/wab/server/db/BundleMigrator";
 import {
   BundleMigrationType,
   unbundleSite,
 } from "@/wab/server/db/bundle-migration-utils";
-import { UnbundledMigrationFn } from "@/wab/server/db/BundleMigrator";
-import { Bundler } from "@/wab/shared/bundler";
 import { RSH } from "@/wab/shared/RuleSetHelpers";
-import { flattenTpls, isTplNamable, isTplVariantable } from "@/wab/tpls";
+import { Bundler } from "@/wab/shared/bundler";
+import { TplNode } from "@/wab/shared/model/classes";
+import { flattenTpls, isTplNamable, isTplVariantable } from "@/wab/shared/core/tpls";
 
 /**
  * This is fixing https://app.shortcut.com/plasmic/story/20351/urgent-plume-button-component-click-not-working

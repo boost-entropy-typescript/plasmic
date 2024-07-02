@@ -1,14 +1,14 @@
-import { Expr, TplComponent } from "@/wab/classes";
 import { getControlModePropType } from "@/wab/client/code-components/code-components";
 import { updateComponentMode } from "@/wab/client/code-components/simplified-mode";
 import { SidebarSection } from "@/wab/client/components/sidebar/SidebarSection";
 import StyleSwitch from "@/wab/client/components/style-controls/StyleSwitch";
 import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
 import { TutorialEventsType } from "@/wab/client/tours/tutorials/tutorials-events";
-import { ensure, spawn } from "@/wab/common";
-import { tryExtractJson } from "@/wab/exprs";
+import { ensure, spawn } from "@/wab/shared/common";
+import { tryExtractJson } from "@/wab/shared/core/exprs";
 import { getTplComponentArg } from "@/wab/shared/TplMgr";
 import { ensureBaseVariantSetting } from "@/wab/shared/Variants";
+import { Expr, TplComponent } from "@/wab/shared/model/classes";
 import type { CodeComponentMode } from "@plasmicapp/host";
 import { observer } from "mobx-react";
 import React from "react";

@@ -1,11 +1,10 @@
-import { ArenaFrame } from "@/wab/classes";
 import { CanvasCtx } from "@/wab/client/components/canvas/canvas-ctx";
 import { ComponentArenaLayout } from "@/wab/client/components/studio/arenas/ComponentArenaLayout";
 import { FocusModeLayout } from "@/wab/client/components/studio/arenas/FocusModeLayout";
 import { FreeFramesLayout } from "@/wab/client/components/studio/arenas/FreeFramesLayout";
 import { PageArenaLayout } from "@/wab/client/components/studio/arenas/PageArenaLayout";
 import { StudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
-import { cx, unexpected } from "@/wab/common";
+import { cx, unexpected } from "@/wab/shared/common";
 import {
   AnyArena,
   isComponentArena,
@@ -13,6 +12,7 @@ import {
   isMixedArena,
   isPageArena,
 } from "@/wab/shared/Arenas";
+import { ArenaFrame } from "@/wab/shared/model/classes";
 import { observer } from "mobx-react";
 import React from "react";
 

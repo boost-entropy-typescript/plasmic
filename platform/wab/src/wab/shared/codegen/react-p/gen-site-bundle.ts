@@ -1,12 +1,11 @@
-import { Component, Site } from "@/wab/classes";
 import {
   exportCodeComponentConfig,
   isCodeComponent,
   isFrameComponent,
   isHostLessCodeComponent,
   isPageComponent,
-} from "@/wab/components";
-import { ImageAssetType } from "@/wab/image-asset-type";
+} from "@/wab/shared/core/components";
+import { ImageAssetType } from "@/wab/shared/core/image-asset-type";
 import { AppAuthProvider } from "@/wab/shared/ApiSchema";
 import {
   ComponentGenHelper,
@@ -20,7 +19,8 @@ import { exportReactPlain } from "@/wab/shared/codegen/react-p/plain";
 import { exportStyleTokens } from "@/wab/shared/codegen/style-tokens";
 import { ExportOpts, ProjectConfig } from "@/wab/shared/codegen/types";
 import { exportGlobalVariantGroup } from "@/wab/shared/codegen/variants";
-import { CssVarResolver } from "@/wab/styles";
+import { Component, Site } from "@/wab/shared/model/classes";
+import { CssVarResolver } from "@/wab/shared/core/styles";
 import {
   computeSerializerSiteContext,
   exportCustomFunctionConfig,

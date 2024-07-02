@@ -8,8 +8,7 @@ import {
   NoneBackground,
   RadialGradient,
   Stop,
-} from "@/wab/bg-styles";
-import { ImageAsset } from "@/wab/classes";
+} from "@/wab/shared/core/bg-styles";
 import {
   boxShadowNodeTypes,
   delimiters,
@@ -33,9 +32,10 @@ import {
   transformToMatrix,
   truncateNumber,
 } from "@/wab/client/figma-importer/utils";
-import { assert, ensure, rad2deg } from "@/wab/common";
+import { assert, ensure, rad2deg } from "@/wab/shared/common";
 import { Matrix as AltMatrix } from "@/wab/commons/transformation-matrix";
-import { mkImageAssetRef } from "@/wab/image-assets";
+import { mkImageAssetRef } from "@/wab/shared/core/image-assets";
+import { ImageAsset } from "@/wab/shared/model/classes";
 import { omit } from "lodash";
 import { CSSProperties } from "react";
 import {

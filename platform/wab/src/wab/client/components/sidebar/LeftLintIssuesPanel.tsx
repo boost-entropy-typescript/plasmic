@@ -1,4 +1,3 @@
-import { Component, isKnownComponent } from "@/wab/classes";
 import { useAppRoles } from "@/wab/client/components/app-auth/app-auth-contexts";
 import {
   ItemOrGroup,
@@ -21,15 +20,16 @@ import {
 } from "@/wab/client/plasmic/plasmic_kit_left_pane/PlasmicLeftLintIssuesPanel";
 import EmojiHappysvgIcon from "@/wab/client/plasmic/q_4_icons/icons/PlasmicIcon__EmojiHappysvg";
 import { useStudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
-import { maybe, xGroupBy } from "@/wab/common";
+import { maybe, xGroupBy } from "@/wab/shared/common";
 import {
   getComponentDisplayName,
   getPageOrComponentLabel,
-} from "@/wab/components";
-import { DEVFLAGS } from "@/wab/devflags";
+} from "@/wab/shared/core/components";
+import { DEVFLAGS } from "@/wab/shared/devflags";
 import { LintIssue, LintIssueType } from "@/wab/shared/linting/lint-types";
 import { lintSite as lintUnprotectedDataQueries } from "@/wab/shared/linting/lint-unprotected-data-queries";
 import { lintSite } from "@/wab/shared/linting/lint-utils";
+import { Component, isKnownComponent } from "@/wab/shared/model/classes";
 import { HTMLElementRefOf } from "@plasmicapp/react-web";
 import { Empty, Popover, Space, notification } from "antd";
 import { groupBy } from "lodash";

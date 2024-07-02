@@ -1,10 +1,4 @@
-import {
-  ensureKnownProjectDependency,
-  ensureKnownSite,
-  Site,
-} from "@/wab/classes";
-import { meta } from "@/wab/classes-metas";
-import { tuple } from "@/wab/common";
+import { tuple } from "@/wab/shared/common";
 import {
   getLastBundleVersion,
   getMigratedBundle,
@@ -20,6 +14,12 @@ import {
   checkExistingReferences,
   checkRefsInBundle,
 } from "@/wab/shared/bundler";
+import {
+  ensureKnownProjectDependency,
+  ensureKnownSite,
+  Site,
+} from "@/wab/shared/model/classes";
+import { meta } from "@/wab/shared/model/classes-metas";
 import L from "lodash";
 import { EntityManager } from "typeorm";
 import * as util from "util";

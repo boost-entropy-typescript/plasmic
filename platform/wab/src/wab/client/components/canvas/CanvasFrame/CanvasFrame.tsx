@@ -1,10 +1,9 @@
-import { ArenaFrame } from "@/wab/classes";
-import { CanvasCtx } from "@/wab/client/components/canvas/canvas-ctx";
 import { CanvasActions } from "@/wab/client/components/canvas/CanvasActions/CanvasActions";
 import { CanvasArtboardSelectionHandle } from "@/wab/client/components/canvas/CanvasFrame/CanvasArtboardSelectionHandle";
 import styles from "@/wab/client/components/canvas/CanvasFrame/CanvasFrame.module.scss";
 import { CanvasHeader } from "@/wab/client/components/canvas/CanvasFrame/CanvasHeader";
 import { headRegexp } from "@/wab/client/components/canvas/CanvasFrame/headRegexp";
+import { CanvasCtx } from "@/wab/client/components/canvas/canvas-ctx";
 import {
   absorbLinkClick,
   closestTaggedNonTextDomElt,
@@ -14,7 +13,7 @@ import { CommentOverlays } from "@/wab/client/components/comments/CommentOverlay
 import { bindShortcutHandlers } from "@/wab/client/shortcuts/shortcut-handler";
 import { STUDIO_SHORTCUTS } from "@/wab/client/shortcuts/studio/studio-shortcuts";
 import { StudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
-import { assert, cx, ensure, spawn, spawnWrapper, tuple } from "@/wab/common";
+import { assert, cx, ensure, spawn, spawnWrapper, tuple } from "@/wab/shared/common";
 import { ScreenDimmer } from "@/wab/commons/components/ScreenDimmer";
 import { AnyArena, getArenaName, getFrameHeight } from "@/wab/shared/Arenas";
 import { siteToAllGlobalVariants } from "@/wab/shared/cached-selectors";
@@ -23,7 +22,8 @@ import {
   toJsIdentifier,
   toVarName,
 } from "@/wab/shared/codegen/util";
-import { getPublicUrl } from "@/wab/urls";
+import { ArenaFrame } from "@/wab/shared/model/classes";
+import { getPublicUrl } from "@/wab/shared/urls";
 import { Spin } from "antd";
 import $ from "jquery";
 import L from "lodash";
@@ -32,8 +32,8 @@ import { observer } from "mobx-react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useMountedState, useUnmount } from "react-use";
-import { AsyncGeneratorReturnType } from "src/wab/commons/types";
-import { DEVFLAGS } from "src/wab/devflags";
+import { AsyncGeneratorReturnType } from "@/wab/commons/types";
+import { DEVFLAGS } from "@/wab/shared/devflags";
 
 interface CanvasFrameProps {
   studioCtx: StudioCtx;

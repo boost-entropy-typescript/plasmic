@@ -1,9 +1,3 @@
-import {
-  Component,
-  isKnownExpr,
-  ProjectDependency,
-  TplComponent,
-} from "@/wab/classes";
 import ListItem from "@/wab/client/components/ListItem";
 import { promptDeleteDep } from "@/wab/client/components/modals/UpgradeDepModal";
 import { PropValueEditor } from "@/wab/client/components/sidebar-tabs/PropValueEditor";
@@ -25,7 +19,7 @@ import {
   moveIndex,
   spawn,
   swallow,
-} from "@/wab/common";
+} from "@/wab/shared/common";
 import {
   findVariantGroupForParam,
   getComponentDisplayName,
@@ -33,10 +27,10 @@ import {
   getRealParams,
   isContextCodeComponent,
   isHostLessCodeComponent,
-} from "@/wab/components";
-import { asCode, codeLit, tryExtractJson } from "@/wab/exprs";
-import { ComponentPropOrigin } from "@/wab/lang";
-import { walkDependencyTree } from "@/wab/project-deps";
+} from "@/wab/shared/core/components";
+import { asCode, codeLit, tryExtractJson } from "@/wab/shared/core/exprs";
+import { ComponentPropOrigin } from "@/wab/shared/core/lang";
+import { walkDependencyTree } from "@/wab/shared/core/project-deps";
 import {
   getPropTypeType,
   isPlainObjectPropType,
@@ -45,8 +39,14 @@ import {
 import { makeGlobalContextPropName } from "@/wab/shared/codegen/react-p/utils";
 import { paramToVarName } from "@/wab/shared/codegen/util";
 import { DefinedIndicatorType } from "@/wab/shared/defined-indicator";
+import {
+  Component,
+  isKnownExpr,
+  ProjectDependency,
+  TplComponent,
+} from "@/wab/shared/model/classes";
 import { isRenderFuncParam, isSlot } from "@/wab/shared/SlotUtils";
-import { tryGetTplOwnerComponent } from "@/wab/tpls";
+import { tryGetTplOwnerComponent } from "@/wab/shared/core/tpls";
 import { Menu, notification, Tooltip } from "antd";
 import L from "lodash";
 import { autorun } from "mobx";

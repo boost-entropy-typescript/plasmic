@@ -1,20 +1,11 @@
-import {
-  ArenaFrame,
-  Component,
-  isKnownTplTag,
-  TplComponent,
-  TplNode,
-  Variant,
-  VariantSetting,
-} from "@/wab/classes";
-import { assert, ensure } from "@/wab/common";
+import { assert, ensure } from "@/wab/shared/common";
 import { isTokenRef } from "@/wab/commons/StyleToken";
 import {
   getEffectiveVariantSettingOfDeepRootElement,
   isPageComponent,
   PageComponent,
-} from "@/wab/components";
-import { parseCssNumericNew } from "@/wab/css";
+} from "@/wab/shared/core/components";
+import { parseCssNumericNew } from "@/wab/shared/css";
 import { ComponentGenHelper } from "@/wab/shared/codegen/codegen-helpers";
 import {
   CONTENT_LAYOUT_FULL_BLEED,
@@ -37,6 +28,15 @@ import {
 } from "@/wab/shared/layoututils";
 import { keyedComputedFn } from "@/wab/shared/mobx-util";
 import {
+  ArenaFrame,
+  Component,
+  isKnownTplTag,
+  TplComponent,
+  TplNode,
+  Variant,
+  VariantSetting,
+} from "@/wab/shared/model/classes";
+import {
   getCssDefault,
   IRuleSetHelpersX,
   ReadonlyIRuleSetHelpersX,
@@ -51,8 +51,8 @@ import {
   VariantCombo,
 } from "@/wab/shared/Variants";
 import { VariantTplMgr } from "@/wab/shared/VariantTplMgr";
-import { getArenaFrameActiveVariants } from "@/wab/sites";
-import { createRuleSetMerger, expandRuleSets } from "@/wab/styles";
+import { getArenaFrameActiveVariants } from "@/wab/shared/core/sites";
+import { createRuleSetMerger, expandRuleSets } from "@/wab/shared/core/styles";
 import {
   isCodeComponentRoot,
   isComponentRoot,
@@ -63,7 +63,7 @@ import {
   isTplTag,
   isTplTextBlock,
   isTplVariantable,
-} from "@/wab/tpls";
+} from "@/wab/shared/core/tpls";
 import memoizeOne from "memoize-one";
 
 export function isSizeProp(prop: string): prop is "width" | "height" {

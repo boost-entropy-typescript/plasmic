@@ -1,4 +1,3 @@
-import { ArenaFrame, Component, Mixin, StyleToken } from "@/wab/classes";
 import ListSectionSeparator from "@/wab/client/components/ListSectionSeparator";
 import { menuSection } from "@/wab/client/components/menu-builder";
 import { MixinPopup } from "@/wab/client/components/sidebar/MixinControls";
@@ -11,15 +10,21 @@ import MixinIcon from "@/wab/client/plasmic/plasmic_kit/PlasmicIcon__Mixin";
 import TokenIcon from "@/wab/client/plasmic/plasmic_kit/PlasmicIcon__Token";
 import PlasmicFindReferencesModal from "@/wab/client/plasmic/plasmic_kit_find_references_modal/PlasmicFindReferencesModal";
 import { StudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
-import { ensure, spawn } from "@/wab/common";
-import { getComponentDisplayName, isPageComponent } from "@/wab/components";
+import { ensure, spawn } from "@/wab/shared/common";
+import { getComponentDisplayName, isPageComponent } from "@/wab/shared/core/components";
 import { FRAME_LOWER } from "@/wab/shared/Labels";
-import { extractComponentUsages, getArenaFromFrame } from "@/wab/sites";
+import {
+  ArenaFrame,
+  Component,
+  Mixin,
+  StyleToken,
+} from "@/wab/shared/model/classes";
+import { extractComponentUsages, getArenaFromFrame } from "@/wab/shared/core/sites";
 import {
   DefaultStyle,
   extractMixinUsages,
   extractTokenUsages,
-} from "@/wab/styles";
+} from "@/wab/shared/core/styles";
 import { Menu } from "antd";
 import L, { sortBy } from "lodash";
 import { observer } from "mobx-react";

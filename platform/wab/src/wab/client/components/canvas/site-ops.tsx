@@ -1,23 +1,3 @@
-import {
-  Arena,
-  ArenaFrame,
-  Component,
-  ComponentArena,
-  ComponentDataQuery,
-  ComponentVariantGroup,
-  ImageAsset,
-  isKnownComponent,
-  isKnownComponentVariantGroup,
-  Mixin,
-  PageArena,
-  ProjectDependency,
-  Site,
-  Split,
-  State,
-  StyleToken,
-  Variant,
-  VariantGroup,
-} from "@/wab/classes";
 import { AppCtx } from "@/wab/client/app-ctx";
 import { U } from "@/wab/client/cli-routes";
 import { FrameClip } from "@/wab/client/clipboard/local";
@@ -47,7 +27,7 @@ import {
   switchType,
   uniqueName,
   xAddAll,
-} from "@/wab/common";
+} from "@/wab/shared/common";
 import { removeFromArray } from "@/wab/commons/collections";
 import { joinReactNodes } from "@/wab/commons/components/ReactUtil";
 import {
@@ -61,10 +41,10 @@ import {
   isPageComponent,
   isPlumeComponent,
   removeVariantGroup,
-} from "@/wab/components";
-import { Pt } from "@/wab/geom";
-import { ImageAssetType } from "@/wab/image-asset-type";
-import { extractTransitiveDepsFromComponents } from "@/wab/project-deps";
+} from "@/wab/shared/core/components";
+import { Pt } from "@/wab/shared/geom";
+import { ImageAssetType } from "@/wab/shared/core/image-asset-type";
+import { extractTransitiveDepsFromComponents } from "@/wab/shared/core/project-deps";
 import {
   deriveInitFrameSettings,
   getActivatedVariantsForFrame,
@@ -93,8 +73,7 @@ import {
   isGlobalVariantFrame,
   isSuperVariantFrame,
 } from "@/wab/shared/component-arenas";
-import { convertVariableTypeToWabType } from "@/wab/shared/core/model-util";
-import { parseScreenSpec } from "@/wab/shared/Css";
+import { parseScreenSpec } from "@/wab/shared/css-size";
 import {
   asSvgDataUrl,
   parseDataUrlToSvgXml,
@@ -105,6 +84,27 @@ import {
   MIXIN_LOWER,
   TOKEN_LOWER,
 } from "@/wab/shared/Labels";
+import {
+  Arena,
+  ArenaFrame,
+  Component,
+  ComponentArena,
+  ComponentDataQuery,
+  ComponentVariantGroup,
+  ImageAsset,
+  isKnownComponent,
+  isKnownComponentVariantGroup,
+  Mixin,
+  PageArena,
+  ProjectDependency,
+  Site,
+  Split,
+  State,
+  StyleToken,
+  Variant,
+  VariantGroup,
+} from "@/wab/shared/model/classes";
+import { convertVariableTypeToWabType } from "@/wab/shared/model/model-util";
 import {
   getFrameColumnIndex,
   removeManagedFramesFromPageArenaForVariants,
@@ -147,26 +147,26 @@ import {
   getResponsiveStrategy,
   getSiteArenas,
   visitComponentRefs,
-} from "@/wab/sites";
+} from "@/wab/shared/core/sites";
 import {
   findImplicitUsages,
   isStateUsedInExpr,
   removeComponentState,
   StateType,
   updateStateAccessType,
-} from "@/wab/states";
+} from "@/wab/shared/core/states";
 import {
   changeTokenUsage,
   extractMixinUsages,
   extractTokenUsages,
-} from "@/wab/styles";
+} from "@/wab/shared/core/styles";
 import {
   findExprsInComponent,
   flattenTpls,
   isTplSlot,
   isTplVariantable,
   replaceTplTreeByEmptyBox,
-} from "@/wab/tpls";
+} from "@/wab/shared/core/tpls";
 import { notification } from "antd";
 import L from "lodash";
 import pluralize from "pluralize";

@@ -1,4 +1,32 @@
 import {
+  arrayEqIgnoreOrder,
+  assert,
+  ensure,
+  isSubList,
+  strictFind,
+  withoutNils,
+} from "@/wab/shared/common";
+import { resolveAllTokenRefs } from "@/wab/commons/StyleToken";
+import {
+  isCodeComponent,
+  isHostLessCodeComponent,
+  isPlumeComponent,
+  PlumeComponent,
+} from "@/wab/shared/core/components";
+import { clone as cloneExpr } from "@/wab/shared/core/exprs";
+import { syncGlobalContexts } from "@/wab/shared/core/project-deps";
+import {
+  adaptEffectiveVariantSetting,
+  EffectiveVariantSetting,
+  getActiveVariantsInArg,
+  getEffectiveVariantSettingForInsertable,
+} from "@/wab/shared/effective-variant-setting";
+import { fixGlobalVariants } from "@/wab/shared/insertable-templates/fixers";
+import {
+  InlineComponentContext,
+  InsertableTemplateExtraInfo,
+} from "@/wab/shared/insertable-templates/types";
+import {
   Arg,
   Component,
   CustomCode,
@@ -15,35 +43,7 @@ import {
   Variant,
   VariantSetting,
   VariantsRef,
-} from "@/wab/classes";
-import {
-  arrayEqIgnoreOrder,
-  assert,
-  ensure,
-  isSubList,
-  strictFind,
-  withoutNils,
-} from "@/wab/common";
-import { resolveAllTokenRefs } from "@/wab/commons/StyleToken";
-import {
-  isCodeComponent,
-  isHostLessCodeComponent,
-  isPlumeComponent,
-  PlumeComponent,
-} from "@/wab/components";
-import { clone as cloneExpr } from "@/wab/exprs";
-import { syncGlobalContexts } from "@/wab/project-deps";
-import {
-  adaptEffectiveVariantSetting,
-  EffectiveVariantSetting,
-  getActiveVariantsInArg,
-  getEffectiveVariantSettingForInsertable,
-} from "@/wab/shared/effective-variant-setting";
-import { fixGlobalVariants } from "@/wab/shared/insertable-templates/fixers";
-import {
-  InlineComponentContext,
-  InsertableTemplateExtraInfo,
-} from "@/wab/shared/insertable-templates/types";
+} from "@/wab/shared/model/classes";
 import { RSH, RuleSetHelpers } from "@/wab/shared/RuleSetHelpers";
 import { getSlotArgs } from "@/wab/shared/SlotUtils";
 import { TplMgr } from "@/wab/shared/TplMgr";
@@ -53,8 +53,8 @@ import {
   mkVariantSetting,
   tryGetBaseVariantSetting,
 } from "@/wab/shared/Variants";
-import { allStyleTokens, isHostLessPackage } from "@/wab/sites";
-import { createExpandedRuleSetMerger } from "@/wab/styles";
+import { allStyleTokens, isHostLessPackage } from "@/wab/shared/core/sites";
+import { createExpandedRuleSetMerger } from "@/wab/shared/core/styles";
 import {
   clone as cloneTpl,
   findVariantSettingsUnderTpl,
@@ -66,7 +66,7 @@ import {
   isTplTag,
   isTplVariantable,
   walkTpls,
-} from "@/wab/tpls";
+} from "@/wab/shared/core/tpls";
 import { flatten } from "lodash";
 
 /**

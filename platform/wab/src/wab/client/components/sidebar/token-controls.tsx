@@ -1,5 +1,4 @@
 // eslint-disable-next-line no-restricted-imports
-import { StyleToken } from "@/wab/classes";
 import { MenuBuilder } from "@/wab/client/components/menu-builder";
 import ColorTokenControl from "@/wab/client/components/sidebar/ColorTokenControl";
 import GeneralTokenControl from "@/wab/client/components/sidebar/GeneralTokenControl";
@@ -11,12 +10,13 @@ import { Icon } from "@/wab/client/components/widgets/Icon";
 import { SimpleTextbox } from "@/wab/client/components/widgets/SimpleTextbox";
 import TokenIcon from "@/wab/client/plasmic/plasmic_kit/PlasmicIcon__Token";
 import { StudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
-import { spawn } from "@/wab/common";
+import { spawn } from "@/wab/shared/common";
 import { TokenType } from "@/wab/commons/StyleToken";
-import { TokenValueResolver } from "@/wab/shared/cached-selectors";
 import { VariantedStylesHelper } from "@/wab/shared/VariantedStylesHelper";
-import { allColorTokens } from "@/wab/sites";
-import { maybeTokenRefCycle } from "@/wab/styles";
+import { TokenValueResolver } from "@/wab/shared/cached-selectors";
+import { StyleToken } from "@/wab/shared/model/classes";
+import { allColorTokens } from "@/wab/shared/core/sites";
+import { maybeTokenRefCycle } from "@/wab/shared/core/styles";
 import { Menu, notification } from "antd";
 import { sortBy } from "lodash";
 import { observer } from "mobx-react";

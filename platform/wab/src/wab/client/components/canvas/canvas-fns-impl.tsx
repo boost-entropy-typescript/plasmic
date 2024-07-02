@@ -1,3 +1,11 @@
+import "@/wab/client/components/canvas/slate";
+import { assert } from "@/wab/shared/common";
+import { normProp, parseCssNumericNew } from "@/wab/shared/css";
+import {
+  isTagInline,
+  isTagListContainer,
+} from "@/wab/shared/core/rich-text-util";
+import { EffectiveVariantSetting } from "@/wab/shared/effective-variant-setting";
 import {
   isKnownNodeMarker,
   Marker,
@@ -5,18 +13,10 @@ import {
   RawText,
   RuleSet,
   StyleMarker,
-} from "@/wab/classes";
-import "@/wab/client/components/canvas/slate";
-import { assert } from "@/wab/common";
-import { normProp, parseCssNumericNew } from "@/wab/css";
-import {
-  isTagInline,
-  isTagListContainer,
-} from "@/wab/shared/core/rich-text-util";
-import { EffectiveVariantSetting } from "@/wab/shared/effective-variant-setting";
+} from "@/wab/shared/model/classes";
 import { mkBaseVariant } from "@/wab/shared/Variants";
-import * as Tpls from "@/wab/tpls";
-import { mkTplTag, TplTagType } from "@/wab/tpls";
+import * as Tpls from "@/wab/shared/core/tpls";
+import { mkTplTag, TplTagType } from "@/wab/shared/core/tpls";
 import type { Descendant } from "slate";
 import { Element, Text } from "slate";
 

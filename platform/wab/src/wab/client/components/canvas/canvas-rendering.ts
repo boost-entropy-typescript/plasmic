@@ -1,52 +1,4 @@
 import {
-  CollectionExpr,
-  Component,
-  ComponentDataQuery,
-  CompositeExpr,
-  CustomCode,
-  DataSourceOpExpr,
-  ensureKnownNamedState,
-  EventHandler,
-  Expr,
-  FunctionArg,
-  FunctionExpr,
-  ImageAssetRef,
-  isKnownColorPropType,
-  isKnownCustomCode,
-  isKnownDefaultStylesClassNamePropType,
-  isKnownDefaultStylesPropType,
-  isKnownEventHandler,
-  isKnownNamedState,
-  isKnownObjectPath,
-  isKnownStateParam,
-  isKnownStyleExpr,
-  isKnownStyleScopeClassNamePropType,
-  isKnownTplTag,
-  MapExpr,
-  Marker,
-  ObjectPath,
-  PageHref,
-  Param,
-  QueryInvalidationExpr,
-  RenderExpr,
-  Site,
-  State,
-  StrongFunctionArg,
-  StyleExpr,
-  StyleTokenRef,
-  TemplatedString,
-  TplComponent,
-  TplNode,
-  TplRef,
-  TplSlot,
-  TplTag,
-  Variant,
-  VariantSetting,
-  VariantsRef,
-  VarRef,
-  VirtualRenderExpr,
-} from "@/wab/classes";
-import {
   cachedRenderTplNode,
   reactHookSpecsToKey,
 } from "@/wab/client/components/canvas/canvas-cache";
@@ -98,7 +50,7 @@ import {
   unexpected,
   withDefaultFunc,
   withoutNils,
-} from "@/wab/common";
+} from "@/wab/shared/common";
 import { mkTokenRef } from "@/wab/commons/StyleToken";
 import { DeepReadonly } from "@/wab/commons/types";
 import {
@@ -108,9 +60,9 @@ import {
   getRepetitionIndexName,
   isCodeComponent,
   isHostLessCodeComponent,
-} from "@/wab/components";
-import { uniqifyClassName } from "@/wab/css";
-import { DEVFLAGS, DevFlagsType } from "@/wab/devflags";
+} from "@/wab/shared/core/components";
+import { uniqifyClassName } from "@/wab/shared/css";
+import { DEVFLAGS, DevFlagsType } from "@/wab/shared/devflags";
 import {
   asCode,
   code,
@@ -123,9 +75,9 @@ import {
   isInteractionLoc,
   isRealCodeExpr,
   removeFallbackFromDataSourceOp,
-} from "@/wab/exprs";
-import { mkParam } from "@/wab/lang";
-import { makeSelectableKey } from "@/wab/selection";
+} from "@/wab/shared/core/exprs";
+import { mkParam } from "@/wab/shared/core/lang";
+import { makeSelectableKey } from "@/wab/shared/core/selection";
 import {
   componenToNonVariantParamNames,
   componentToElementNames,
@@ -161,6 +113,10 @@ import {
   isPlainObjectPropType,
   tryGetStateHelpers,
 } from "@/wab/shared/code-components/code-components";
+import {
+  isTplRootWithCodeComponentInteractionVariants,
+  withoutInteractionVariantPrefix,
+} from "@/wab/shared/code-components/interaction-variants";
 import { toReactAttr } from "@/wab/shared/codegen/image-assets";
 import {
   deriveReactHookSpecs,
@@ -184,7 +140,6 @@ import {
   NodeNamer,
 } from "@/wab/shared/codegen/react-p/utils";
 import { paramToVarName, toVarName } from "@/wab/shared/codegen/util";
-import { isRenderFuncType, typeFactory } from "@/wab/shared/core/model-util";
 import { plasmicImgAttrStyles } from "@/wab/shared/core/style-props";
 import { parseDataUrlToSvgXml } from "@/wab/shared/data-urls";
 import {
@@ -195,6 +150,55 @@ import { stampIgnoreError } from "@/wab/shared/error-handling";
 import { CanvasEnv, evalCodeWithEnv } from "@/wab/shared/eval";
 import { exprUsesCtxOrFreeVars } from "@/wab/shared/eval/expression-parser";
 import { ContainerType } from "@/wab/shared/layoututils";
+import {
+  CollectionExpr,
+  Component,
+  ComponentDataQuery,
+  CompositeExpr,
+  CustomCode,
+  DataSourceOpExpr,
+  ensureKnownNamedState,
+  EventHandler,
+  Expr,
+  FunctionArg,
+  FunctionExpr,
+  ImageAssetRef,
+  isKnownColorPropType,
+  isKnownCustomCode,
+  isKnownDefaultStylesClassNamePropType,
+  isKnownDefaultStylesPropType,
+  isKnownEventHandler,
+  isKnownNamedState,
+  isKnownObjectPath,
+  isKnownStateParam,
+  isKnownStyleExpr,
+  isKnownStyleScopeClassNamePropType,
+  isKnownTplTag,
+  MapExpr,
+  Marker,
+  ObjectPath,
+  PageHref,
+  Param,
+  QueryInvalidationExpr,
+  RenderExpr,
+  Site,
+  State,
+  StrongFunctionArg,
+  StyleExpr,
+  StyleTokenRef,
+  TemplatedString,
+  TplComponent,
+  TplNode,
+  TplRef,
+  TplSlot,
+  TplTag,
+  Variant,
+  VariantSetting,
+  VariantsRef,
+  VarRef,
+  VirtualRenderExpr,
+} from "@/wab/shared/model/classes";
+import { isRenderFuncType, typeFactory } from "@/wab/shared/model/model-util";
 import { canAddChildren } from "@/wab/shared/parenting";
 import {
   getPlumeCanvasPlugin,
@@ -222,7 +226,6 @@ import {
   isPseudoElementVariantForTpl,
   isScreenVariant,
   isStyleVariant,
-  isTplRootWithCCInteractionVariants,
   VariantCombo,
   variantHasPrivatePseudoElementSelector,
 } from "@/wab/shared/Variants";
@@ -237,7 +240,7 @@ import {
   isWritableState,
   shouldHaveImplicitState,
   StateVariableType,
-} from "@/wab/states";
+} from "@/wab/shared/core/states";
 import {
   classNameForRuleSet,
   defaultStyleClassNames,
@@ -248,7 +251,7 @@ import {
   makeStyleExprClassName,
   makeStyleScopeClassName,
   studioDefaultStylesClassNameBase,
-} from "@/wab/styles";
+} from "@/wab/shared/core/styles";
 import {
   ancestorsUp,
   getOwnerSite,
@@ -267,8 +270,8 @@ import {
   summarizeTpl,
   tplHasRef,
   TplTextTag,
-} from "@/wab/tpls";
-import { placeholderImgUrl } from "@/wab/urls";
+} from "@/wab/shared/core/tpls";
+import { placeholderImgUrl } from "@/wab/shared/urls";
 import type { usePlasmicInvalidate } from "@plasmicapp/data-sources";
 import { DataDict, mkMetaName } from "@plasmicapp/host";
 import { $StateSpec } from "@plasmicapp/react-web";
@@ -701,9 +704,15 @@ const mkTriggers = computedFn(
               // because we don't want the content to change when the user tries to edit rich text
               // while in design mode.
               if (isStyleVariant(variant) && isInteractive) {
-                if (isTplRootWithCCInteractionVariants(component.tplTree)) {
+                if (
+                  isTplRootWithCodeComponentInteractionVariants(
+                    component.tplTree
+                  )
+                ) {
                   return variant.selectors.reduce(
-                    (prev, key) => prev && ctx.$ccInteractions[key],
+                    (prev, key) =>
+                      prev &&
+                      ctx.$ccInteractions[withoutInteractionVariantPrefix(key)],
                     true
                   );
                 }
@@ -1424,7 +1433,10 @@ function renderTplComponent(
       ctx.valKey
     );
 
-    if (isComponentRoot && isTplRootWithCCInteractionVariants(node)) {
+    if (
+      isComponentRoot &&
+      isTplRootWithCodeComponentInteractionVariants(node)
+    ) {
       props["updateInteractionVariant"] = ctx.updateInteractionVariant;
     }
 

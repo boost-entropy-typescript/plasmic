@@ -1,4 +1,65 @@
 import {
+  customInsertMaps,
+  ensure,
+  ensureArray,
+  filterFalsy,
+  maybeMemoizeFn,
+  switchType,
+  tuple,
+  withoutNils,
+  xAddAll,
+  xSetDefault,
+} from "@/wab/shared/common";
+import {
+  extractAllReferencedTokenIds,
+  ResolvedToken,
+  resolveToken,
+  TokenType,
+  TokenValue,
+  tryParseTokenRef,
+} from "@/wab/commons/StyleToken";
+import { DeepReadonly } from "@/wab/commons/types";
+import {
+  allComponentVariants,
+  getComponentDisplayName,
+  getNonVariantParams,
+  isCodeComponent,
+  isPlumeComponent,
+  PageComponent,
+  tryGetVariantGroupValueFromArg,
+} from "@/wab/shared/core/components";
+import { getProjectFlags } from "@/wab/shared/devflags";
+import { isRealCodeExpr } from "@/wab/shared/core/exprs";
+import { ImageAssetType } from "@/wab/shared/core/image-asset-type";
+import {
+  extractAllAssetRefs,
+  getTagAttrForImageAsset,
+} from "@/wab/shared/core/image-assets";
+import { ParamExportType } from "@/wab/shared/core/lang";
+import { walkDependencyTree } from "@/wab/shared/core/project-deps";
+import {
+  getBuiltinComponentRegistrations,
+  isBuiltinCodeComponent,
+} from "@/wab/shared/code-components/builtin-code-components";
+import {
+  CustomFunctionId,
+  customFunctionId,
+} from "@/wab/shared/code-components/code-components";
+import {
+  getInteractionVariantMeta,
+  isTplRootWithCodeComponentInteractionVariants,
+} from "@/wab/shared/code-components/interaction-variants";
+import {
+  buildUidToNameMap,
+  getNamedDescendantNodes,
+  getParamNames,
+  makeNodeNamerFromMap,
+  nodeNameBackwardsCompatibility,
+} from "@/wab/shared/codegen/react-p";
+import { validJsIdentifierChars } from "@/wab/shared/codegen/util";
+import mobx from "@/wab/shared/import-mobx";
+import { keyedComputedFn, maybeComputedFn } from "@/wab/shared/mobx-util";
+import {
   ArenaFrame,
   CodeLibrary,
   Component,
@@ -28,64 +89,7 @@ import {
   Variant,
   VariantGroup,
   VariantSetting,
-} from "@/wab/classes";
-import {
-  customInsertMaps,
-  ensure,
-  ensureArray,
-  filterFalsy,
-  maybeMemoizeFn,
-  switchType,
-  tuple,
-  withoutNils,
-  xAddAll,
-  xSetDefault,
-} from "@/wab/common";
-import {
-  extractAllReferencedTokenIds,
-  ResolvedToken,
-  resolveToken,
-  TokenType,
-  TokenValue,
-  tryParseTokenRef,
-} from "@/wab/commons/StyleToken";
-import { DeepReadonly } from "@/wab/commons/types";
-import {
-  allComponentVariants,
-  getComponentDisplayName,
-  getNonVariantParams,
-  isCodeComponent,
-  isPlumeComponent,
-  PageComponent,
-  tryGetVariantGroupValueFromArg,
-} from "@/wab/components";
-import { getProjectFlags } from "@/wab/devflags";
-import { isRealCodeExpr } from "@/wab/exprs";
-import { ImageAssetType } from "@/wab/image-asset-type";
-import {
-  extractAllAssetRefs,
-  getTagAttrForImageAsset,
-} from "@/wab/image-assets";
-import { ParamExportType } from "@/wab/lang";
-import { walkDependencyTree } from "@/wab/project-deps";
-import {
-  getBuiltinComponentRegistrations,
-  isBuiltinCodeComponent,
-} from "@/wab/shared/code-components/builtin-code-components";
-import {
-  CustomFunctionId,
-  customFunctionId,
-} from "@/wab/shared/code-components/code-components";
-import {
-  buildUidToNameMap,
-  getNamedDescendantNodes,
-  getParamNames,
-  makeNodeNamerFromMap,
-  nodeNameBackwardsCompatibility,
-} from "@/wab/shared/codegen/react-p";
-import { validJsIdentifierChars } from "@/wab/shared/codegen/util";
-import mobx from "@/wab/shared/import-mobx";
-import { keyedComputedFn, maybeComputedFn } from "@/wab/shared/mobx-util";
+} from "@/wab/shared/model/classes";
 import { FramePinManager } from "@/wab/shared/PinManager";
 import { readonlyRSH } from "@/wab/shared/RuleSetHelpers";
 import {
@@ -96,7 +100,6 @@ import { VariantedStylesHelper } from "@/wab/shared/VariantedStylesHelper";
 import {
   isPrivateStyleVariant,
   isStyleVariant,
-  isTplRootWithCCInteractionVariants,
   isVariantSettingEmpty,
   StyleVariant,
   VariantCombo,
@@ -109,9 +112,9 @@ import {
   allImageAssets,
   allStyleTokens,
   isHostLessPackage,
-} from "@/wab/sites";
-import { isOnChangeParam } from "@/wab/states";
-import { expandRuleSets } from "@/wab/styles";
+} from "@/wab/shared/core/sites";
+import { isOnChangeParam } from "@/wab/shared/core/states";
+import { expandRuleSets } from "@/wab/shared/core/styles";
 import {
   findExprsInComponent,
   findExprsInNode,
@@ -120,7 +123,7 @@ import {
   isTplIcon,
   isTplPicture,
   isTplVariantable,
-} from "@/wab/tpls";
+} from "@/wab/shared/core/tpls";
 import { keyBy } from "lodash";
 
 export const flattenComponent = maybeComputedFn(function flattenComponent(
@@ -1162,7 +1165,7 @@ export const siteToUsedDataSources = maybeComputedFn(
 const componentCCInteractionStyleVariantsToDisplayNames = maybeComputedFn(
   function ccStyleVariantToDisplayNames(component: Component) {
     const tplRoot = component.tplTree;
-    if (isTplRootWithCCInteractionVariants(tplRoot)) {
+    if (isTplRootWithCodeComponentInteractionVariants(tplRoot)) {
       const interactionVariantMeta =
         tplRoot.component.codeComponentMeta.interactionVariantMeta;
       return component.variants
@@ -1170,8 +1173,12 @@ const componentCCInteractionStyleVariantsToDisplayNames = maybeComputedFn(
         .map((variant): [StyleVariant, string[]] => {
           return [
             variant,
-            variant.selectors.map(
-              (selector) => interactionVariantMeta[selector].displayName
+            withoutNils(
+              variant.selectors.map(
+                (selector) =>
+                  getInteractionVariantMeta(interactionVariantMeta, selector)
+                    ?.displayName
+              )
             ),
           ];
         });

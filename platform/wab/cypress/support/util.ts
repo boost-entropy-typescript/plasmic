@@ -4,7 +4,6 @@
  */
 import * as _ from "lodash";
 import * as platform from "platform";
-import { HostLessPackageInfo, State } from "../../src/wab/classes";
 import { ACTIONS_META } from "../../src/wab/client/state-management/interactions-meta";
 import { StudioCtx } from "../../src/wab/client/studio-ctx/StudioCtx";
 import { ViewCtx } from "../../src/wab/client/studio-ctx/view-ctx";
@@ -14,20 +13,24 @@ import {
   updateVariantOperations,
 } from "../../src/wab/client/test-helpers/test-state-management";
 import {
+  ApiDataSource,
+  ApiUpdateDataSourceRequest,
+  CreateSiteRequest,
+} from "../../src/wab/shared/ApiSchema";
+import {
   ensureArray,
   ensureType,
   mkShortId,
   spawnWrapper,
   unexpected,
   withoutNils,
-} from "../../src/wab/common";
-import { DevFlagsType } from "../../src/wab/devflags";
+} from "../../src/wab/shared/common";
 import {
-  ApiDataSource,
-  ApiUpdateDataSourceRequest,
-  CreateSiteRequest,
-} from "../../src/wab/shared/ApiSchema";
-import { StateAccessType, StateVariableType } from "../../src/wab/states";
+  StateAccessType,
+  StateVariableType,
+} from "../../src/wab/shared/core/states";
+import { DevFlagsType } from "../../src/wab/shared/devflags";
+import { HostLessPackageInfo, State } from "../../src/wab/shared/model/classes";
 import bundles from "../bundles";
 
 // Attention: we ban cy.window, cy.document, cy.focused, Cypress.$.

@@ -1,7 +1,32 @@
 import {
+  arrayEqIgnoreOrder,
+  assert,
+  ensure,
+  mkShortId,
+  moveIndex,
+  tuple,
+  xAddAll,
+} from "@/wab/shared/common";
+import {
+  allSuperComponentVariants,
+  getNamespacedComponentName,
+  isCodeComponent,
+} from "@/wab/shared/core/components";
+import { code } from "@/wab/shared/core/exprs";
+import { ScreenSizeSpec, parseScreenSpec } from "@/wab/shared/css-size";
+import {
+  FramePinManager,
+  withoutIrrelevantScreenVariants,
+} from "@/wab/shared/PinManager";
+import { siteCCInteractionStyleVariantsToDisplayNames } from "@/wab/shared/cached-selectors";
+import { toVarName } from "@/wab/shared/codegen/util";
+import {
+  ensureComponentArenaColsOrder,
+  ensureComponentArenaRowsOrder,
+} from "@/wab/shared/component-arenas";
+import {
   ArenaFrame,
   Arg,
-  CodeComponentInteractionVariantMeta,
   Component,
   ComponentVariantGroup,
   CustomCode,
@@ -18,55 +43,30 @@ import {
   VariantGroup,
   VariantGroupState,
   VariantSetting,
-} from "@/wab/classes";
-import {
-  arrayEqIgnoreOrder,
-  assert,
-  ensure,
-  mkShortId,
-  moveIndex,
-  tuple,
-  xAddAll,
-} from "@/wab/common";
-import {
-  allSuperComponentVariants,
-  getNamespacedComponentName,
-  isCodeComponent,
-} from "@/wab/components";
-import { code } from "@/wab/exprs";
-import { siteCCInteractionStyleVariantsToDisplayNames } from "@/wab/shared/cached-selectors";
-import { toVarName } from "@/wab/shared/codegen/util";
-import {
-  ensureComponentArenaColsOrder,
-  ensureComponentArenaRowsOrder,
-} from "@/wab/shared/component-arenas";
-import { parseScreenSpec, ScreenSizeSpec } from "@/wab/shared/Css";
-import {
-  FramePinManager,
-  withoutIrrelevantScreenVariants,
-} from "@/wab/shared/PinManager";
+} from "@/wab/shared/model/classes";
 import { ResponsiveStrategy } from "@/wab/shared/responsiveness";
 import {
+  UNINITIALIZED_VALUE,
   allGlobalVariantGroups,
   getResponsiveStrategy,
-  UNINITIALIZED_VALUE,
   writeable,
-} from "@/wab/sites";
+} from "@/wab/shared/core/sites";
 import {
   getLessSelector,
   getPseudoSelector,
   mkRuleSet,
   pseudoSelectors,
-} from "@/wab/styles";
+} from "@/wab/shared/core/styles";
 import {
+  TplCodeComponent,
   isComponentRoot,
   isTplComponent,
   isTplTag,
   summarizeTplTag,
-  TplCodeComponent,
-} from "@/wab/tpls";
+} from "@/wab/shared/core/tpls";
 import { arrayContains } from "class-validator";
 import L, { orderBy, uniqBy } from "lodash";
+import { isTplRootWithCodeComponentInteractionVariants } from "@/wab/shared/code-components/interaction-variants";
 
 export const BASE_VARIANT_NAME = "base";
 
@@ -122,36 +122,11 @@ interface _VariantPath {
   path: Array<[Variant, number]>;
 }
 
-export function isCodeComponentWithInteractionVariants(component: Component) {
-  return isCodeComponent(component)
-    ? Object.keys(component.codeComponentMeta.interactionVariantMeta).length > 0
-    : false;
-}
-
-export function isTplRootWithCCInteractionVariants(
-  tpl: TplNode
-): tpl is TplCodeComponent {
-  return (
-    isTplComponent(tpl) &&
-    isComponentRoot(tpl) &&
-    isCodeComponentWithInteractionVariants(tpl.component)
-  );
-}
-
-export function getCodeComponentInteractionVariantMeta(
-  tpl: TplCodeComponent,
-  key: string
-): CodeComponentInteractionVariantMeta | null {
-  const metas = tpl.component.codeComponentMeta.interactionVariantMeta;
-  if (key in metas) {
-    return metas[key];
-  }
-  return null;
-}
-
 export function canHaveInteractionVariant(component: Component) {
   const tplRoot = component.tplTree;
-  return isTplTag(tplRoot) || isTplRootWithCCInteractionVariants(tplRoot);
+  return (
+    isTplTag(tplRoot) || isTplRootWithCodeComponentInteractionVariants(tplRoot)
+  );
 }
 
 export function isStandaloneVariantGroup(

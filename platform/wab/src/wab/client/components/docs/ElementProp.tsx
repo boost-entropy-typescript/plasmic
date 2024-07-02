@@ -1,10 +1,10 @@
-import { TplNode } from "@/wab/classes";
 import { WithContextMenu } from "@/wab/client/components/ContextMenu";
 import { DocsPortalCtx } from "@/wab/client/components/docs/DocsPortalCtx";
 import { createNodeIcon } from "@/wab/client/components/sidebar-tabs/tpl-tree";
 import { PlasmicElementProp } from "@/wab/client/plasmic/plasmic_kit_docs_portal/PlasmicElementProp";
 import { toClassName } from "@/wab/shared/codegen/util";
-import { isTplComponent, isTplTag, TplNamable } from "@/wab/tpls";
+import { TplNode } from "@/wab/shared/model/classes";
+import { isTplComponent, isTplTag, TplNamable } from "@/wab/shared/core/tpls";
 import { Dropdown, Menu } from "antd";
 import { observer } from "mobx-react";
 import * as React from "react";

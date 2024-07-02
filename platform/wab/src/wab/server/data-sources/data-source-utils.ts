@@ -1,7 +1,6 @@
-import { DataSourceOpExpr, Site } from "@/wab/classes";
-import { assert, isLiteralObject, jsonClone, swallow } from "@/wab/common";
-import { DEVFLAGS, getProjectFlags } from "@/wab/devflags";
-import { ExprCtx } from "@/wab/exprs";
+import { assert, isLiteralObject, jsonClone, swallow } from "@/wab/shared/common";
+import { DEVFLAGS, getProjectFlags } from "@/wab/shared/devflags";
+import { ExprCtx } from "@/wab/shared/core/exprs";
 import { makeAirtableFetcher } from "@/wab/server/data-sources/airtable-fetcher";
 import { makeDynamoDbFetcher } from "@/wab/server/data-sources/dynamodb-fetcher";
 import { getMigratedUserPropsOpBundle } from "@/wab/server/data-sources/end-user-utils";
@@ -27,15 +26,15 @@ import {
 } from "@/wab/shared/data-sources-meta/data-source-registry";
 import {
   ArgMeta,
-  coerceArgStringToType,
   DataSourceMeta,
-  dataSourceTemplateToString,
   Filters,
   FiltersLogic,
-  isJsonType,
   OperationMeta,
   OperationTemplate,
   RawPagination,
+  coerceArgStringToType,
+  dataSourceTemplateToString,
+  isJsonType,
 } from "@/wab/shared/data-sources-meta/data-sources";
 import { buildSqlStringForFilterTemplateArg } from "@/wab/shared/data-sources/to-sql";
 import {
@@ -50,6 +49,7 @@ import {
   templateSubstituteDynamicValues,
   withCurrentUserValues,
 } from "@/wab/shared/dynamic-bindings";
+import { DataSourceOpExpr, Site } from "@/wab/shared/model/classes";
 import { CrudFilter, CrudFilters, LogicalFilter } from "@pankod/refine-core";
 import {
   Config,

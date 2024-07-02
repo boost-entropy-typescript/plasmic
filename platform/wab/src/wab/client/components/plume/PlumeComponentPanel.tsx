@@ -1,17 +1,17 @@
-import { Component } from "@/wab/classes";
 import { SidebarSection } from "@/wab/client/components/sidebar/SidebarSection";
 import { HoverableDisclosure } from "@/wab/client/components/widgets/HoverableDisclosure";
-import { withoutNils } from "@/wab/common";
+import { withoutNils } from "@/wab/shared/common";
 import { joinReactNodes } from "@/wab/commons/components/ReactUtil";
-import { allComponentVariants } from "@/wab/components";
+import { allComponentVariants } from "@/wab/shared/core/components";
 import { flattenComponent } from "@/wab/shared/cached-selectors";
+import { Component } from "@/wab/shared/model/classes";
 import {
   getPlumeEditorPlugin,
   getPlumeElementDef,
   getPlumeSlotDef,
   getPlumeVariantDef,
 } from "@/wab/shared/plume/plume-registry";
-import { isTplSlot } from "@/wab/tpls";
+import { isTplSlot } from "@/wab/shared/core/tpls";
 import { Alert } from "antd";
 import { observer } from "mobx-react";
 import * as React from "react";

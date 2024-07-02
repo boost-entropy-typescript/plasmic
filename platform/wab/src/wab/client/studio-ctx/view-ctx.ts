@@ -1,19 +1,3 @@
-import {
-  ArenaFrame,
-  Component,
-  CustomFunction,
-  isKnownTplComponent,
-  Param,
-  RawText,
-  RichText,
-  State,
-  TplComponent,
-  TplNode,
-  TplSlot,
-  TplTag,
-  Variant,
-  VariantSetting,
-} from "@/wab/classes";
 import { CanvasCtx } from "@/wab/client/components/canvas/canvas-ctx";
 import { RunFn } from "@/wab/client/components/canvas/CanvasText";
 import "@/wab/client/components/canvas/slate";
@@ -54,19 +38,19 @@ import {
   switchType,
   tuple,
   withoutNils,
-} from "@/wab/common";
+} from "@/wab/shared/common";
 import { drainQueue } from "@/wab/commons/asyncutil";
 import { safeCallbackify } from "@/wab/commons/control";
 import {
   CodeComponent,
   isCodeComponent,
   isFrameComponent,
-} from "@/wab/components";
-import { DEVFLAGS } from "@/wab/devflags";
-import { getRawCode } from "@/wab/exprs";
-import { Pt, rectsIntersect } from "@/wab/geom";
-import { metaSvc } from "@/wab/metas";
-import { Selectable, SQ } from "@/wab/selection";
+} from "@/wab/shared/core/components";
+import { DEVFLAGS } from "@/wab/shared/devflags";
+import { getRawCode } from "@/wab/shared/core/exprs";
+import { Pt, rectsIntersect } from "@/wab/shared/geom";
+import { metaSvc } from "@/wab/shared/core/metas";
+import { Selectable, SQ } from "@/wab/shared/core/selection";
 import { getArenaFrames } from "@/wab/shared/Arenas";
 import { customFunctionId } from "@/wab/shared/code-components/code-components";
 import {
@@ -76,30 +60,46 @@ import {
   TransientComponentVariantFrame,
 } from "@/wab/shared/component-frame";
 import { CanvasEnv, evalCodeWithEnv } from "@/wab/shared/eval";
+import {
+  ArenaFrame,
+  Component,
+  CustomFunction,
+  isKnownTplComponent,
+  Param,
+  RawText,
+  RichText,
+  State,
+  TplComponent,
+  TplNode,
+  TplSlot,
+  TplTag,
+  Variant,
+  VariantSetting,
+} from "@/wab/shared/model/classes";
 import { RSH } from "@/wab/shared/RuleSetHelpers";
 import { isTplResizable } from "@/wab/shared/sizingutils";
 import { getAncestorSlotArg } from "@/wab/shared/SlotUtils";
 import { $$$ } from "@/wab/shared/TplQuery";
 import { isBaseVariant } from "@/wab/shared/Variants";
 import { VariantTplMgr } from "@/wab/shared/VariantTplMgr";
-import { isTplAttachedToSite } from "@/wab/sites";
-import { SlotSelection } from "@/wab/slots";
+import { isTplAttachedToSite } from "@/wab/shared/core/sites";
+import { SlotSelection } from "@/wab/shared/core/slots";
 import {
   getStateOnChangePropName,
   getStateValuePropName,
   getStateVarName,
   StateVariableType,
-} from "@/wab/states";
-import * as Tpls from "@/wab/tpls";
-import { RawTextLike } from "@/wab/tpls";
+} from "@/wab/shared/core/states";
+import * as Tpls from "@/wab/shared/core/tpls";
+import { RawTextLike } from "@/wab/shared/core/tpls";
 import {
   bestValForTpl,
   ValComponent,
   ValNode,
   ValTag,
   ValTextTag,
-} from "@/wab/val-nodes";
-import { asTpl, asVal, isValSelectable, tplFromSelectable } from "@/wab/vals";
+} from "@/wab/shared/core/val-nodes";
+import { asTpl, asVal, isValSelectable, tplFromSelectable } from "@/wab/shared/core/vals";
 import {
   generateStateOnChangeProp,
   generateStateValueProp,
@@ -117,7 +117,7 @@ import type { Editor as SlateEditor } from "slate";
 import {
   allCustomFunctions,
   getLinkedCodeProps,
-} from "src/wab/shared/cached-selectors";
+} from "@/wab/shared/cached-selectors";
 
 export class ViewMode {
   static live: ViewMode;

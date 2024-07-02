@@ -1,4 +1,3 @@
-import { ImageAsset } from "@/wab/classes";
 import { AppCtx } from "@/wab/client/app-ctx";
 import {
   SiteOps,
@@ -13,8 +12,9 @@ import {
 import { vectorNodeTypes } from "@/wab/client/figma-importer/constants";
 import { SceneNode } from "@/wab/client/figma-importer/plugin-types";
 import { FigmaData } from "@/wab/client/figma-importer/types";
-import { ensure } from "@/wab/common";
-import { ImageAssetType } from "@/wab/image-asset-type";
+import { ensure } from "@/wab/shared/common";
+import { ImageAssetType } from "@/wab/shared/core/image-asset-type";
+import { ImageAsset } from "@/wab/shared/model/classes";
 import { keys } from "lodash";
 
 export async function uploadFigmaImages(figmaData: FigmaData, appCtx: AppCtx) {

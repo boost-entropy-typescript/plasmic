@@ -1,4 +1,24 @@
 import {
+  arrayEqIgnoreOrder,
+  assert,
+  CustomError,
+  ensure,
+  mergeSets,
+  only,
+  removeWhere,
+  switchType,
+  tryRemove,
+} from "@/wab/shared/common";
+import { removeFromArray } from "@/wab/commons/collections";
+import { resolveAllTokenRefs } from "@/wab/commons/StyleToken";
+import { hasImageAssetRef } from "@/wab/shared/core/image-assets";
+import {
+  IChangeRecorder,
+  ModelChange,
+  RecordedChanges,
+} from "@/wab/shared/core/observable-model";
+import { getArenaFrames } from "@/wab/shared/Arenas";
+import {
   ArenaFrame,
   ArenaFrameCell,
   ArenaFrameGrid,
@@ -78,28 +98,8 @@ import {
   VariantSetting,
   VariantsRef,
   VarRef,
-} from "@/wab/classes";
-import {
-  arrayEqIgnoreOrder,
-  assert,
-  CustomError,
-  ensure,
-  mergeSets,
-  only,
-  removeWhere,
-  switchType,
-  tryRemove,
-} from "@/wab/common";
-import { removeFromArray } from "@/wab/commons/collections";
-import { resolveAllTokenRefs } from "@/wab/commons/StyleToken";
-import { hasImageAssetRef } from "@/wab/image-assets";
-import {
-  IChangeRecorder,
-  ModelChange,
-  RecordedChanges,
-} from "@/wab/observable-model";
-import { getArenaFrames } from "@/wab/shared/Arenas";
-import { instUtil } from "@/wab/shared/core/InstUtil";
+} from "@/wab/shared/model/classes";
+import { instUtil } from "@/wab/shared/model/InstUtil";
 import {
   isBaseVariant,
   isScreenVariantGroup,
@@ -112,8 +112,8 @@ import {
   trackComponentRoot,
   trackComponentSite,
   tryGetTplOwnerComponent,
-} from "@/wab/tpls";
-import { undoChanges } from "@/wab/undo-util";
+} from "@/wab/shared/core/tpls";
+import { undoChanges } from "@/wab/shared/core/undo-util";
 import { uniq } from "lodash";
 
 export interface DeletedAssetsSummary {

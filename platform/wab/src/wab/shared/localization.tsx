@@ -1,20 +1,11 @@
-import {
-  Component,
-  Expr,
-  isKnownExprText,
-  isKnownRawText,
-  RichText,
-  Site,
-  TplNode,
-} from "@/wab/classes";
-import { assert, unexpected } from "@/wab/common";
+import { assert, unexpected } from "@/wab/shared/common";
 import {
   isCodeComponent,
   isPageComponent,
   isPlainComponent,
-} from "@/wab/components";
-import { getCssRulesFromRs } from "@/wab/css";
-import { isFallbackableExpr, tryExtractJson } from "@/wab/exprs";
+} from "@/wab/shared/core/components";
+import { getCssRulesFromRs } from "@/wab/shared/css";
+import { isFallbackableExpr, tryExtractJson } from "@/wab/shared/core/exprs";
 import { ProjectId } from "@/wab/shared/ApiSchema";
 import { flattenComponent } from "@/wab/shared/cached-selectors";
 import {
@@ -28,6 +19,15 @@ import {
   normalizeMarkers,
 } from "@/wab/shared/core/rich-text-util";
 import { EffectiveVariantSetting } from "@/wab/shared/effective-variant-setting";
+import {
+  Component,
+  Expr,
+  isKnownExprText,
+  isKnownRawText,
+  RichText,
+  Site,
+  TplNode,
+} from "@/wab/shared/model/classes";
 import {
   makeVariantComboSorter,
   sortedVariantSettings,
@@ -50,7 +50,7 @@ import {
   isTplVariantable,
   tplChildren,
   TplTextTag,
-} from "@/wab/tpls";
+} from "@/wab/shared/core/tpls";
 import { genTranslatableString } from "@plasmicapp/react-web";
 import { isEmpty, sortBy, uniq } from "lodash";
 import React from "react";

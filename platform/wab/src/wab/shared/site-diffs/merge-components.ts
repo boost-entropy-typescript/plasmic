@@ -1,4 +1,26 @@
 import {
+  arrayEq,
+  arrayEqIgnoreOrder,
+  assert,
+  ensure,
+  maybe,
+  remove,
+  removeWhere,
+  switchType,
+  tuple,
+  withoutNils,
+  xIntersect,
+  xSetDefault,
+} from "@/wab/shared/common";
+import { CodeComponent, isCodeComponent } from "@/wab/shared/core/components";
+import { ChangeRecorder } from "@/wab/shared/core/observable-model";
+import { Bundler } from "@/wab/shared/bundler";
+import { flattenComponent } from "@/wab/shared/cached-selectors";
+import {
+  attachRenderableTplSlots,
+  mkCodeComponent,
+} from "@/wab/shared/code-components/code-components";
+import {
   Arg,
   Component,
   ensureKnownRenderExpr,
@@ -20,33 +42,11 @@ import {
   Variant,
   VariantSetting,
   VirtualRenderExpr,
-} from "@/wab/classes";
-import { meta } from "@/wab/classes-metas";
-import {
-  arrayEq,
-  arrayEqIgnoreOrder,
-  assert,
-  ensure,
-  maybe,
-  remove,
-  removeWhere,
-  switchType,
-  tuple,
-  withoutNils,
-  xIntersect,
-  xSetDefault,
-} from "@/wab/common";
-import { CodeComponent, isCodeComponent } from "@/wab/components";
-import { Field } from "@/wab/model/model-meta";
-import { ChangeRecorder } from "@/wab/observable-model";
-import { Bundler } from "@/wab/shared/bundler";
-import { flattenComponent } from "@/wab/shared/cached-selectors";
-import {
-  attachRenderableTplSlots,
-  mkCodeComponent,
-} from "@/wab/shared/code-components/code-components";
-import { instUtil } from "@/wab/shared/core/InstUtil";
-import { assertSameInstType } from "@/wab/shared/core/model-tree-util";
+} from "@/wab/shared/model/classes";
+import { meta } from "@/wab/shared/model/classes-metas";
+import { instUtil } from "@/wab/shared/model/InstUtil";
+import { Field } from "@/wab/shared/model/model-meta";
+import { assertSameInstType } from "@/wab/shared/model/model-tree-util";
 import {
   AutoReconciliation,
   cloneFieldValueToMergedSite,
@@ -78,14 +78,14 @@ import {
   mkVariantSetting,
   tryGetBaseVariantSetting,
 } from "@/wab/shared/Variants";
-import { visitComponentRefs } from "@/wab/sites";
+import { visitComponentRefs } from "@/wab/shared/core/sites";
 import {
   fixParentPointers,
   mkTplComponentX,
   tplChildren,
   trackComponentRoot,
   trackComponentSite,
-} from "@/wab/tpls";
+} from "@/wab/shared/core/tpls";
 import {
   findLastIndex,
   groupBy,

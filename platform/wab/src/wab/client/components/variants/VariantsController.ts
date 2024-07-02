@@ -1,19 +1,12 @@
 import {
-  ArenaFrame,
-  ArenaFrameCell,
-  isKnownVariant,
-  Site,
-  Variant,
-} from "@/wab/classes";
-import {
   makeClientPinManager,
   makeCurrentVariantEvalState,
   makeEmptyPinState,
 } from "@/wab/client/components/variants/ClientPinManager";
 import { StudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
 import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
-import { assert, ensure } from "@/wab/common";
-import { DEVFLAGS } from "@/wab/devflags";
+import { assert, ensure } from "@/wab/shared/common";
+import { DEVFLAGS } from "@/wab/shared/devflags";
 import {
   ensureCustomFrameForActivatedVariants,
   isComponentArena,
@@ -26,6 +19,13 @@ import {
   getComponentArenaBaseFrame,
   isCustomComponentFrame,
 } from "@/wab/shared/component-arenas";
+import {
+  ArenaFrame,
+  ArenaFrameCell,
+  isKnownVariant,
+  Site,
+  Variant,
+} from "@/wab/shared/model/classes";
 import {
   ensureManagedRowForVariantInPageArena,
   getFrameColumnIndex,

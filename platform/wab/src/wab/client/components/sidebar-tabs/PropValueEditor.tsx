@@ -1,34 +1,3 @@
-import {
-  CollectionExpr,
-  Component,
-  ensureKnownCollectionExpr,
-  ensureKnownFunctionType,
-  ensureKnownVariantsRef,
-  ensureKnownVarRef,
-  Expr,
-  FunctionArg,
-  ImageAssetRef,
-  isKnownDataSourceOpExpr,
-  isKnownEventHandler,
-  isKnownExpr,
-  isKnownFunctionArg,
-  isKnownImageAsset,
-  isKnownImageAssetRef,
-  isKnownPageHref,
-  isKnownQueryInvalidationExpr,
-  isKnownStyleTokenRef,
-  isKnownTemplatedString,
-  isKnownTplComponent,
-  isKnownTplRef,
-  isKnownTplTag,
-  PageHref,
-  StrongFunctionArg,
-  StyleTokenRef,
-  TplComponent,
-  Variant,
-  VariantsRef,
-  VarRef,
-} from "@/wab/classes";
 import { ArrayPropEditor } from "@/wab/client/components/sidebar-tabs/ComponentProps/ArrayPropEditor";
 import { BoolPropEditor } from "@/wab/client/components/sidebar-tabs/ComponentProps/BoolPropEditor";
 import { CardPickerEditor } from "@/wab/client/components/sidebar-tabs/ComponentProps/CardPickerEditor";
@@ -85,7 +54,7 @@ import {
   hasKey,
   mkShortId,
   uncheckedCast,
-} from "@/wab/common";
+} from "@/wab/shared/common";
 import { unwrap } from "@/wab/commons/failable-utils";
 import { mkTokenRef, tryParseTokenRef } from "@/wab/commons/StyleToken";
 import {
@@ -101,8 +70,8 @@ import {
   mergeUserMinimalValueWithCompositeExpr,
   serCompositeExprMaybe,
   tryExtractJson,
-} from "@/wab/exprs";
-import { ImageAssetType } from "@/wab/image-asset-type";
+} from "@/wab/shared/core/exprs";
+import { ImageAssetType } from "@/wab/shared/core/image-asset-type";
 import { siteToAllTokensDict } from "@/wab/shared/cached-selectors";
 import {
   getPropTypeType,
@@ -113,12 +82,43 @@ import {
   wabTypeToPropType,
 } from "@/wab/shared/code-components/code-components";
 import { getContextDependentValue } from "@/wab/shared/context-dependent-value";
-import { typesEqual } from "@/wab/shared/core/model-util";
 import { DataSourceType } from "@/wab/shared/data-sources-meta/data-source-registry";
 import { CanvasEnv, tryEvalExpr } from "@/wab/shared/eval";
+import {
+  CollectionExpr,
+  Component,
+  ensureKnownCollectionExpr,
+  ensureKnownFunctionType,
+  ensureKnownVariantsRef,
+  ensureKnownVarRef,
+  Expr,
+  FunctionArg,
+  ImageAssetRef,
+  isKnownDataSourceOpExpr,
+  isKnownEventHandler,
+  isKnownExpr,
+  isKnownFunctionArg,
+  isKnownImageAsset,
+  isKnownImageAssetRef,
+  isKnownPageHref,
+  isKnownQueryInvalidationExpr,
+  isKnownStyleTokenRef,
+  isKnownTemplatedString,
+  isKnownTplComponent,
+  isKnownTplRef,
+  isKnownTplTag,
+  PageHref,
+  StrongFunctionArg,
+  StyleTokenRef,
+  TplComponent,
+  Variant,
+  VariantsRef,
+  VarRef,
+} from "@/wab/shared/model/classes";
+import { typesEqual } from "@/wab/shared/model/model-util";
 import { isStandaloneVariantGroup } from "@/wab/shared/Variants";
-import { smartHumanize } from "@/wab/strs";
-import { getDisplayNameOfEventHandlerKey, isTplComponent } from "@/wab/tpls";
+import { smartHumanize } from "@/wab/shared/strs";
+import { getDisplayNameOfEventHandlerKey, isTplComponent } from "@/wab/shared/core/tpls";
 import { ContextDependentConfig } from "@plasmicapp/host";
 import L, { isNil, isNumber } from "lodash";
 import { observer } from "mobx-react";

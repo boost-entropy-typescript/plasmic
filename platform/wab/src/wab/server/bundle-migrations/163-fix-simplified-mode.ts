@@ -1,13 +1,13 @@
-import { Arg, isKnownTplComponent } from "@/wab/classes";
-import { codeLit } from "@/wab/exprs";
+import { codeLit } from "@/wab/shared/core/exprs";
+import { UnbundledMigrationFn } from "@/wab/server/db/BundleMigrator";
 import {
   BundleMigrationType,
   unbundleSite,
 } from "@/wab/server/db/bundle-migration-utils";
-import { UnbundledMigrationFn } from "@/wab/server/db/BundleMigrator";
-import { Bundler } from "@/wab/shared/bundler";
 import { ensureBaseVariantSetting } from "@/wab/shared/Variants";
-import { flattenTpls } from "@/wab/tpls";
+import { Bundler } from "@/wab/shared/bundler";
+import { Arg, isKnownTplComponent } from "@/wab/shared/model/classes";
+import { flattenTpls } from "@/wab/shared/core/tpls";
 import { formComponentName } from "@plasmicpkgs/antd5";
 
 export const migrate: UnbundledMigrationFn = async (bundle, db, entity) => {

@@ -1,12 +1,6 @@
-import {
-  ensureKnownProjectDependency,
-  ensureKnownSite,
-  Site,
-} from "@/wab/classes";
-import { meta } from "@/wab/classes-metas";
-import { assert, maybe, spawn } from "@/wab/common";
-import { observeModel } from "@/wab/observable-model";
-import { walkDependencyTree } from "@/wab/project-deps";
+import { assert, maybe, spawn } from "@/wab/shared/common";
+import { observeModel } from "@/wab/shared/core/observable-model";
+import { walkDependencyTree } from "@/wab/shared/core/project-deps";
 import { DEFAULT_DATABASE_URI } from "@/wab/server/config";
 import { getMigratedBundle } from "@/wab/server/db/BundleMigrator";
 import { getOrderedDepBundleIds } from "@/wab/server/db/DbBundleLoader";
@@ -26,12 +20,18 @@ import {
   FastBundler,
 } from "@/wab/shared/bundler";
 import { isEmptyBundle } from "@/wab/shared/bundles";
-import { instUtil } from "@/wab/shared/core/InstUtil";
+import {
+  ensureKnownProjectDependency,
+  ensureKnownSite,
+  Site,
+} from "@/wab/shared/model/classes";
+import { meta } from "@/wab/shared/model/classes-metas";
+import { instUtil } from "@/wab/shared/model/InstUtil";
 import {
   assertSiteInvariants,
   InvariantError,
 } from "@/wab/shared/site-invariants";
-import { taggedUnbundle } from "@/wab/tagged-unbundle";
+import { taggedUnbundle } from "@/wab/shared/core/tagged-unbundle";
 import L from "lodash";
 const { Command } = require("commander");
 

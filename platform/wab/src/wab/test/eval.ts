@@ -1,3 +1,7 @@
+import { ensureInstance } from "@/wab/shared/common";
+import { ComponentType, mkComponent } from "@/wab/shared/core/components";
+import { code } from "@/wab/shared/core/exprs";
+import { mkParam, mkVar, ParamExportType } from "@/wab/shared/core/lang";
 import {
   ensureKnownSlotParam,
   ensureKnownTplTag,
@@ -5,12 +9,8 @@ import {
   TplComponent,
   TplTag,
   VarRef,
-} from "@/wab/classes";
-import { ensureInstance } from "@/wab/common";
-import { ComponentType, mkComponent } from "@/wab/components";
-import { code } from "@/wab/exprs";
-import { mkParam, mkVar, ParamExportType } from "@/wab/lang";
-import { typeFactory } from "@/wab/shared/core/model-util";
+} from "@/wab/shared/model/classes";
+import { typeFactory } from "@/wab/shared/model/model-util";
 import { assertSiteInvariants } from "@/wab/shared/site-invariants";
 import { TplMgr } from "@/wab/shared/TplMgr";
 import {
@@ -19,7 +19,7 @@ import {
   mkVariantSetting,
 } from "@/wab/shared/Variants";
 import { ensureBaseVariantSetting } from "@/wab/shared/VariantTplMgr";
-import { createSite } from "@/wab/sites";
+import { createSite } from "@/wab/shared/core/sites";
 import { mkTplTestText } from "@/wab/test/tpls";
 import {
   flattenTpls,
@@ -28,7 +28,7 @@ import {
   mkTplComponentFlex,
   mkTplComponentX,
   mkTplTagX,
-} from "@/wab/tpls";
+} from "@/wab/shared/core/tpls";
 
 export const componentLib = {
   TextDisp: (() => {

@@ -1,37 +1,37 @@
-import { Component, Variant } from "@/wab/classes";
 import {
-  mkProjectLocation,
-  parseProjectLocation,
   R,
   SEARCH_PARAM_BRANCH,
   U,
   UU,
+  mkProjectLocation,
+  parseProjectLocation,
 } from "@/wab/client/cli-routes";
 import { showCanvasPageNavigationNotification } from "@/wab/client/components/canvas/studio-canvas-util";
 import { ClientPinManager } from "@/wab/client/components/variants/ClientPinManager";
 import { HostFrameCtx } from "@/wab/client/frame-ctx/host-frame-ctx";
 import { StudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
-import { ensure, hackyCast, spawn, spawnWrapper, tuple } from "@/wab/common";
+import { ensure, hackyCast, spawn, spawnWrapper, tuple } from "@/wab/shared/common";
 import { withProvider } from "@/wab/commons/components/ContextUtil";
 import {
   allComponentNonStyleVariants,
   allComponentVariants,
-} from "@/wab/components";
+} from "@/wab/shared/core/components";
 import { MainBranchId, ProjectId } from "@/wab/shared/ApiSchema";
 import { getFrameHeight } from "@/wab/shared/Arenas";
-import { toVarName } from "@/wab/shared/codegen/util";
 import { FramePinManager } from "@/wab/shared/PinManager";
+import {
+  VariantCombo,
+  getReferencedVariantGroups,
+  isGlobalVariant,
+  isScreenVariant,
+} from "@/wab/shared/Variants";
+import { toVarName } from "@/wab/shared/codegen/util";
+import { Component, Variant } from "@/wab/shared/model/classes";
 import {
   getMatchingPagePathParams,
   substituteUrlParams,
 } from "@/wab/shared/utils/url-utils";
-import {
-  getReferencedVariantGroups,
-  isGlobalVariant,
-  isScreenVariant,
-  VariantCombo,
-} from "@/wab/shared/Variants";
-import { allGlobalVariants } from "@/wab/sites";
+import { allGlobalVariants } from "@/wab/shared/core/sites";
 import * as Sentry from "@sentry/browser";
 import { notification } from "antd";
 import { Location, LocationDescriptorObject } from "history";

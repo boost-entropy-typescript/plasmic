@@ -1,14 +1,4 @@
 import {
-  Component,
-  CustomCode,
-  DataSourceOpExpr,
-  EventHandler,
-  Expr,
-  Interaction,
-  NameArg,
-  TplComponent,
-} from "@/wab/classes";
-import {
   BottomModalButtons,
   useBottomModalActions,
 } from "@/wab/client/components/BottomModal";
@@ -34,26 +24,36 @@ import { LabeledItemRow } from "@/wab/client/components/sidebar/sidebar-helpers"
 import Button from "@/wab/client/components/widgets/Button";
 import { providesAppCtx } from "@/wab/client/contexts/AppContexts";
 import {
-  providesStudioCtx,
   StudioCtx,
+  providesStudioCtx,
   useStudioCtx,
 } from "@/wab/client/studio-ctx/StudioCtx";
 import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
-import { ensure, ensureArray, mkShortId, spawn, swallow } from "@/wab/common";
-import { ExprCtx, serCompositeExprMaybe } from "@/wab/exprs";
+import { ensure, ensureArray, mkShortId, spawn, swallow } from "@/wab/shared/common";
+import { ExprCtx, serCompositeExprMaybe } from "@/wab/shared/core/exprs";
+import { TplMgr } from "@/wab/shared/TplMgr";
+import { ensureBaseVariantSetting } from "@/wab/shared/Variants";
 import { toVarName } from "@/wab/shared/codegen/util";
 import { getDataSourceMeta } from "@/wab/shared/data-sources-meta/data-source-registry";
 import {
   DataSourceMeta,
+  LookupSpecDraft,
   dataSourceTemplateToString,
   ensureDataSourceStandardQuery,
   ensureLookupSpecFromDraft,
   extractFiltersFromDefaultDataSourceQueries,
-  LookupSpecDraft,
 } from "@/wab/shared/data-sources-meta/data-sources";
-import { TplMgr } from "@/wab/shared/TplMgr";
-import { ensureBaseVariantSetting } from "@/wab/shared/Variants";
-import { tryGetTplOwnerComponent } from "@/wab/tpls";
+import {
+  Component,
+  CustomCode,
+  DataSourceOpExpr,
+  EventHandler,
+  Expr,
+  Interaction,
+  NameArg,
+  TplComponent,
+} from "@/wab/shared/model/classes";
+import { tryGetTplOwnerComponent } from "@/wab/shared/core/tpls";
 import { DataSourceSchema, TableSchema } from "@plasmicapp/data-sources";
 import { FormType, formTypeDescription } from "@plasmicpkgs/antd5";
 import { notification } from "antd";

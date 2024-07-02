@@ -1,13 +1,17 @@
-import { isKnownSite, ProjectDependency, Site } from "@/wab/classes";
-import { ensureInstance } from "@/wab/common";
-import { isFrameComponent } from "@/wab/components";
+import { ensureInstance } from "@/wab/shared/common";
+import { isFrameComponent } from "@/wab/shared/core/components";
 import { BundleMigrationType } from "@/wab/server/db/bundle-migration-utils";
 import { UnbundledMigrationFn } from "@/wab/server/db/BundleMigrator";
 import { loadDepPackages } from "@/wab/server/db/DbBundleLoader";
 import { getArenaFrames } from "@/wab/shared/Arenas";
 import { Bundler } from "@/wab/shared/bundler";
+import {
+  isKnownSite,
+  ProjectDependency,
+  Site,
+} from "@/wab/shared/model/classes";
 import { TplMgr } from "@/wab/shared/TplMgr";
-import { getSiteArenas } from "@/wab/sites";
+import { getSiteArenas } from "@/wab/shared/core/sites";
 
 export const migrate: UnbundledMigrationFn = async (bundle, db, entity) => {
   const deps = await loadDepPackages(db, bundle);

@@ -1,21 +1,21 @@
-import { ensureKnownTplTag } from "@/wab/classes";
-import { clientToFramePt, clientToFrameRect } from "@/wab/client/coords";
 import { NodeTargeter } from "@/wab/client/Dnd";
 import { resizeRect } from "@/wab/client/FreestyleManipulator";
+import { clientToFramePt, clientToFrameRect } from "@/wab/client/coords";
 import { renderCantAddMsg } from "@/wab/client/messages/parenting-msgs";
 import {
   cssPropsForInvertTransform,
   useStudioCtx,
 } from "@/wab/client/studio-ctx/StudioCtx";
 import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
-import { ensure, ensureString } from "@/wab/common";
+import { ensure, ensureString } from "@/wab/shared/common";
 import {
   XDraggable,
   XDraggableEvent,
 } from "@/wab/commons/components/XDraggable";
-import { Box, Pt, Rect, rectTopLeft } from "@/wab/geom";
+import { Box, Pt, Rect, rectTopLeft } from "@/wab/shared/geom";
 import { $$$ } from "@/wab/shared/TplQuery";
-import { isTplSlot, isTplTag, isTplTagOrComponent } from "@/wab/tpls";
+import { ensureKnownTplTag } from "@/wab/shared/model/classes";
+import { isTplSlot, isTplTag, isTplTagOrComponent } from "@/wab/shared/core/tpls";
 import { notification } from "antd";
 import $ from "jquery";
 import { observer } from "mobx-react";

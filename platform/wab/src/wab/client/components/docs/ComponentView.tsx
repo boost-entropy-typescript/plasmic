@@ -3,9 +3,9 @@ import { DocsPortalCtx } from "@/wab/client/components/docs/DocsPortalCtx";
 import DocsPropsTableRow from "@/wab/client/components/docs/DocsPropsTableRow";
 import { typeString } from "@/wab/client/components/docs/VariantProp";
 import { PlasmicComponentView } from "@/wab/client/plasmic/plasmic_kit_docs_portal/PlasmicComponentView";
-import { isPlumeComponent } from "@/wab/components";
+import { isPlumeComponent } from "@/wab/shared/core/components";
 import { toVarName } from "@/wab/shared/codegen/util";
-import { wabToTsType } from "@/wab/shared/core/model-util";
+import { wabToTsType } from "@/wab/shared/model/model-util";
 import {
   getPlumeDocsPlugin,
   PlumeDocsProp,

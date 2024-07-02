@@ -1,9 +1,3 @@
-import {
-  Component,
-  ProjectDependency,
-  TplComponent,
-  TplNode,
-} from "@/wab/classes";
 import { MenuBuilder } from "@/wab/client/components/menu-builder";
 import { checkAndNotifyUnsupportedHostVersion } from "@/wab/client/components/modals/codeComponentModals";
 import S from "@/wab/client/components/sidebar-tabs/CustomBehaviorsSection.module.scss";
@@ -18,19 +12,25 @@ import OpenIcon from "@/wab/client/plasmic/plasmic_kit/PlasmicIcon__Open";
 import PlusIcon from "@/wab/client/plasmic/plasmic_kit/PlasmicIcon__Plus";
 import { StudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
 import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
-import { assert, ensure, ensureArray } from "@/wab/common";
+import { assert, ensure, ensureArray } from "@/wab/shared/common";
 import {
   getComponentDisplayName,
   isCodeComponent,
   isHostLessCodeComponent,
-} from "@/wab/components";
-import { DEVFLAGS } from "@/wab/devflags";
+} from "@/wab/shared/core/components";
+import { DEVFLAGS } from "@/wab/shared/devflags";
 import { CUSTOM_BEHAVIORS_CAP } from "@/wab/shared/Labels";
 import { getSlotParams } from "@/wab/shared/SlotUtils";
 import { $$$ } from "@/wab/shared/TplQuery";
-import { isHostLessPackage } from "@/wab/sites";
-import { SlotSelection } from "@/wab/slots";
-import { isTplComponent } from "@/wab/tpls";
+import {
+  Component,
+  ProjectDependency,
+  TplComponent,
+  TplNode,
+} from "@/wab/shared/model/classes";
+import { isHostLessPackage } from "@/wab/shared/core/sites";
+import { SlotSelection } from "@/wab/shared/core/slots";
+import { isTplComponent } from "@/wab/shared/core/tpls";
 import { Dropdown, Menu } from "antd";
 import { findIndex } from "lodash";
 import { observer } from "mobx-react";

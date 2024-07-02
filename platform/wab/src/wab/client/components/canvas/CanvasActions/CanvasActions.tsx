@@ -1,4 +1,3 @@
-import { ArenaFrame } from "@/wab/classes";
 import { CanvasTransformedBox } from "@/wab/client/components/canvas/CanvasTransformedBox";
 import { useRerenderOnUserBodyChange } from "@/wab/client/components/canvas/UserBodyObserver";
 import { hasLayoutBox } from "@/wab/client/dom";
@@ -6,21 +5,22 @@ import WarningIcon from "@/wab/client/plasmic/q_4_icons/icons/PlasmicIcon__Warni
 import { globalHookCtx } from "@/wab/client/react-global-hook/globalHook";
 import { RightTabKey, useStudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
 import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
-import { assert } from "@/wab/common";
+import { assert } from "@/wab/shared/common";
 import {
   CodeComponent,
   getComponentDisplayName,
   isCodeComponent,
-} from "@/wab/components";
+} from "@/wab/shared/core/components";
 import { AnyArena } from "@/wab/shared/Arenas";
 import { maybePropTypeToDisplayName } from "@/wab/shared/code-components/code-components";
+import { ArenaFrame } from "@/wab/shared/model/classes";
 import {
-  flattenVals,
   InvalidArgMeta,
-  isValComponent,
   ValComponent,
   ValidationType,
-} from "@/wab/val-nodes";
+  flattenVals,
+  isValComponent,
+} from "@/wab/shared/core/val-nodes";
 import { Tooltip } from "antd";
 import $ from "jquery";
 import { observer } from "mobx-react";

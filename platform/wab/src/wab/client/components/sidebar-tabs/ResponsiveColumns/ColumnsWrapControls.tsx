@@ -1,4 +1,3 @@
-import { ColumnsConfig } from "@/wab/classes";
 import S from "@/wab/client/components/sidebar-tabs/ColumnsSection.module.scss";
 import {
   FullRow,
@@ -12,13 +11,14 @@ import { Icon } from "@/wab/client/components/widgets/Icon";
 import MinusIcon from "@/wab/client/plasmic/plasmic_kit/PlasmicIcon__Minus";
 import PlusIcon from "@/wab/client/plasmic/plasmic_kit/PlasmicIcon__Plus";
 import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
-import { spawn } from "@/wab/common";
+import { spawn } from "@/wab/shared/common";
 import {
   isReverseValue,
   redistributeColumns,
   updateCurrentTplColumns,
 } from "@/wab/shared/columns-utils";
-import { TplColumnsTag } from "@/wab/tpls";
+import { ColumnsConfig } from "@/wab/shared/model/classes";
+import { TplColumnsTag } from "@/wab/shared/core/tpls";
 import cn from "classnames";
 import { clamp } from "lodash";
 import { observer } from "mobx-react";

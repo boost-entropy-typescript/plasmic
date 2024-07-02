@@ -1,14 +1,3 @@
-import {
-  Component,
-  Expr,
-  FunctionType,
-  isKnownExpr,
-  isKnownFunctionType,
-  isKnownPageHref,
-  isKnownRenderableType,
-  isKnownRenderFuncType,
-  Param,
-} from "@/wab/classes";
 import { PropValueEditor } from "@/wab/client/components/sidebar-tabs/PropValueEditor";
 import { SidebarModal } from "@/wab/client/components/sidebar/SidebarModal";
 import { IconLinkButton } from "@/wab/client/components/widgets";
@@ -19,21 +8,32 @@ import Textbox from "@/wab/client/components/widgets/Textbox";
 import PlusIcon from "@/wab/client/plasmic/plasmic_kit/PlasmicIcon__Plus";
 import PlasmicParamSection from "@/wab/client/plasmic/plasmic_kit_state_management/PlasmicParamSection";
 import { StudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
-import { assert, ensure, mkShortId, spawn } from "@/wab/common";
-import { canRenameParam } from "@/wab/components";
-import { clone, codeLit, tryExtractJson } from "@/wab/exprs";
-import { mkParam } from "@/wab/lang";
+import { assert, ensure, mkShortId, spawn } from "@/wab/shared/common";
+import { canRenameParam } from "@/wab/shared/core/components";
+import { clone, codeLit, tryExtractJson } from "@/wab/shared/core/exprs";
+import { mkParam } from "@/wab/shared/core/lang";
 import {
   getPropTypeType,
   wabTypeToPropType,
 } from "@/wab/shared/code-components/code-components";
-import { typeDisplayName, typeFactory } from "@/wab/shared/core/model-util";
 import { COMPONENT_PROP_CAP } from "@/wab/shared/Labels";
-import { smartHumanize } from "@/wab/strs";
-import { cloneType } from "@/wab/tpls";
+import {
+  Component,
+  Expr,
+  FunctionType,
+  isKnownExpr,
+  isKnownFunctionType,
+  isKnownPageHref,
+  isKnownRenderableType,
+  isKnownRenderFuncType,
+  Param,
+} from "@/wab/shared/model/classes";
+import { typeDisplayName, typeFactory } from "@/wab/shared/model/model-util";
+import { smartHumanize } from "@/wab/shared/strs";
+import { cloneType } from "@/wab/shared/core/tpls";
 import { isNaN } from "lodash";
 import React from "react";
-import { Modal } from "src/wab/client/components/widgets/Modal";
+import { Modal } from "@/wab/client/components/widgets/Modal";
 
 function getComponentParamTypeOptions() {
   return [

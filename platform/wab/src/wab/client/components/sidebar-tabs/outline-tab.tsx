@@ -1,6 +1,5 @@
-import { ArenaFrame, ComponentArena } from "@/wab/classes";
-import styles from "@/wab/client/components/sidebar-tabs/outline-tab.module.scss";
 import { OutlineCtx } from "@/wab/client/components/sidebar-tabs/OutlineCtx";
+import styles from "@/wab/client/components/sidebar-tabs/outline-tab.module.scss";
 import {
   ArenaTree,
   ArenaTreeRef,
@@ -12,7 +11,7 @@ import PlasmicOutlineTab from "@/wab/client/plasmic/project_panel/PlasmicOutline
 import PlasmicSearchInput from "@/wab/client/plasmic/project_panel/PlasmicSearchInput";
 import ChevronDownsvgIcon from "@/wab/client/plasmic/q_4_icons/icons/PlasmicIcon__ChevronDownsvg";
 import { useStudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
-import { switchType } from "@/wab/common";
+import { switchType } from "@/wab/shared/common";
 import {
   getArenaFrameDesc,
   getArenaFrames,
@@ -20,6 +19,7 @@ import {
   isPageArena,
 } from "@/wab/shared/Arenas";
 import { getComponentArenaRowLabel } from "@/wab/shared/component-arenas";
+import { ArenaFrame, ComponentArena } from "@/wab/shared/model/classes";
 import { Dropdown, Menu } from "antd";
 import { observer } from "mobx-react";
 import * as React from "react";

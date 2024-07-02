@@ -1,10 +1,3 @@
-import {
-  isKnownRawText,
-  isKnownRenderExpr,
-  isKnownVirtualRenderExpr,
-  RawText,
-  TplNode,
-} from "@/wab/classes";
 import { mkProjectLocation, openNewTab } from "@/wab/client/cli-routes";
 import { isStyleClip } from "@/wab/client/clipboard/local";
 import { makeFrameMenu } from "@/wab/client/components/frame-menu";
@@ -17,9 +10,9 @@ import { LabelWithDetailedTooltip } from "@/wab/client/components/widgets/LabelW
 import { getComboForAction } from "@/wab/client/shortcuts/studio/studio-shortcuts";
 import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
 import { getVisibilityChoicesForTpl } from "@/wab/client/utils/tpl-client-utils";
-import { asOne, ensure, ensureInstance, filterMapTruthy } from "@/wab/common";
-import { isCodeComponent, isFrameComponent } from "@/wab/components";
-import { Selectable } from "@/wab/selection";
+import { asOne, ensure, ensureInstance, filterMapTruthy } from "@/wab/shared/common";
+import { isCodeComponent, isFrameComponent } from "@/wab/shared/core/components";
+import { Selectable } from "@/wab/shared/core/selection";
 import { MainBranchId } from "@/wab/shared/ApiSchema";
 import { isMixedArena } from "@/wab/shared/Arenas";
 import { isCoreTeamEmail } from "@/wab/shared/devflag-utils";
@@ -32,6 +25,13 @@ import {
   getContainerTypeName,
   PositionLayoutType,
 } from "@/wab/shared/layoututils";
+import {
+  isKnownRawText,
+  isKnownRenderExpr,
+  isKnownVirtualRenderExpr,
+  RawText,
+  TplNode,
+} from "@/wab/shared/model/classes";
 import {
   isTplAutoSizable,
   isTplDefaultSized,
@@ -49,7 +49,7 @@ import {
   getVisibilityLabel,
   hasVisibilitySetting,
 } from "@/wab/shared/visibility-utils";
-import { SlotSelection } from "@/wab/slots";
+import { SlotSelection } from "@/wab/shared/core/slots";
 import {
   areSiblings,
   canConvertToSlot,
@@ -69,8 +69,8 @@ import {
   isTplTextBlock,
   tplChildrenOnly,
   tryGetVariantSettingStoringText,
-} from "@/wab/tpls";
-import { ValComponent } from "@/wab/val-nodes";
+} from "@/wab/shared/core/tpls";
+import { ValComponent } from "@/wab/shared/core/val-nodes";
 import { Menu, notification, Tooltip } from "antd";
 import React from "react";
 

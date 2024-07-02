@@ -1,11 +1,4 @@
 import {
-  ensureKnownTplComponent,
-  isKnownClassNamePropType,
-  TplComponent,
-  TplNode,
-  TplTag,
-} from "@/wab/classes";
-import {
   hasSimplifiedMode,
   isTplCodeComponentStyleable,
 } from "@/wab/client/code-components/code-components";
@@ -69,24 +62,31 @@ import {
 } from "@/wab/client/components/style-controls/StyleComponent";
 import { StudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
 import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
-import { asOne, assert, ensure, ensureArray } from "@/wab/common";
+import { asOne, assert, ensure, ensureArray } from "@/wab/shared/common";
 import {
   getComponentDisplayName,
   isCodeComponent,
   isCodeComponentTpl,
   isPageComponent,
-} from "@/wab/components";
-import { DEVFLAGS, DevFlagsType } from "@/wab/devflags";
+} from "@/wab/shared/core/components";
+import { DEVFLAGS, DevFlagsType } from "@/wab/shared/devflags";
 import { PublicStyleSection } from "@/wab/shared/ApiSchema";
 import { isTagListContainer } from "@/wab/shared/core/rich-text-util";
 import { isGridTag } from "@/wab/shared/grid-utils";
+import {
+  ensureKnownTplComponent,
+  isKnownClassNamePropType,
+  TplComponent,
+  TplNode,
+  TplTag,
+} from "@/wab/shared/model/classes";
 import {
   getAncestorSlotArg,
   getAncestorTplSlot,
   isTypographyNode,
 } from "@/wab/shared/SlotUtils";
 import { canEditStyleSection } from "@/wab/shared/ui-config-utils";
-import { getApplicableSelectors } from "@/wab/styles";
+import { getApplicableSelectors } from "@/wab/shared/core/styles";
 import {
   canToggleVisibility,
   EventHandlerKeyType,
@@ -107,8 +107,8 @@ import {
   isTplVariantable,
   TplColumnsTag,
   TplColumnTag,
-} from "@/wab/tpls";
-import { ValComponent } from "@/wab/val-nodes";
+} from "@/wab/shared/core/tpls";
+import { ValComponent } from "@/wab/shared/core/val-nodes";
 import { Alert } from "antd";
 import $ from "jquery";
 import { observer } from "mobx-react";

@@ -1,5 +1,5 @@
 /// <reference types="@types/resize-observer-browser" />
-import { ArenaFrame } from "@/wab/classes";
+import { handleError } from "@/wab/client/ErrorNotifications";
 import { CodeFetchersRegistry } from "@/wab/client/code-fetchers";
 import {
   CanvasFrameInfo,
@@ -14,7 +14,6 @@ import {
 import * as domMod from "@/wab/client/dom";
 import { NodeAndOffset } from "@/wab/client/dom";
 import { scriptExec, upsertJQSelector } from "@/wab/client/dom-utils";
-import { handleError } from "@/wab/client/ErrorNotifications";
 import { StudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
 import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
 import {
@@ -23,9 +22,9 @@ import {
   spawn,
   spawnWrapper,
   withTimeout,
-} from "@/wab/common";
-import { DEVFLAGS } from "@/wab/devflags";
-import { Box } from "@/wab/geom";
+} from "@/wab/shared/common";
+import { DEVFLAGS } from "@/wab/shared/devflags";
+import { Box } from "@/wab/shared/geom";
 import {
   getFrameHeight,
   isHeightAutoDerived,
@@ -37,8 +36,9 @@ import {
 } from "@/wab/shared/cached-selectors";
 import { getBuiltinComponentRegistrations } from "@/wab/shared/code-components/builtin-code-components";
 import { CodeComponentsRegistry } from "@/wab/shared/code-components/code-components";
+import { ArenaFrame } from "@/wab/shared/model/classes";
 import { CodeLibraryRegistration } from "@/wab/shared/register-library";
-import { getPublicUrl } from "@/wab/urls";
+import { getPublicUrl } from "@/wab/shared/urls";
 import {
   ComponentRegistration,
   CustomFunctionRegistration,
@@ -48,7 +48,7 @@ import { notification } from "antd";
 import $ from "jquery";
 import L from "lodash";
 import debounce from "lodash/debounce";
-import { autorun, Lambda, observable, runInAction } from "mobx";
+import { Lambda, autorun, observable, runInAction } from "mobx";
 import React from "react";
 
 declare const COMMITHASH: string;

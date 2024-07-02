@@ -1,12 +1,3 @@
-import {
-  Component,
-  isKnownArena,
-  isKnownComponent,
-  isKnownTplNode,
-  ProjectDependency,
-  TplNode,
-  TplTag,
-} from "@/wab/classes";
 import { getComponentPresets } from "@/wab/client/code-components/code-presets";
 import { useFocusManager } from "@/wab/client/components/aria-utils";
 import {
@@ -64,7 +55,7 @@ import {
 } from "@/wab/client/studio-ctx/StudioCtx";
 import { TutorialEventsType } from "@/wab/client/tours/tutorials/tutorials-events";
 import { isFlexContainer } from "@/wab/client/utils/tpl-client-utils";
-import { createMapFromObject } from "@/wab/collections";
+import { createMapFromObject } from "@/wab/shared/collections";
 import {
   assertNever,
   delay,
@@ -78,7 +69,7 @@ import {
   sliding,
   sortBy,
   spawnWrapper,
-} from "@/wab/common";
+} from "@/wab/shared/common";
 import { HighlightBlinker } from "@/wab/commons/components/HighlightBlinker";
 import {
   CodeComponent,
@@ -94,31 +85,40 @@ import {
   isSubComponent,
   sortComponentsByName,
   tryGetDefaultComponent,
-} from "@/wab/components";
+} from "@/wab/shared/core/components";
 import {
   DEVFLAGS,
   flattenInsertableTemplates,
   flattenInsertableTemplatesByType,
   HostLessPackageInfo,
   InsertableTemplatesGroup,
-} from "@/wab/devflags";
-import { ImageAssetType } from "@/wab/image-asset-type";
-import { isIcon } from "@/wab/image-assets";
+} from "@/wab/shared/devflags";
+import { ImageAssetType } from "@/wab/shared/core/image-asset-type";
+import { isIcon } from "@/wab/shared/core/image-assets";
 import { isBuiltinCodeComponent } from "@/wab/shared/code-components/builtin-code-components";
 import { FRAMES_CAP } from "@/wab/shared/Labels";
+import {
+  Component,
+  isKnownArena,
+  isKnownComponent,
+  isKnownTplNode,
+  ProjectDependency,
+  TplNode,
+  TplTag,
+} from "@/wab/shared/model/classes";
 import {
   canInsertAlias,
   canInsertHostlessPackage,
   InsertPanelConfig,
 } from "@/wab/shared/ui-config-utils";
-import { isHostLessPackage } from "@/wab/sites";
-import { SlotSelection } from "@/wab/slots";
+import { isHostLessPackage } from "@/wab/shared/core/sites";
+import { SlotSelection } from "@/wab/shared/core/slots";
 import {
   isComponentRoot,
   isTplColumn,
   isTplContainer,
   isTplTextBlock,
-} from "@/wab/tpls";
+} from "@/wab/shared/core/tpls";
 import cn from "classnames";
 import { UseComboboxGetItemPropsOptions } from "downshift";
 import L, { groupBy, last, uniq } from "lodash";

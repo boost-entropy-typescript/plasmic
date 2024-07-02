@@ -1,14 +1,4 @@
 import {
-  CollectionExpr,
-  ensureKnownMapExpr,
-  Expr,
-  isKnownCustomCode,
-  isKnownMapExpr,
-  MapExpr,
-  TplComponent,
-  TplTag,
-} from "@/wab/classes";
-import {
   isPropShown,
   PropEditorRow,
 } from "@/wab/client/components/sidebar-tabs/PropEditorRow";
@@ -18,14 +8,24 @@ import Chip from "@/wab/client/components/widgets/Chip";
 import { Icon } from "@/wab/client/components/widgets/Icon";
 import PlusIcon from "@/wab/client/plasmic/plasmic_kit/PlasmicIcon__Plus";
 import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
-import { assert } from "@/wab/common";
+import { assert } from "@/wab/shared/common";
 import { removeFromArray } from "@/wab/commons/collections";
-import { clone as cloneExpr, codeLit, tryExtractJson } from "@/wab/exprs";
+import { clone as cloneExpr, codeLit, tryExtractJson } from "@/wab/shared/core/exprs";
 import {
   maybePropTypeToDisplayName,
   StudioPropType,
 } from "@/wab/shared/code-components/code-components";
 import { CanvasEnv } from "@/wab/shared/eval";
+import {
+  CollectionExpr,
+  ensureKnownMapExpr,
+  Expr,
+  isKnownCustomCode,
+  isKnownMapExpr,
+  MapExpr,
+  TplComponent,
+  TplTag,
+} from "@/wab/shared/model/classes";
 import omit from "lodash/omit";
 import React from "react";
 

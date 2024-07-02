@@ -1,3 +1,13 @@
+import { assert, ensure, ensureString, mkUuid } from "@/wab/shared/common";
+import {
+  asCode,
+  clone,
+  ExprCtx,
+  stripParensAndMaybeConvertToIife,
+} from "@/wab/shared/core/exprs";
+import { ApiDataSource } from "@/wab/shared/ApiSchema";
+import type { DataSourceType } from "@/wab/shared/data-sources-meta/data-source-registry";
+import { substitutePlaceholder } from "@/wab/shared/dynamic-bindings";
 import {
   CustomCode,
   DataSourceOpExpr,
@@ -7,17 +17,7 @@ import {
   ObjectPath,
   QueryInvalidationExpr,
   TemplatedString,
-} from "@/wab/classes";
-import { assert, ensure, ensureString, mkUuid } from "@/wab/common";
-import {
-  asCode,
-  clone,
-  ExprCtx,
-  stripParensAndMaybeConvertToIife,
-} from "@/wab/exprs";
-import { ApiDataSource } from "@/wab/shared/ApiSchema";
-import type { DataSourceType } from "@/wab/shared/data-sources-meta/data-source-registry";
-import { substitutePlaceholder } from "@/wab/shared/dynamic-bindings";
+} from "@/wab/shared/model/classes";
 import {
   DataSourceSchema,
   Pagination,

@@ -1,3 +1,17 @@
+import { assert, ensureArray, maybe } from "@/wab/shared/common";
+import { allSuccess } from "@/wab/commons/failable-utils";
+import { DeepReadonly } from "@/wab/commons/types";
+import {
+  getComponentDisplayName,
+  isCodeComponent,
+  isCodeComponentTpl,
+  isPlasmicComponent,
+} from "@/wab/shared/core/components";
+import { flattenComponent } from "@/wab/shared/cached-selectors";
+import { elementSchemaToTpl } from "@/wab/shared/code-components/code-components";
+import { toVarName } from "@/wab/shared/codegen/util";
+import { typographyCssProps } from "@/wab/shared/core/style-props";
+import { maybeComputedFn } from "@/wab/shared/mobx-util";
 import {
   Arg,
   Component,
@@ -15,30 +29,16 @@ import {
   Var,
   Variant,
   VirtualRenderExpr,
-} from "@/wab/classes";
-import { assert, ensureArray, maybe } from "@/wab/common";
-import { allSuccess } from "@/wab/commons/failable-utils";
-import { DeepReadonly } from "@/wab/commons/types";
-import {
-  getComponentDisplayName,
-  isCodeComponent,
-  isCodeComponentTpl,
-  isPlasmicComponent,
-} from "@/wab/components";
-import { flattenComponent } from "@/wab/shared/cached-selectors";
-import { elementSchemaToTpl } from "@/wab/shared/code-components/code-components";
-import { toVarName } from "@/wab/shared/codegen/util";
+} from "@/wab/shared/model/classes";
 import {
   isRenderableType,
   isRenderFuncType,
-} from "@/wab/shared/core/model-util";
-import { typographyCssProps } from "@/wab/shared/core/style-props";
-import { maybeComputedFn } from "@/wab/shared/mobx-util";
+} from "@/wab/shared/model/model-util";
 import { TplMgr } from "@/wab/shared/TplMgr";
 import { $$$ } from "@/wab/shared/TplQuery";
 import { tryGetBaseVariantSetting, VariantCombo } from "@/wab/shared/Variants";
-import { SlotSelection } from "@/wab/slots";
-import { createExpandedRuleSetMerger, THEMABLE_TAGS } from "@/wab/styles";
+import { SlotSelection } from "@/wab/shared/core/slots";
+import { createExpandedRuleSetMerger, THEMABLE_TAGS } from "@/wab/shared/core/styles";
 import {
   ancestorsUpWithSlotSelections,
   flattenTpls,
@@ -58,7 +58,7 @@ import {
   TplTagCodeGenType,
   TplTextTag,
   tryGetOwnerSite,
-} from "@/wab/tpls";
+} from "@/wab/shared/core/tpls";
 import L from "lodash";
 
 export function getSlotParams(component: Component) {

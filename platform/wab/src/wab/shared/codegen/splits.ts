@@ -1,3 +1,9 @@
+import { withDefault } from "@/wab/shared/common";
+import {
+  allGlobalVariantsReferencedByComponent,
+  isPageComponent,
+} from "@/wab/shared/core/components";
+import { toClassName, toVarName } from "@/wab/shared/codegen/util";
 import {
   isKnownGlobalVariantSplitContent,
   RandomSplitSlice,
@@ -5,14 +11,8 @@ import {
   Site,
   Split,
   SplitContent,
-} from "@/wab/classes";
-import { withDefault } from "@/wab/common";
-import {
-  allGlobalVariantsReferencedByComponent,
-  isPageComponent,
-} from "@/wab/components";
-import { toClassName, toVarName } from "@/wab/shared/codegen/util";
-import { SplitStatus, SplitType } from "@/wab/splits";
+} from "@/wab/shared/model/classes";
+import { SplitStatus, SplitType } from "@/wab/shared/core/splits";
 import { sumBy, uniq } from "lodash";
 
 interface SerializedGlobalVariantSplitContent {
