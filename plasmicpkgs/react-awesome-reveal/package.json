@@ -1,6 +1,6 @@
 {
   "name": "@plasmicpkgs/react-awesome-reveal",
-  "version": "3.8.200",
+  "version": "3.8.201",
   "description": "Plasmic registration call for react-awesome-reveal",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -37,7 +37,8 @@
     "tslib": "^2.2.0"
   },
   "dependencies": {
-    "react-awesome-reveal": "^3.8.0"
+    "@emotion/react": "^11.11.4",
+    "react-awesome-reveal": "^4.2.12"
   },
   "peerDependencies": {
     "@plasmicapp/host": ">=1.0.0",

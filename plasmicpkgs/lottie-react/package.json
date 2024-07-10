@@ -1,6 +1,6 @@
 {
   "name": "@plasmicpkgs/lottie-react",
-  "version": "0.0.188",
+  "version": "0.0.189",
   "description": "Plasmic registration call for the HTML5 video element",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -37,7 +37,7 @@
     "tslib": "^2.2.0"
   },
   "dependencies": {
-    "lottie-react": "^2.1.0"
+    "lottie-react": "^2.4.0"
   },
   "peerDependencies": {
     "@plasmicapp/host": ">=1.0.0",
