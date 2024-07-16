@@ -60,7 +60,6 @@ import {
   strictZip,
   switchType,
   tuple,
-  uniqueName,
 } from "@/wab/shared/common";
 import { clone as cloneExpr, isRealCodeExpr } from "@/wab/shared/core/exprs";
 import * as Lang from "@/wab/shared/core/lang";
@@ -180,7 +179,7 @@ import {
   setTplVisibility,
 } from "@/wab/shared/visibility-utils";
 import { CodeComponentMeta as ComponentRegistration } from "@plasmicapp/host/registerComponent";
-import L, { cloneDeep, orderBy, uniq, without } from "lodash";
+import L, { cloneDeep, orderBy, uniq } from "lodash";
 import memoizeOne from "memoize-one";
 
 export enum ComponentType {
@@ -1783,18 +1782,7 @@ export function addSlotParam(
   }
   // We need to make sure the new slot param does not conflict with
   // any existing names
-  const paramNames = component.params.map((p) => p.variable.name);
-  slotName = uniqueName(
-    [
-      ...paramNames,
-      ...without(
-        new TplMgr({ site }).getExistingTplNames(component),
-        "children"
-      ),
-    ],
-    slotName,
-    { normalize: (n) => toVarName(n) }
-  );
+  slotName = new TplMgr({ site }).getUniqueParamName(component, slotName);
   const slotParam = Lang.mkParam({
     name: slotName,
     type: typeFactory.renderable(),
