@@ -13,8 +13,14 @@ import {
   getParamByVarName,
   isCodeComponent,
 } from "@/wab/shared/core/components";
-import { code } from "@/wab/shared/core/exprs";
-import { Component, CustomCode, VariantsRef } from "@/wab/shared/model/classes";
+import { customCode } from "@/wab/shared/core/exprs";
+import { tryEvalExpr } from "@/wab/shared/eval";
+import {
+  Component,
+  CustomCode,
+  VariantsRef,
+  isKnownCustomCode,
+} from "@/wab/shared/model/classes";
 import {
   isAnyType,
   isBoolType,
@@ -53,12 +59,15 @@ function fixComponentFigmaPropKey(key: string, prop: ComponentProperty) {
   return key;
 }
 
-function isFigmaTrueishValue(value: number | string | boolean) {
+function isFigmaTrueishValue(value: number | string | boolean | null) {
   if (isBoolean(value)) {
     return value;
   }
   if (isNumber(value)) {
     return value === 1;
+  }
+  if (value === null) {
+    return false;
   }
   return ["true", "on"].includes(`${value}`.trim().toLowerCase());
 }
@@ -187,7 +196,7 @@ function fromFigmaPropsToTplProps(
     Object.entries(figmaProps).map(([key, value]) => {
       const param = getParamByVarName(component, toVarName(key));
 
-      if (!param || isSlot(param)) {
+      if (!param || isSlot(param) || value === undefined) {
         return null;
       }
 
@@ -224,17 +233,30 @@ function fromFigmaPropsToTplProps(
       if (isBoolType(param.type)) {
         // We may have to convert a string value to a boolean as we may be mapping a variant
         // to a boolean prop
-        return isJsonScalar(value) && isFigmaTrueishValue(value)
-          ? [param.variable.name, true]
+        const propExpectedValue =
+          isJsonScalar(value) && isFigmaTrueishValue(value);
+        // We will attempt to evaluate the default expression of the param without additional data
+        // as we are only interested in "true" or "false" values
+        const propDefaultValue =
+          param.defaultExpr && isKnownCustomCode(param.defaultExpr)
+            ? tryEvalExpr(param.defaultExpr.code, {}).val
+            : false;
+        return propExpectedValue !== propDefaultValue
+          ? [param.variable.name, propExpectedValue]
           : null;
       }
 
-      if (isAnyType(param.type) || isArray(value) || isObject(value)) {
+      if (
+        isAnyType(param.type) ||
+        isArray(value) ||
+        isObject(value) ||
+        value === null
+      ) {
         // If the param we are dealing with is of any type or the value
         // is an array or object, we will convert the value to a custom code
         // This is because we want to ensure that the value passed is a valid
         // scalar value
-        return [param.variable.name, code(JSON.stringify(value))];
+        return [param.variable.name, customCode(JSON.stringify(value))];
       }
 
       return [param.variable.name, value];
