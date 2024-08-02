@@ -137,18 +137,20 @@ export function registerRadio(
           description:
             "The value of the input element, used when submitting an HTML form.",
         },
+        // Keeping for backwards compatibility reasons
         onSelectionChange: {
           type: "eventHandler",
           argTypes: [{ name: "isSelected", type: "boolean" }],
+          hidden: () => true,
         },
       },
       states: {
+        // Keeping for backwards compatibility reasons
         isSelected: {
           type: "readonly",
           onChangeProp: "onSelectionChange",
           variableType: "boolean",
-          hidden: (_ps: BaseRadioProps, ctx: BaseControlContextData | null) =>
-            !ctx?.isStandalone,
+          hidden: () => true,
         },
       },
       trapsFocus: true,

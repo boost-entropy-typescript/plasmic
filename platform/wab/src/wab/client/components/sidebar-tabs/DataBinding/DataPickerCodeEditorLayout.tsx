@@ -2,6 +2,7 @@ import {
   CodePreview,
   renderInspector,
 } from "@/wab/client/components/coding/CodePreview";
+import type { FullCodeEditor } from "@/wab/client/components/coding/FullCodeEditor";
 import {
   DataPickerRunCodeActionContext,
   DataPickerTypesSchema,
@@ -10,23 +11,20 @@ import {
   DefaultDataPickerCodeEditorLayoutProps,
   PlasmicDataPickerCodeEditorLayout,
 } from "@/wab/client/plasmic/plasmic_kit_data_binding/PlasmicDataPickerCodeEditorLayout";
+import { useStudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
+import { isLiteralObjectByName, withoutNils } from "@/wab/shared/common";
 import { HTMLElementRefOf } from "@plasmicapp/react-web";
 import * as React from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { useStudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
-import { isLiteralObjectByName, withoutNils } from "@/wab/shared/common";
 
 export interface DataPickerCodeEditorLayoutProps
   extends Omit<DefaultDataPickerCodeEditorLayoutProps, "envPanel"> {
-  editorRef: React.RefObject<{
-    getValue: () => string;
-  }>;
+  editorRef: React.RefObject<FullCodeEditor>;
   data: object;
   defaultValue: string;
   onSave: (val: string) => boolean;
   schema?: DataPickerTypesSchema;
   context?: string;
-  showReactNamespace?: boolean;
   hideEnvPanel?: boolean;
 }
 
@@ -44,7 +42,6 @@ function DataPickerCodeEditorLayout_(
     defaultValue,
     onSave,
     schema,
-    showReactNamespace,
     hideEnvPanel,
     context,
     ...rest
@@ -71,10 +68,8 @@ function DataPickerCodeEditorLayout_(
             onChange={(val: string) => setCurrentValue(val)}
             enableMinimap={false}
             hideGlobalSuggestions={true}
-            lightTheme={true}
             folding={false}
             schema={schema}
-            showReactNamespace={showReactNamespace}
             autoFocus
           />
         </React.Suspense>
