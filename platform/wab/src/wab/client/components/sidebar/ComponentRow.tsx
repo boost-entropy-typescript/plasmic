@@ -1,5 +1,5 @@
 import { mkProjectLocation, openNewTab } from "@/wab/client/cli-routes";
-import ListItem from "@/wab/client/components/ListItem";
+import RowItem from "@/wab/client/components/RowItem";
 import { MenuBuilder } from "@/wab/client/components/menu-builder";
 import { DefaultComponentKindModal } from "@/wab/client/components/modals/DefaultComponentKindModal";
 import { showModalToRefreshCodeComponentProps } from "@/wab/client/components/modals/codeComponentModals";
@@ -30,6 +30,7 @@ import {
   getComponentDisplayName,
   getDefaultComponentKind,
   getDefaultComponentLabel,
+  getFolderComponentDisplayName,
   getSuperComponents,
   isCodeComponent,
   isContextCodeComponent,
@@ -37,23 +38,24 @@ import {
   isReusableComponent,
 } from "@/wab/shared/core/components";
 import { Component } from "@/wab/shared/model/classes";
-import { Menu, Popover, Tooltip, notification } from "antd";
+import { Menu, Popover, notification } from "antd";
 import { observer } from "mobx-react";
 import * as React from "react";
 
 export const ComponentRow = observer(function ComponentRow(props: {
   component: Component;
-  readOnly: boolean;
-  importedFrom?: string;
   matcher: Matcher;
+  indentMultiplier: number;
+  importedFrom?: string;
 }) {
-  const { component, readOnly, importedFrom, matcher } = props;
+  const { component, matcher, importedFrom, indentMultiplier } = props;
   const studioCtx = useStudioCtx();
   const isPlainComponent =
     isReusableComponent(component) &&
     !isCodeComponent(component) &&
     !importedFrom;
   const isCodeComp = isCodeComponent(component);
+  const readOnly = studioCtx.getLeftTabPermission("components") === "readable";
 
   const overlay = () => {
     const builder = new MenuBuilder();
@@ -73,7 +75,9 @@ export const ComponentRow = observer(function ComponentRow(props: {
     return builder.build({ menuName: "component-item-menu" });
   };
 
-  const indent = !matcher.hasQuery() ? getSuperComponents(component).length : 0;
+  const calcIndent = !matcher.hasQuery()
+    ? getSuperComponents(component).length + indentMultiplier
+    : indentMultiplier;
 
   const defaultComponentKind = getDefaultComponentKind(
     studioCtx.site,
@@ -97,30 +101,14 @@ export const ComponentRow = observer(function ComponentRow(props: {
         type: AddItemType.tpl,
       }}
     >
-      <ListItem
-        isDraggable={!readOnly}
+      <RowItem
+        style={{
+          height: 32,
+          paddingLeft: calcIndent * 16 + 6,
+        }}
         icon={<Icon icon={ComponentIcon} />}
         menu={overlay}
-        style={{
-          paddingLeft: indent * 24,
-        }}
-        hasRightContents={isCodeComp}
-        rightContent={
-          isCodeComp ? (
-            <Tooltip title={component.codeComponentMeta.importPath}>
-              <code
-                style={{
-                  textOverflow: "ellipsis",
-                  minWidth: 0,
-                  overflow: "hidden",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {component.codeComponentMeta.importPath}
-              </code>
-            </Tooltip>
-          ) : undefined
-        }
+        menuSize={"small"}
         onClick={
           isPlainComponent
             ? () => {
@@ -145,13 +133,13 @@ export const ComponentRow = observer(function ComponentRow(props: {
             }
           >
             <strong>
-              {matcher.boldSnippets(getComponentDisplayName(component))}
+              {matcher.boldSnippets(getFolderComponentDisplayName(component))}
             </strong>
           </Popover>
         ) : (
-          matcher.boldSnippets(getComponentDisplayName(component))
+          matcher.boldSnippets(getFolderComponentDisplayName(component))
         )}
-      </ListItem>
+      </RowItem>
     </DraggableInsertable>
   );
 });

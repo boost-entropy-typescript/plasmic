@@ -55,6 +55,7 @@ import {
   ensureInstance,
   filterFalsy,
   insert,
+  last,
   mergeMaps,
   mkShortId,
   strictZip,
@@ -2265,7 +2266,7 @@ export function sortComponentsByName(comps: Component[]) {
     result.push(comp);
     // Also add all sub components
     for (const subComp of naturalSort(comp.subComps, (c) =>
-      getComponentDisplayName(c)
+      getFolderComponentTrimmedName(c)
     )) {
       addComp(subComp);
     }
@@ -2274,7 +2275,7 @@ export function sortComponentsByName(comps: Component[]) {
   // First order non-sub-components by name
   for (const comp of naturalSort(
     comps.filter((c) => !c.superComp),
-    (c) => getComponentDisplayName(c)
+    (c) => getFolderComponentTrimmedName(c)
   )) {
     addComp(comp);
   }
@@ -2296,10 +2297,36 @@ export function isComponentHiddenFromContentEditor(
 }
 
 export function getComponentDisplayName(component: Component) {
-  if (isCodeComponent(component)) {
-    return component.codeComponentMeta.displayName ?? component.name;
+  if (isCodeComponent(component) && component.codeComponentMeta.displayName) {
+    return component.codeComponentMeta.displayName;
   }
   return component.name || "unnamed artboard";
+}
+
+export function getFolderComponentDisplayName(component: Component) {
+  const componentName =
+    isCodeComponent(component) && component.codeComponentMeta.displayName
+      ? component.codeComponentMeta.displayName
+      : !!component.name
+      ? component.name
+      : "unnamed artboard";
+
+  const componentPath = componentName
+    .split("/")
+    .map((str) => str.trim())
+    .filter((str) => !!str);
+  return componentPath.length > 0 ? last(componentPath) : componentName;
+}
+
+export function getFolderComponentTrimmedName(component: Component) {
+  if (!component.name) {
+    return "unnamed artboard";
+  }
+  return component.name
+    .split("/")
+    .map((str) => str.trim())
+    .filter((str) => !!str)
+    .join("/");
 }
 
 export function getCodeComponentDescription(component: CodeComponent) {
