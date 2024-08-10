@@ -1,3 +1,12 @@
+/**
+ * This module handles loading secrets from secrets.json.
+ *
+ * Plasmic should run without any secrets.json file.
+ * But for testing some features, you'll need to set up certain variables.
+ *
+ * By default, secrets are read from ~/.plasmic/secrets.json.
+ */
+
 import { ensure, uncheckedCast } from "@/wab/shared/common";
 import fs from "fs";
 import * as os from "os";
@@ -7,11 +16,6 @@ interface Secrets {
     /** AKA consumer key */
     clientId: string;
     /** AKA consumer secret */
-    clientSecret: string;
-  };
-  okta?: {
-    domain: string;
-    clientId: string;
     clientSecret: string;
   };
   airtableSso?: {
@@ -89,22 +93,6 @@ export function getGoogleClientId() {
 
 export function getGoogleClientSecret() {
   return loadSecrets().google?.clientSecret ?? "fake";
-}
-
-export function hasOkta() {
-  return "okta" in loadSecrets();
-}
-
-export function getOktaDomain() {
-  return loadSecrets().okta?.domain ?? "fake";
-}
-
-export function getOktaClientId() {
-  return loadSecrets().okta?.clientId ?? "fake";
-}
-
-export function getOktaClientSecret() {
-  return loadSecrets().okta?.clientSecret ?? "fake";
 }
 
 export function getSmtpAuth() {

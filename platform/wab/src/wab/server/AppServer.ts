@@ -35,13 +35,20 @@ import * as path from "path";
 import { getConnection } from "typeorm";
 import v8 from "v8";
 // API keys and Passport configuration
+import { setupPassport } from "@/wab/server/auth/passport-cfg";
+import * as authRoutes from "@/wab/server/auth/routes";
+import {
+  apiAuth,
+  shopifyAuthStart,
+  shopifyCallback,
+} from "@/wab/server/auth/routes";
+import { doLogout } from "@/wab/server/auth/util";
 import { Config } from "@/wab/server/config";
 import { DbMgr, SUPER_USER } from "@/wab/server/db/DbMgr";
 import { getDevFlagsMergedWithOverrides } from "@/wab/server/db/appconfig";
 import { createMailer } from "@/wab/server/emails/Mailer";
 import { ExpressSession } from "@/wab/server/entities/Entities";
 import "@/wab/server/extensions";
-import { setupPassport } from "@/wab/server/passport-cfg";
 import { WabPromStats, trackPostgresPool } from "@/wab/server/promstats";
 import * as adminRoutes from "@/wab/server/routes/admin";
 import {
@@ -58,12 +65,6 @@ import {
   upsertEndUser,
 } from "@/wab/server/routes/app-oauth";
 import { getAppCtx } from "@/wab/server/routes/appctx";
-import * as authRoutes from "@/wab/server/routes/auth";
-import {
-  apiAuth,
-  shopifyAuthStart,
-  shopifyCallback,
-} from "@/wab/server/routes/auth";
 import { bigCommerceGraphql } from "@/wab/server/routes/bigcommerce";
 import {
   cachePublicCmsRead,
@@ -307,7 +308,6 @@ import { getSegmentWriteKey } from "@/wab/server/secrets";
 import { logError } from "@/wab/server/server-util";
 import { ASYNC_TIMING } from "@/wab/server/timing-util";
 import { TypeormStore } from "@/wab/server/util/TypeormSessionStore";
-import { doLogout } from "@/wab/server/util/auth-util";
 import {
   pruneOldBundleBackupsCache,
   prunePartialRevCache,
@@ -374,7 +374,6 @@ const isCsrfFreeRoute = (pathname: string, config: Config) => {
     pathname.includes("/api/v1/wl/") ||
     pathname.includes("/api/v1/cms/") ||
     pathname.match("/api/v1/projects/[^/]+$") ||
-    pathname.match("/api/v1/auth/saml/.*/consume") ||
     pathname.match("/api/v1/auth/sso/.*/consume") ||
     pathname.includes("/api/v1/app-auth/user") ||
     pathname.includes("/api/v1/app-auth/userinfo") ||
@@ -1366,12 +1365,6 @@ export function addMainAppServerRoutes(
     "/api/v1/oauth2/google/callback",
     withNext(authRoutes.googleCallback)
   );
-  app.get("/api/v1/auth/saml/login", withNext(authRoutes.samlLogin));
-  app.get("/api/v1/auth/saml/test", withNext(authRoutes.isValidSamlEmail));
-  app.post(
-    "/api/v1/auth/saml/:tenantId/consume",
-    withNext(authRoutes.samlCallback)
-  );
   app.get("/api/v1/auth/sso/test", withNext(authRoutes.isValidSsoEmail));
   app.get("/api/v1/auth/sso/:tenantId/login", withNext(authRoutes.ssoLogin));
   app.get(
@@ -1504,11 +1497,6 @@ export function addMainAppServerRoutes(
     "/api/v1/admin/devflags",
     adminOnly,
     withNext(adminRoutes.setDevFlagOverrides)
-  );
-  app.post(
-    "/api/v1/admin/upsert-saml",
-    adminOnly,
-    withNext(adminRoutes.upsertSamlConfig)
   );
   app.post(
     "/api/v1/admin/upsert-sso",
