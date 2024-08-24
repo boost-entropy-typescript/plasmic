@@ -1,7 +1,7 @@
 import React from "react";
 import type { ButtonProps } from "react-aria-components";
 import { Button } from "react-aria-components";
-import { getCommonInputProps } from "./common";
+import { getCommonProps } from "./common";
 import {
   UpdateInteractionVariant,
   pickAriaComponentVariants,
@@ -18,6 +18,7 @@ const BUTTON_INTERACTION_VARIANTS = [
   "pressed" as const,
   "focused" as const,
   "focusVisible" as const,
+  "disabled" as const,
 ];
 
 const { interactionVariants, withObservedValues } = pickAriaComponentVariants(
@@ -48,7 +49,7 @@ export function BaseButton(props: BaseButtonProps) {
 
   return (
     <Button type={type} {...rest}>
-      {({ isHovered, isPressed, isFocused, isFocusVisible }) =>
+      {({ isHovered, isPressed, isFocused, isFocusVisible, isDisabled }) =>
         withObservedValues(
           children,
           {
@@ -56,6 +57,7 @@ export function BaseButton(props: BaseButtonProps) {
             pressed: isPressed,
             focused: isFocused,
             focusVisible: isFocusVisible,
+            disabled: isDisabled,
           },
           updateInteractionVariant
         )
@@ -87,7 +89,7 @@ export function registerButton(
         cursor: "pointer",
       },
       props: {
-        ...getCommonInputProps<BaseButtonProps>("button", [
+        ...getCommonProps<BaseButtonProps>("button", [
           "isDisabled",
           "aria-label",
         ]),

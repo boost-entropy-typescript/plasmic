@@ -1,6 +1,7 @@
 import React from "react";
 import { mergeProps } from "react-aria";
 import { Slider, SliderThumb, SliderTrack } from "react-aria-components";
+import { getCommonProps } from "./common";
 import { PlasmicSliderContext } from "./contexts";
 import ErrorBoundary from "./ErrorBoundary";
 import {
@@ -19,12 +20,13 @@ const SLIDER_THUMB_INTERACTION_VARIANTS = [
   "hovered" as const,
   "focused" as const,
   "focusVisible" as const,
+  "disabled" as const,
 ];
 
 const { interactionVariants, withObservedValues } = pickAriaComponentVariants(
   SLIDER_THUMB_INTERACTION_VARIANTS
 );
-interface BaseSliderThumbProps
+export interface BaseSliderThumbProps
   extends React.ComponentProps<typeof SliderThumb> {
   advanced?: boolean;
   // Optional callback to update the interaction variant state
@@ -45,7 +47,7 @@ export function BaseSliderThumb({
 
   const thumb = (
     <SliderThumb {...mergedProps}>
-      {({ isDragging, isHovered, isFocused, isFocusVisible }) =>
+      {({ isDragging, isHovered, isFocused, isFocusVisible, isDisabled }) =>
         withObservedValues(
           <>{advanced ? children : undefined}</>,
           {
@@ -53,6 +55,7 @@ export function BaseSliderThumb({
             hovered: isHovered,
             focused: isFocused,
             focusVisible: isFocusVisible,
+            disabled: isDisabled,
           },
           updateInteractionVariant
         )
@@ -81,7 +84,7 @@ export function registerSliderThumb(
   loader?: Registerable,
   overrides?: CodeComponentMetaOverrides<typeof BaseSliderThumb>
 ) {
-  registerComponentHelper(
+  return registerComponentHelper(
     loader,
     BaseSliderThumb,
     {
@@ -100,6 +103,11 @@ export function registerSliderThumb(
       },
       interactionVariants,
       props: {
+        ...getCommonProps<BaseSliderThumbProps>("slider thumb", [
+          "name",
+          "isDisabled",
+          "autoFocus",
+        ]),
         advanced: {
           type: "boolean",
           displayName: "Advanced",

@@ -2,16 +2,15 @@ import { PlasmicElement } from "@plasmicapp/host";
 import React from "react";
 import type { CheckboxProps } from "react-aria-components";
 import { Checkbox } from "react-aria-components";
-import { getCommonInputProps } from "./common";
+import { getCommonProps, hasParent } from "./common";
 import { PlasmicCheckboxGroupContext } from "./contexts";
 import {
   UpdateInteractionVariant,
   pickAriaComponentVariants,
 } from "./interaction-variant-utils";
-import { LABEL_COMPONENT_NAME } from "./registerLabel";
 import {
-  BaseControlContextData,
   CodeComponentMetaOverrides,
+  HasControlContextData,
   Registerable,
   makeComponentName,
   registerComponentHelper,
@@ -22,11 +21,15 @@ const CHECKBOX_INTERACTION_VARIANTS = [
   "pressed" as const,
   "focused" as const,
   "focusVisible" as const,
+  "indeterminate" as const,
+  "disabled" as const,
+  "selected" as const,
+  "readonly" as const,
+  "selected" as const,
 ];
 
-interface BaseCheckboxProps extends CheckboxProps {
+interface BaseCheckboxProps extends CheckboxProps, HasControlContextData {
   children: React.ReactNode;
-  setControlContextData?: (ctxData: BaseControlContextData) => void;
   // Optional callback to update the interaction variant state
   // as it's only provided if the component is the root of a Studio component
   updateInteractionVariant?: UpdateInteractionVariant<
@@ -42,16 +45,24 @@ export function BaseCheckbox(props: BaseCheckboxProps) {
   const { children, updateInteractionVariant, setControlContextData, ...rest } =
     props;
   const contextProps = React.useContext(PlasmicCheckboxGroupContext);
-  const isStandalone = !contextProps;
 
   setControlContextData?.({
-    isStandalone,
+    parent: contextProps,
   });
 
   return (
     <>
       <Checkbox {...rest}>
-        {({ isHovered, isPressed, isFocused, isFocusVisible }) =>
+        {({
+          isHovered,
+          isPressed,
+          isFocused,
+          isFocusVisible,
+          isDisabled,
+          isIndeterminate,
+          isSelected,
+          isReadOnly,
+        }) =>
           withObservedValues(
             children,
             {
@@ -59,6 +70,10 @@ export function BaseCheckbox(props: BaseCheckboxProps) {
               pressed: isPressed,
               focused: isFocused,
               focusVisible: isFocusVisible,
+              disabled: isDisabled,
+              indeterminate: isIndeterminate,
+              selected: isSelected,
+              readonly: isReadOnly,
             },
             updateInteractionVariant
           )
@@ -104,14 +119,8 @@ export const makeDefaultCheckboxChildren = ({
           },
         },
         {
-          type: "component",
-          name: LABEL_COMPONENT_NAME,
-          props: {
-            children: {
-              type: "text",
-              value: label,
-            },
-          },
+          type: "text",
+          value: label,
         },
       ],
     },
@@ -140,7 +149,7 @@ export function registerCheckbox(
       importName: "BaseCheckbox",
       interactionVariants,
       props: {
-        ...getCommonInputProps<CheckboxProps>("checkbox", [
+        ...getCommonProps<BaseCheckboxProps>("checkbox", [
           "name",
           "isDisabled",
           "isReadOnly",
@@ -159,13 +168,15 @@ export function registerCheckbox(
         value: {
           type: "string",
           description:
-            "The value of the input element, used when submitting an HTML form.",
+            'The value of the checkbox in "selected" state, used when submitting an HTML form.',
+          defaultValueHint: "on",
         },
         isSelected: {
           type: "boolean",
+          displayName: "Default Selected",
           editOnly: true,
           uncontrolledProp: "defaultSelected",
-          description: "Whether the checkbox is toggled on",
+          description: "Whether the checkbox should be selected by default",
           defaultValueHint: false,
           defaultValue: false,
         },
@@ -200,10 +211,7 @@ export function registerCheckbox(
           valueProp: "isSelected",
           onChangeProp: "onChange",
           variableType: "boolean",
-          hidden: (
-            _ps: BaseCheckboxProps,
-            ctx: BaseControlContextData | null
-          ) => !ctx?.isStandalone,
+          hidden: hasParent,
         },
       },
       trapsFocus: true,

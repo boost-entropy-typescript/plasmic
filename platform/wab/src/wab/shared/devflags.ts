@@ -4,6 +4,7 @@ import {
   ApiFeatureTier,
   FeatureTierId,
   ProjectId,
+  StripePriceId,
   TeamId,
   WorkspaceId,
 } from "@/wab/shared/ApiSchema";
@@ -399,7 +400,7 @@ const DEFAULT_DEVFLAGS = {
   enablePlasmicHosting: true,
   // The tiers to get dynamically retrieve from the server
   featureTierNames: featureTiers,
-  useNewFeatureTiers: false,
+  useNewFeatureTiers: true,
   newFeatureTierNames: newFeatureTiers,
   freeTier: ensureType<ApiFeatureTier>({
     createdAt: "2021-08-05T23:39:21.570Z",
@@ -411,11 +412,11 @@ const DEFAULT_DEVFLAGS = {
     id: "freeTier" as FeatureTierId,
     name: "Free",
     monthlySeatPrice: 0,
-    monthlySeatStripePriceId: "price_1JLFtfHIopbCiFei4rR6omdz",
+    monthlySeatStripePriceId: "price_1JLFtfHIopbCiFei4rR6omdz" as StripePriceId,
     monthlyBasePrice: null,
     monthlyBaseStripePriceId: null,
     annualSeatPrice: 0,
-    annualSeatStripePriceId: "price_1LG1ZcHIopbCiFeigziyEF6W",
+    annualSeatStripePriceId: "price_1LG1ZcHIopbCiFeigziyEF6W" as StripePriceId,
     annualBasePrice: null,
     annualBaseStripePriceId: null,
     minUsers: 0,
@@ -677,6 +678,8 @@ const DEFAULT_DEVFLAGS = {
   templateTours: {} as Record<string, string>,
 
   arbitraryCssSelectors: false,
+
+  autoOpen: false,
 };
 
 Object.assign(DEFAULT_DEVFLAGS, DEFAULT_DEVFLAG_OVERRIDES);
@@ -739,6 +742,7 @@ export function applyPlasmicUserDevFlagOverrides(target: DevFlagsType) {
     warningsInCanvas: true,
     previewSteps: true,
     arbitraryCssSelectors: true,
+    autoOpen: true,
   } as Partial<DevFlagsType>);
 }
 

@@ -6,10 +6,10 @@ import type { BaseHeader } from "./registerHeader";
 import type { BaseInput } from "./registerInput";
 import type { BaseLabel } from "./registerLabel";
 import type { BaseListBoxProps } from "./registerListBox";
-import type { BasePopover } from "./registerPopover";
 import { BaseRadioGroup } from "./registerRadioGroup";
 import type { BaseSection } from "./registerSection";
 import { BaseSlider } from "./registerSlider";
+import { BaseTextField } from "./registerTextField";
 
 // We pass down context props via our own Plasmic*Context instead of directly
 // using react-aria-component's *Context, because react-aria-component's
@@ -17,6 +17,11 @@ import { BaseSlider } from "./registerSlider";
 // a context provider, it will just be overwritten by react-aria-component's
 // context provider.  So we do the merging within our own Base* components
 // instead.
+
+// Creating the text field context here because input/textarea inside text field receive a null for the TextFieldContext
+export const PlasmicTextFieldContext = React.createContext<
+  React.ComponentProps<typeof BaseTextField> | undefined
+>(undefined);
 
 export const PlasmicCheckboxGroupContext = React.createContext<
   React.ComponentProps<typeof BaseCheckboxGroup> | undefined
@@ -30,9 +35,12 @@ export const PlasmicDialogTriggerContext = React.createContext<
   React.ComponentProps<typeof BaseDialogTrigger> | undefined
 >(undefined);
 
-export const PlasmicSliderContext = React.createContext<
-  React.ComponentProps<typeof BaseSlider> | undefined
->(undefined);
+export type PlasmicSliderContextType<T extends number | number[]> =
+  | React.ComponentProps<typeof BaseSlider<T>>
+  | undefined;
+
+export const PlasmicSliderContext =
+  React.createContext<PlasmicSliderContextType<number | number[]>>(undefined);
 
 export const PlasmicLabelContext = React.createContext<
   React.ComponentProps<typeof BaseLabel> | undefined
@@ -40,10 +48,6 @@ export const PlasmicLabelContext = React.createContext<
 
 export const PlasmicListBoxContext = React.createContext<
   BaseListBoxProps | undefined
->(undefined);
-
-export const PlasmicPopoverContext = React.createContext<
-  React.ComponentProps<typeof BasePopover> | undefined
 >(undefined);
 
 export const PlasmicItemContext = React.createContext<
