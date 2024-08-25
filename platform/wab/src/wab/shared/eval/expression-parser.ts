@@ -1,6 +1,6 @@
 import { arrayEq, unexpected, xUnion } from "@/wab/shared/common";
-import { DEVFLAGS } from "@/wab/shared/devflags";
 import { asCode, isRealCodeExpr } from "@/wab/shared/core/exprs";
+import { DEVFLAGS } from "@/wab/shared/devflags";
 import { ENABLED_GLOBALS } from "@/wab/shared/eval";
 import {
   Expr,
@@ -19,7 +19,7 @@ import {
   parseJsCode,
   writeJs,
 } from "@/wab/shared/parser-utils";
-import { validJsIdentifierRegex } from "@/wab/shared/utils/regex-valid-js-identifier";
+import { isValidJsIdentifier } from "@/wab/shared/utils/regex-js-identifier";
 import { ancestor as traverse } from "acorn-walk";
 import type * as ast from "estree";
 
@@ -469,7 +469,7 @@ export function pathToString(path: (string | number)[]) {
         if (idx == 0) {
           return s;
         }
-        if (typeof s === "number" || !s.match(validJsIdentifierRegex)) {
+        if (typeof s === "number" || !isValidJsIdentifier(s)) {
           return `[${JSON.stringify(s)}]`;
         }
         return `.${s}`;
