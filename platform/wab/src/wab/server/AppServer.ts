@@ -1,23 +1,7 @@
-// const origLog = console.error;
-// console.error = (...args: any[]) => {
-//   origLog(...args);
-//   origLog(new Error().stack);
-// };
-
-// const origOn = (process as any).on;
-// (process as any).on = function (...args) {
-//   if (args[0].toLowerCase() === "unhandledrejection") {
-//     debugger;
-//   }
-//   return origOn.apply(this, args);
-// };
-import { mkShortId, safeCast, spawn } from "@/wab/shared/common";
-import { DEVFLAGS } from "@/wab/shared/devflags";
+import { methodForwarder } from "@/wab/commons/methodForwarder";
 import * as Sentry from "@sentry/node";
 import * as Tracing from "@sentry/tracing";
-import Analytics from "analytics-node";
 import * as bodyParser from "body-parser";
-import connectDatadog from "connect-datadog";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import errorHandler from "errorhandler";
@@ -35,6 +19,7 @@ import * as path from "path";
 import { getConnection } from "typeorm";
 import v8 from "v8";
 // API keys and Passport configuration
+import { initAmplitudeNode } from "@/wab/server/analytics/amplitude-node";
 import { setupPassport } from "@/wab/server/auth/passport-cfg";
 import * as authRoutes from "@/wab/server/auth/routes";
 import {
@@ -68,7 +53,6 @@ import { getAppCtx } from "@/wab/server/routes/appctx";
 import { bigCommerceGraphql } from "@/wab/server/routes/bigcommerce";
 import {
   cachePublicCmsRead,
-  cloneDatabase,
   countTable,
   getDatabase,
   publicCreateRows,
@@ -79,6 +63,7 @@ import {
   upsertDatabaseTables,
 } from "@/wab/server/routes/cms";
 import {
+  cloneDatabase,
   cmsFileUpload,
   createDatabase,
   createRows,
@@ -305,7 +290,6 @@ import {
   getWorkspaces,
   updateWorkspace,
 } from "@/wab/server/routes/workspaces";
-import { getSegmentWriteKey } from "@/wab/server/secrets";
 import { logError } from "@/wab/server/server-util";
 import { ASYNC_TIMING } from "@/wab/server/timing-util";
 import { TypeormStore } from "@/wab/server/util/TypeormSessionStore";
@@ -321,18 +305,13 @@ import {
   isApiError,
   transformErrors,
 } from "@/wab/shared/ApiErrors/errors";
+import { ConsoleLogAnalytics } from "@/wab/shared/analytics/ConsoleLogAnalytics";
 import { Bundler } from "@/wab/shared/bundler";
+import { mkShortId, safeCast, spawn } from "@/wab/shared/common";
 import { isCoreTeamEmail } from "@/wab/shared/devflag-utils";
+import { DEVFLAGS } from "@/wab/shared/devflags";
 import { isStampedIgnoreError } from "@/wab/shared/error-handling";
 import fileUpload from "express-fileupload";
-
-const hotShots = require("hot-shots");
-
-const datadogMiddleware = connectDatadog({
-  response_code: true,
-  tags: ["app:my_app"],
-  dogstatsd: new hotShots.StatsD("localhost", 8126),
-});
 
 const csrfFreeStaticRoutes = [
   "/api/v1/admin/user",
@@ -525,6 +504,24 @@ function addMiddlewares(
   } else {
     console.log("Skipping session store setup...");
   }
+
+  const newRequestScopedAnalytics = initAmplitudeNode();
+  app.use(
+    safeCast<RequestHandler>(async (req, res, next) => {
+      const analytics = newRequestScopedAnalytics();
+      req.analytics = config.production
+        ? analytics
+        : methodForwarder(new ConsoleLogAnalytics(), analytics);
+      req.analytics.appendBaseEventProperties({
+        host: config.host,
+        production: config.production,
+      });
+      if (req.user) {
+        req.analytics.setUser(req.user.id);
+      }
+      next();
+    })
+  );
 
   app.use((req, res, next) => {
     // This is before we've loaded req.devflags - just use the hard-coded default for the core team email domain.
@@ -737,7 +734,6 @@ function addMiddlewares(
   } else {
     console.log("Skipping CSRF setup...");
   }
-  app.analytics = new Analytics(getSegmentWriteKey());
 
   // Parse body further down to prevent unauthorized users from incurring large parses.
   app.use(bodyParser.json({ limit: "400mb" }));
@@ -829,11 +825,6 @@ export function addCmsPublicRoutes(app: express.Application) {
     "/api/v1/cms/databases/:dbId/tables/:tableIdentifier/rows",
     withNext(publicCreateRows)
   );
-  app.post(
-    "/api/v1/cms/databases/:dbId/clone",
-    apiAuth,
-    withNext(cloneDatabase)
-  );
   app.post("/api/v1/cms/rows/:rowId/publish", withNext(publicPublishRow));
   app.put("/api/v1/cms/rows/:rowId", withNext(publicUpdateRow));
   app.delete("/api/v1/cms/rows/:rowId", withNext(publicDeleteRow));
@@ -843,6 +834,7 @@ export function addCmsEditorRoutes(app: express.Application) {
   // CMS API for use by studio to crud; access by usual browser login
   app.get("/api/v1/cmse/databases", withNext(listDatabases));
   app.post("/api/v1/cmse/databases", withNext(createDatabase));
+  app.post("/api/v1/cmse/databases/:dbId/clone", withNext(cloneDatabase));
   app.get(
     "/api/v1/cmse/databases/:dbId",
     withNext(getCmsDatabaseAndSecretTokenById)
@@ -2169,9 +2161,6 @@ export async function createApp(
 
   // Sentry setup needs to be first
   addSentry(app, config);
-
-  // Datadog docs say it needs to come before any routing.
-  app.use(datadogMiddleware);
 
   if (config.production) {
     app.enable("trust proxy");

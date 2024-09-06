@@ -1,5 +1,4 @@
-/** @format */
-
+import { analytics } from "@/wab/client/analytics";
 import { Api } from "@/wab/client/api";
 import {
   AppCtx,
@@ -68,7 +67,6 @@ import { isCoreTeamEmail } from "@/wab/shared/devflag-utils";
 import { StarterSectionConfig } from "@/wab/shared/devflags";
 import { accessLevelRank } from "@/wab/shared/EntUtil";
 import { getMaximumTierFromTeams } from "@/wab/shared/pricing/pricing-utils";
-import posthog from "posthog-js";
 import * as React from "react";
 import { Redirect, Route, Switch, useHistory, useLocation } from "react-router";
 
@@ -461,9 +459,6 @@ export function Root() {
       hostFrameCtx?.topFrameApi || promisifyMethods(new Api());
     const topFrameApi = hostFrameCtx?.topFrameApi || null;
     const bundler = new FastBundler();
-    history.listen(() => {
-      analytics.page("studio");
-    });
 
     spawn(
       (async () => {
@@ -501,19 +496,25 @@ export function Root() {
     const appCtx = await loadAppCtx(nonAuthCtx, true);
     hackyCast(window).gAppCtx = appCtx;
 
-    if (appCtx.selfInfo?.email) {
-      const email = appCtx.selfInfo.email;
-      posthog.identify(appCtx.selfInfo.id, {
-        email,
+    if (appCtx.selfInfo) {
+      const tier = isCoreTeamEmail(appCtx.selfInfo.email, appCtx.appConfig)
+        ? "enterprise"
+        : getMaximumTierFromTeams(appCtx.teams);
+
+      // TODO: Move identify to server when we can rely more on PostHog product analytics
+      analytics().identify(appCtx.selfInfo.id, {
+        email: appCtx.selfInfo.email,
         firstName: appCtx.selfInfo.firstName,
         lastName: appCtx.selfInfo.lastName,
         isWhiteLabel: appCtx.selfInfo.isWhiteLabel,
         whiteLabelId: appCtx.selfInfo.whiteLabelId,
         whiteLabelEmail: appCtx.selfInfo.whiteLabelInfo?.email,
-        tier: isCoreTeamEmail(email, appCtx.appConfig)
-          ? "core"
-          : getMaximumTierFromTeams(appCtx.teams),
+        tier,
       });
+
+      if (["enterprise", "team", "pro"].includes(tier)) {
+        analytics().recordSession();
+      }
     }
     return appCtx;
   };
