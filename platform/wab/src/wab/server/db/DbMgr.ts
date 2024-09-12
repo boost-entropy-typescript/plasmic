@@ -196,7 +196,6 @@ import {
   only,
   pairwise,
   spawn,
-  strict,
   tuple,
   unexpected,
   unreachable,
@@ -216,7 +215,7 @@ import {
 } from "@/wab/shared/data-sources-meta/data-source-registry";
 import { OperationTemplate } from "@/wab/shared/data-sources-meta/data-sources";
 import { WebhookHeader } from "@/wab/shared/db-json-blobs";
-import { isCoreTeamEmail } from "@/wab/shared/devflag-utils";
+import { isAdminTeamEmail } from "@/wab/shared/devflag-utils";
 import { DEVFLAGS } from "@/wab/shared/devflags";
 import { MIN_ACCESS_LEVEL_FOR_SUPPORT } from "@/wab/shared/discourse/config";
 import { LocalizationKeyScheme } from "@/wab/shared/localization";
@@ -454,6 +453,13 @@ export function ensureFound<T>(x: T | null | undefined, name: string): T {
 
 async function getOneOrFailIfTooMany<T>(queryBuilder: SelectQueryBuilder<T>) {
   return maybeOne(await queryBuilder.getMany());
+}
+
+function ensureResourceIdFromPermission(perm: Permission) {
+  return ensure(
+    [perm.teamId, perm.workspaceId, perm.projectId].find((id) => id != null),
+    "Permission should have one of the ids set"
+  );
 }
 
 export type StampNewFields = {
@@ -1061,6 +1067,7 @@ export class DbMgr implements MigrationDbMgr {
   // Team methods.
   //
 
+  /** Throws `ForbiddenError` if user does not have required level in the team. */
   checkTeamPerms = (
     teamId: TeamId,
     requireLevel: AccessLevel,
@@ -1074,6 +1081,7 @@ export class DbMgr implements MigrationDbMgr {
       includeDeleted
     );
 
+  /** Throws `ForbiddenError` if user does not have required level in any team. */
   checkTeamsPerms = (
     teamIds: TeamId[],
     requireLevel: AccessLevel,
@@ -1091,6 +1099,7 @@ export class DbMgr implements MigrationDbMgr {
     teamId: TeamId,
     userId: UserId
   ): Promise<AccessLevel> {
+    this.checkSuperUser();
     const existingPerm = await this.permissions().findOne({
       where: {
         teamId,
@@ -1179,6 +1188,17 @@ export class DbMgr implements MigrationDbMgr {
     }
     const teamOwner = await this.getUserById(ownerId);
     return [teamOwner];
+  }
+
+  async getTeamsByParentId(ids: TeamId[]) {
+    await this._checkResourcesPerms(
+      { type: "team", ids: ids },
+      "viewer",
+      "get",
+      false
+    );
+
+    return this._queryTeams({ parentTeamId: In(ids) }).getMany();
   }
 
   async updateTeam({
@@ -1291,7 +1311,25 @@ export class DbMgr implements MigrationDbMgr {
   async getAffiliatedTeams() {
     const userId = this.checkNormalUser();
     return this._queryTeams({}, false)
-      .leftJoin(Permission, "perm", "perm.teamId = t.id")
+      .innerJoin(Permission, "perm", "perm.teamId = t.id")
+      .andWhere(
+        `
+          t.deletedAt is null
+          and
+          perm.userId = :userId
+          and
+          perm.deletedAt is null
+          `,
+        { userId }
+      )
+      .getMany();
+  }
+
+  async getAffiliatedTeamPermissions() {
+    const userId = this.checkNormalUser();
+    return await this.permissions()
+      .createQueryBuilder("perm")
+      .innerJoin(Team, "t", "t.id = perm.teamId")
       .andWhere(
         `
           t.deletedAt is null
@@ -1330,10 +1368,10 @@ export class DbMgr implements MigrationDbMgr {
     email: string,
     rawLevelToGrant: GrantableAccessLevel
   ) {
-    return this.grantResourcePermissionByEmail(
+    return this.grantResourcesPermissionByEmail(
       {
         type: "team",
-        id: teamId,
+        ids: [teamId],
       },
       email,
       rawLevelToGrant
@@ -1341,8 +1379,8 @@ export class DbMgr implements MigrationDbMgr {
   }
 
   async revokeTeamPermissionsByEmails(teamId: TeamId, emails: string[]) {
-    return this.revokeResourcePermissionsByEmail(
-      { type: "team", id: teamId },
+    return this.revokeResourcesPermissionsByEmail(
+      { type: "team", ids: [teamId] },
       emails
     );
   }
@@ -1399,7 +1437,7 @@ export class DbMgr implements MigrationDbMgr {
     });
 
     if (excludePlasmicEmails) {
-      users = users.filter((u) => !isCoreTeamEmail(u.email, DEVFLAGS));
+      users = users.filter((u) => !isAdminTeamEmail(u.email, DEVFLAGS));
     }
 
     return _.uniqBy(users, (u) => `${u.userId}|${u.email}`);
@@ -1811,6 +1849,10 @@ export class DbMgr implements MigrationDbMgr {
         teamId: team.id,
       });
     }
+
+    // This column is marked as select: false, but TypeORM's create() call
+    // doesn't respect it. Manually remove it here.
+    user.bcrypt = undefined;
     return user;
   }
 
@@ -1942,13 +1984,18 @@ export class DbMgr implements MigrationDbMgr {
   }
 
   private async _getUserBcrypt(id: string) {
-    return ensureFound<User>(
+    const user = ensureFound<User>(
       await this.users().findOne({
         where: { id, ...excludeDeleted() },
         select: ["bcrypt", "id"],
       }),
       `User with ID ${id}`
-    ).bcrypt;
+    );
+
+    // `User.bcrypt` normally has type `string | undefined`,
+    // because it is marked `select: false`.
+    // Use `!` since we explicitly selected it and the column is not nullable.
+    return user.bcrypt!;
   }
 
   async comparePassword(
@@ -2173,7 +2220,7 @@ export class DbMgr implements MigrationDbMgr {
   async getAffiliatedWorkspaces(teamId?: TeamId, userId?: UserId) {
     userId = userId ?? this.checkNormalUser();
     let qb = this._queryWorkspaces({})
-      .leftJoin(
+      .innerJoin(
         Permission,
         "perm",
         `
@@ -2263,10 +2310,10 @@ export class DbMgr implements MigrationDbMgr {
     email: string,
     rawLevelToGrant: GrantableAccessLevel
   ) {
-    return this.grantResourcePermissionByEmail(
+    return this.grantResourcesPermissionByEmail(
       {
         type: "workspace",
-        id: workspaceId,
+        ids: [workspaceId],
       },
       email,
       rawLevelToGrant
@@ -2278,8 +2325,8 @@ export class DbMgr implements MigrationDbMgr {
     emails: string[],
     ignoreOwnerCheck?: boolean
   ) {
-    return this.revokeResourcePermissionsByEmail(
-      { type: "workspace", id: workspaceId },
+    return this.revokeResourcesPermissionsByEmail(
+      { type: "workspace", ids: [workspaceId] },
       emails,
       ignoreOwnerCheck
     );
@@ -3779,7 +3826,7 @@ export class DbMgr implements MigrationDbMgr {
         : (await unbundlePkgVersion(this, bundler, fromData)).site;
     const clonedSite = cloneSite(fromSite);
     // Devflag overrides at project creation time
-    if (isCoreTeamEmail(ownerEmail, DEVFLAGS) && updateDefaultInsertable) {
+    if (isAdminTeamEmail(ownerEmail, DEVFLAGS) && updateDefaultInsertable) {
       clonedSite.flags.defaultInsertable = DEFAULT_INSERTABLE;
     }
     const { project, rev } = await this.createProject({
@@ -5221,9 +5268,13 @@ export class DbMgr implements MigrationDbMgr {
     await this.entMgr.save(ownerPerms);
 
     // Finally grant permission to new owner
-    await this.grantResourcePermissionByEmail(taggedResourceId, user.email, {
-      force: "owner",
-    });
+    await this.grantResourcesPermissionByEmail(
+      pluralizeResourceId(taggedResourceId),
+      user.email,
+      {
+        force: "owner",
+      }
+    );
   }
 
   private async _getResourcesById(
@@ -5314,7 +5365,7 @@ export class DbMgr implements MigrationDbMgr {
     if (this.actor.type === "NormalUser") {
       const userId = this.checkNormalUser();
       const user = await this.getUserById(userId);
-      const isPlasmicTeam = user.email.endsWith("@" + DEVFLAGS.coreTeamDomain);
+      const isAdmin = isAdminTeamEmail(user.email, DEVFLAGS);
 
       const allPerms = (
         await this.sudo().getPermissionsForResources(taggedResourceIds, false)
@@ -5344,7 +5395,7 @@ export class DbMgr implements MigrationDbMgr {
         if (
           taggedResourceIds.type === "project" &&
           addPerms &&
-          !isPlasmicTeam &&
+          !isAdmin &&
           // Don't automatically update permission if acting as spy
           !this.actor.isSpy &&
           (!maxFromPerms ||
@@ -5368,7 +5419,7 @@ export class DbMgr implements MigrationDbMgr {
             [
               levels[resource.id],
               ...(maxFromPerms ? [maxFromPerms] : []),
-              ...(isPlasmicTeam ? ["editor" as AccessLevel] : []),
+              ...(isAdmin ? ["editor" as AccessLevel] : []),
             ],
             (lvl) => accessLevelRank(lvl)
           ),
@@ -5400,7 +5451,9 @@ export class DbMgr implements MigrationDbMgr {
     return levels;
   }
 
-  async _getActorAccessLevelToResourceById(taggedResourceId: TaggedResourceId) {
+  private async _getActorAccessLevelToResourceById(
+    taggedResourceId: TaggedResourceId
+  ) {
     const resource = await this._getResourceById(taggedResourceId);
     const selfLevel = await this._getActorAccessLevelToResource(resource);
     return selfLevel;
@@ -5470,26 +5523,26 @@ export class DbMgr implements MigrationDbMgr {
     emails: string[],
     ignoreOwnerCheck?: boolean
   ) {
-    await this.revokeResourcePermissionsByEmail(
-      { type: "project", id: projectId },
+    await this.revokeResourcesPermissionsByEmail(
+      { type: "project", ids: [projectId] },
       emails,
       ignoreOwnerCheck
     );
   }
 
-  async revokeResourcePermissionsByEmail(
-    taggedResourceId: TaggedResourceId,
+  async revokeResourcesPermissionsByEmail(
+    taggedResourceIds: TaggedResourceIds,
     emails: string[],
     ignoreOwnerCheck?: boolean
   ) {
-    await this._checkResourcePerms(
-      taggedResourceId,
+    await this._checkResourcesPerms(
+      taggedResourceIds,
       "editor",
       "revoke permission on"
     );
     const emailSet = new Set(emails.map((e) => e.toLowerCase()));
     const perms = await this.getPermissionsForResources(
-      pluralizeResourceId(taggedResourceId),
+      taggedResourceIds,
       true
     );
     for (const perm of perms) {
@@ -5506,6 +5559,27 @@ export class DbMgr implements MigrationDbMgr {
       }
     }
     await this.entMgr.save(perms);
+    await this.maybeRevokePermissionToSubResources(taggedResourceIds, emails);
+  }
+
+  private async maybeRevokePermissionToSubResources(
+    taggedResourceIds: TaggedResourceIds,
+    emails: string[]
+  ) {
+    if (taggedResourceIds.type !== "team") {
+      return;
+    }
+
+    const subTeams = await this.getTeamsByParentId(taggedResourceIds.ids);
+    if (subTeams.length !== 0) {
+      await this.revokeResourcesPermissionsByEmail(
+        {
+          type: "team",
+          ids: subTeams.map((t) => t.id),
+        },
+        emails
+      );
+    }
   }
 
   async grantProjectPermissionByEmail(
@@ -5513,10 +5587,10 @@ export class DbMgr implements MigrationDbMgr {
     email: string,
     rawLevelToGrant: GrantableAccessLevel
   ) {
-    return await this.grantResourcePermissionByEmail(
+    return await this.grantResourcesPermissionByEmail(
       {
         type: "project",
-        id: projectId,
+        ids: [projectId],
       },
       email,
       rawLevelToGrant
@@ -5609,76 +5683,166 @@ export class DbMgr implements MigrationDbMgr {
     return await this.grantTeamPermissionToUser(team, userId, levelToGrant);
   }
 
-  async grantResourcePermissionByEmail(
-    taggedResourceId: TaggedResourceId,
+  async grantResourcesPermissionByEmail(
+    taggedResourceIds: TaggedResourceIds,
     email: string,
     rawLevelToGrant: GrantableAccessLevel | ForcedAccessLevel,
     grantExistingUsersOnly?: boolean
   ) {
-    await this._checkResourcePerms(
-      taggedResourceId,
+    await this._checkResourcesPerms(
+      taggedResourceIds,
       "commenter",
       "grant permission"
     );
 
     email = email.toLowerCase();
-    const resource = await this._getResourceById(taggedResourceId);
+
     const levelToGrant = isForcedAccessLevel(rawLevelToGrant)
       ? rawLevelToGrant.force
       : ensureGrantableAccessLevel(rawLevelToGrant);
+    return this.grantResourcesPermission(
+      taggedResourceIds,
+      email,
+      levelToGrant,
+      grantExistingUsersOnly
+    );
+  }
+
+  private async grantResourcesPermission(
+    taggedResourceIds: TaggedResourceIds,
+    email: string,
+    levelToGrant: AccessLevel,
+    grantExistingUsersOnly?: boolean
+  ) {
     const user = await this.tryGetUserByEmail(email);
     if (!user && grantExistingUsersOnly) {
       throw new GrantUserNotFoundError();
     }
-    const existingPerm = await this.permissions().findOne({
+    const existingPerms = await this.permissions().find({
       where: {
-        [taggedResourceId.type]: resource,
+        [`${taggedResourceIds.type}Id`]: In(taggedResourceIds.ids),
         ...excludeDeleted(),
         ...(user ? { user } : { email }),
       },
     });
-    const userIsOwner =
-      user &&
-      existingPerm &&
-      existingPerm.userId === user.id &&
-      existingPerm.accessLevel === "owner";
-    checkPermissions(
-      !userIsOwner,
-      strict`${await this.describeActor()} tried to set permissions for ${email} who is an owner on ${
-        taggedResourceId.type
-      } ${resource.id}`
+
+    const resourcesAccessLevel = await this._getActorAccessLevelToResources(
+      taggedResourceIds
     );
-    const selfLevel =
-      resource instanceof Project
-        ? await this._getActorAccessLevelToProject(resource, false)
-        : await this._getActorAccessLevelToResource(resource);
-    checkPermissions(
-      accessLevelRank(selfLevel) >= accessLevelRank(levelToGrant),
-      strict`${await this.describeActor()} with access level ${selfLevel} tried to grant higher level ${levelToGrant} to ${email} on ${
-        taggedResourceId.type
-      } ${resource.id}`
+    await this.checkGrantAccessPermission(
+      taggedResourceIds.type,
+      user,
+      email,
+      levelToGrant,
+      existingPerms,
+      resourcesAccessLevel
     );
-    if (existingPerm) {
-      checkPermissions(
-        accessLevelRank(existingPerm.accessLevel) <= accessLevelRank(selfLevel),
-        strict`${await this.describeActor()} with access level tried to set permissions for ${email} who already has ${
-          existingPerm.accessLevel
-        } on ${taggedResourceId.type} ${resource.id}`
+
+    let createdPerm = false;
+
+    const addedResourceSet = new Set<string>();
+
+    if (existingPerms.length > 0) {
+      existingPerms.forEach(async (perm) => {
+        const resourceId = ensureResourceIdFromPermission(perm);
+        addedResourceSet.add(resourceId);
+        const selfLevel = resourcesAccessLevel[resourceId];
+        checkPermissions(
+          accessLevelRank(perm.accessLevel) <= accessLevelRank(selfLevel),
+          `${await this.describeActor()} with access level tried to set permissions for ${email} who already has ${
+            perm.accessLevel
+          } on ${taggedResourceIds.type} ${resourceId}`
+        );
+      });
+      existingPerms.forEach((perm) =>
+        mergeSane(perm, this.stampUpdate(), {
+          accessLevel: levelToGrant,
+        })
       );
-      mergeSane(existingPerm, this.stampUpdate(), {
-        accessLevel: levelToGrant,
+      await this.entMgr.save(existingPerms);
+      createdPerm = true;
+    }
+    const perms = taggedResourceIds.ids
+      .filter((id) => !addedResourceSet.has(id))
+      .map((id) => {
+        return this.permissions().create({
+          ...this.stampNew(),
+          ...(user ? { user } : { email }),
+          [`${taggedResourceIds.type}Id`]: id,
+          accessLevel: levelToGrant,
+        });
       });
-      await this.entMgr.save(existingPerm);
-      return { created: false };
-    } else {
-      const perm = this.permissions().create({
-        ...this.stampNew(),
-        ...(user ? { user } : { email }),
-        [taggedResourceId.type]: resource,
-        accessLevel: levelToGrant,
-      });
-      await this.entMgr.save(perm);
-      return { created: true };
+    await this.entMgr.save(perms);
+    await this.maybeGrantPermissionToSubResources(
+      taggedResourceIds,
+      email,
+      levelToGrant
+    );
+
+    return { created: createdPerm };
+  }
+
+  /**
+   * Do not allow the grant to happen if:
+   * 1. The user to be granted already is the owner of the resource
+   * 2. The user granting has a lower access level than the granted access level
+   */
+  private async checkGrantAccessPermission(
+    resourceType: string,
+    user: User | undefined,
+    email: string,
+    levelToGrant: AccessLevel,
+    permissions: Permission[],
+    resourcesAccessLevel: Record<string, AccessLevel>
+  ) {
+    const actor = await this.describeActor();
+    const ownerPerms = user
+      ? permissions.filter(
+          (perm) => perm.userId === user.id && perm.accessLevel === "owner"
+        )
+      : [];
+    checkPermissions(
+      ownerPerms.length === 0,
+      ownerPerms
+        .map(
+          (perm) =>
+            `${actor} tried to set permissions for ${email} who is an owner on ${resourceType} ${ensureResourceIdFromPermission(
+              perm
+            )}`
+        )
+        .join("\n")
+    );
+
+    const wrongAccessLevelEntries = Object.entries(resourcesAccessLevel).filter(
+      ([_id, selfLevel]) =>
+        accessLevelRank(selfLevel) < accessLevelRank(levelToGrant)
+    );
+    checkPermissions(
+      wrongAccessLevelEntries.length === 0,
+      wrongAccessLevelEntries
+        .map(
+          ([id, selfLevel]) =>
+            `${actor} with access level ${selfLevel} tried to grant higher level ${levelToGrant} to ${email} on ${resourceType} ${id}`
+        )
+        .join("\n")
+    );
+  }
+
+  private async maybeGrantPermissionToSubResources(
+    taggedResourceIds: TaggedResourceIds,
+    email: string,
+    levelToGrant: AccessLevel
+  ) {
+    if (taggedResourceIds.type !== "team") {
+      return;
+    }
+    const subTeams = await this.getTeamsByParentId(taggedResourceIds.ids);
+    if (subTeams.length !== 0) {
+      await this.grantResourcesPermission(
+        { type: "team", ids: subTeams.map((team) => team.id) },
+        email,
+        levelToGrant
+      );
     }
   }
 
@@ -7341,7 +7505,7 @@ export class DbMgr implements MigrationDbMgr {
     ownerEmail?: string;
   }) {
     // Devflag overrides at project creation time
-    if (isCoreTeamEmail(ownerEmail, DEVFLAGS)) {
+    if (isAdminTeamEmail(ownerEmail, DEVFLAGS)) {
       site.flags.defaultInsertable = DEFAULT_INSERTABLE;
     }
     const { project, rev } = await this.createProject({

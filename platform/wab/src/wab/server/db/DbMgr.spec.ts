@@ -1,5 +1,10 @@
 import { seedTestDb } from "@/wab/server/db/DbInit";
-import { ANON_USER, DbMgr, SkipSafeDelete } from "@/wab/server/db/DbMgr";
+import {
+  ANON_USER,
+  DbMgr,
+  normalActor,
+  SkipSafeDelete,
+} from "@/wab/server/db/DbMgr";
 import {
   CmsRow,
   FeatureTier,
@@ -1011,6 +1016,39 @@ describe("DbMgr", () => {
       );
     }));
 
+  it("cascades permissions from team to sub teams", () =>
+    withDb(async (sudo, [user1, user2], [db1]) => {
+      const teams = await db1().getAffiliatedTeams();
+      const rootTeam = ensure(
+        teams.find((t) => (t.id as string) !== (user1.id as string)),
+        ""
+      );
+      const subTeam = await sudo.sudoUpdateTeam({
+        id: (await db1().createTeam("Sub Team")).id,
+        parentTeamId: rootTeam.id,
+      });
+
+      expect(await sudo.getTeamAccessLevelByUser(subTeam.id, user2.id)).toBe(
+        "blocked"
+      );
+      expect(await sudo.getTeamAccessLevelByUser(rootTeam.id, user2.id)).toBe(
+        "blocked"
+      );
+
+      await db1().grantTeamPermissionByEmail(
+        rootTeam.id,
+        user2.email,
+        "editor"
+      );
+
+      expect(await sudo.getTeamAccessLevelByUser(subTeam.id, user2.id)).toBe(
+        "editor"
+      );
+      expect(await sudo.getTeamAccessLevelByUser(rootTeam.id, user2.id)).toBe(
+        "editor"
+      );
+    }));
+
   // TODO This should probably change to be based on the specific invite so as not to be tied to the email. Esp. without email verification. But this is the current behavior.
   it.skip("when creating user, should claim pending invites by email", () =>
     withDb(async (sudo, [user1], [db1]) => {
@@ -1383,4 +1421,67 @@ describe("DbMgr", () => {
       });
       expect(updatedTeam.uiConfig?.hideDefaultPageTemplates).toBe(true);
     }));
+});
+
+describe("DbMgr.user", () => {
+  it("creates user with 2 teams/workspaces if needsTeamCreationPrompt: false", async () => {
+    await withDb(async (sudo, _users, _dbs, _project, em) => {
+      const user = await sudo.createUser({
+        email: "user@domain.com",
+        password: "!53kr3tz!",
+        firstName: "Firstname",
+        lastName: "Lastname",
+        needsTeamCreationPrompt: false,
+      });
+
+      // matches getUserById
+      const userDbMgr = new DbMgr(em, normalActor(user.id));
+      const getUser = await userDbMgr.getUserById(user.id);
+      expect(getUser).toEqual(user);
+
+      // creates 2 teams: personal team and organization
+      const teams = await userDbMgr.getAffiliatedTeams();
+      expect(teams).toHaveLength(2);
+      const personalTeam = teams.find(
+        (t) => t.personalTeamOwnerId === user.id
+      )!;
+      expect(personalTeam.name).toEqual("Personal team");
+      const orgTeam = teams.find((t) => t.personalTeamOwnerId === null)!;
+      expect(orgTeam.name).toEqual("Firstname's First Organization");
+
+      // team permissions should match
+      const teamPermissions = await userDbMgr.getAffiliatedTeamPermissions();
+      expect(teamPermissions).toHaveLength(2);
+      expect(teamPermissions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            userId: user.id,
+            teamId: personalTeam.id,
+            accessLevel: "owner",
+          }),
+          expect.objectContaining({
+            userId: user.id,
+            teamId: orgTeam.id,
+            accessLevel: "owner",
+          }),
+        ])
+      );
+
+      // check workspaces
+      const workspaces = await userDbMgr.getAffiliatedWorkspaces();
+      expect(workspaces).toHaveLength(2);
+      expect(workspaces).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            name: "My playground",
+            teamId: personalTeam.id,
+          }),
+          expect.objectContaining({
+            name: "Firstname's First Workspace",
+            teamId: orgTeam.id,
+          }),
+        ])
+      );
+    });
+  });
 });

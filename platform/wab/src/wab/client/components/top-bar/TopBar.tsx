@@ -27,10 +27,13 @@ import {
   isPageComponent,
   isReusableComponent,
 } from "@/wab/shared/core/components";
-import { isCoreTeamEmail } from "@/wab/shared/devflag-utils";
+import { isAdminTeamEmail } from "@/wab/shared/devflag-utils";
 import { pruneUnusedImageAssets } from "@/wab/shared/prune-site";
 import { naturalSort } from "@/wab/shared/sort";
-import { canEditProjectConfig } from "@/wab/shared/ui-config-utils";
+import {
+  canEditProjectConfig,
+  canPublishProject,
+} from "@/wab/shared/ui-config-utils";
 import { fixPageHrefsToLocal } from "@/wab/shared/utils/split-site-utils";
 import { Menu, Tooltip, notification } from "antd";
 import { observer } from "mobx-react";
@@ -170,11 +173,11 @@ function _TopBar({ preview }: TopBarProps) {
               }
             });
 
-            const isPlasmicAdmin = isCoreTeamEmail(
+            const isAdmin = isAdminTeamEmail(
               appCtx.selfInfo?.email,
               appCtx.appConfig
             );
-            if (isPlasmicAdmin || appCtx.appConfig.debug) {
+            if (isAdmin || appCtx.appConfig.debug) {
               builder.genSection("Debug", (push2) => {
                 builder.genSub("Optimization", (push3) => {
                   push3(
@@ -245,7 +248,7 @@ function _TopBar({ preview }: TopBarProps) {
                     </Menu.Item>
                   );
                 });
-                if (isPlasmicAdmin) {
+                if (isAdmin) {
                   push2(
                     <Menu.Item
                       key="admin-mode"
@@ -394,7 +397,7 @@ function _TopBar({ preview }: TopBarProps) {
         }}
         publishButton={{
           props: {
-            enable: studioCtx.canEditProject(),
+            enable: studioCtx.canEditProject() && canPublishProject(uiConfig),
           },
         }}
         avatar={{
@@ -530,7 +533,7 @@ function _TopBar({ preview }: TopBarProps) {
         }
         variantsComboSelect={{}}
         plasmicAdminMode={
-          isCoreTeamEmail(appCtx.selfInfo?.email, appCtx.appConfig) &&
+          isAdminTeamEmail(appCtx.selfInfo?.email, appCtx.appConfig) &&
           appCtx.selfInfo?.adminModeDisabled
         }
       />

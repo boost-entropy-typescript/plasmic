@@ -200,6 +200,7 @@ export class Team extends Base<"TeamId"> {
   @Column("jsonb", { nullable: true })
   uiConfig: UiConfig | null;
 
+  @Index()
   @Column("text", { nullable: true })
   parentTeamId: TeamId | null;
 
@@ -247,7 +248,7 @@ export class User extends OrgChild<"UserId"> {
   @Column("text", { unique: true })
   @IsEmail({ ignore_max_length: true })
   email: string;
-  @Column("text", { select: false }) bcrypt: string;
+  @Column("text", { select: false }) bcrypt: string | undefined;
   @Column("timestamptz", { nullable: true })
   permanentlyDeletedAt: Date | null;
 
