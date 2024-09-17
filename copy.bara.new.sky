@@ -69,8 +69,8 @@ core.workflow(
     ),
     destination = git.github_destination(
         url = destinationUrl,
-        fetch = 'master',
-        push = 'master',
+        fetch = 'main',
+        push = 'main',
     ),
     origin_files = globs_for_public,
     destination_files = glob(["**"]),

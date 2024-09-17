@@ -5,18 +5,15 @@ import { Checkbox } from "react-aria-components";
 import { getCommonProps, hasParent } from "./common";
 import { PlasmicCheckboxGroupContext } from "./contexts";
 import {
-  UpdateInteractionVariant,
-  pickAriaComponentVariants,
-} from "./interaction-variant-utils";
-import {
   CodeComponentMetaOverrides,
   HasControlContextData,
   Registerable,
   makeComponentName,
   registerComponentHelper,
 } from "./utils";
+import { WithVariants, pickAriaComponentVariants } from "./variant-utils";
 
-const CHECKBOX_INTERACTION_VARIANTS = [
+const CHECKBOX_VARIANTS = [
   "hovered" as const,
   "pressed" as const,
   "focused" as const,
@@ -28,22 +25,18 @@ const CHECKBOX_INTERACTION_VARIANTS = [
   "selected" as const,
 ];
 
-interface BaseCheckboxProps extends CheckboxProps, HasControlContextData {
+interface BaseCheckboxProps
+  extends CheckboxProps,
+    HasControlContextData,
+    WithVariants<typeof CHECKBOX_VARIANTS> {
   children: React.ReactNode;
-  // Optional callback to update the interaction variant state
-  // as it's only provided if the component is the root of a Studio component
-  updateInteractionVariant?: UpdateInteractionVariant<
-    typeof CHECKBOX_INTERACTION_VARIANTS
-  >;
 }
 
-const { interactionVariants, withObservedValues } = pickAriaComponentVariants(
-  CHECKBOX_INTERACTION_VARIANTS
-);
+const { variants, withObservedValues } =
+  pickAriaComponentVariants(CHECKBOX_VARIANTS);
 
 export function BaseCheckbox(props: BaseCheckboxProps) {
-  const { children, updateInteractionVariant, setControlContextData, ...rest } =
-    props;
+  const { children, updateVariant, setControlContextData, ...rest } = props;
   const contextProps = React.useContext(PlasmicCheckboxGroupContext);
 
   setControlContextData?.({
@@ -75,7 +68,7 @@ export function BaseCheckbox(props: BaseCheckboxProps) {
               selected: isSelected,
               readonly: isReadOnly,
             },
-            updateInteractionVariant
+            updateVariant
           )
         }
       </Checkbox>
@@ -128,7 +121,7 @@ export const makeDefaultCheckboxChildren = ({
       ? [
           {
             type: "text",
-            value: "Add interaction variants to see it in action...",
+            value: "Use the registered variants to see it in action...",
           } as PlasmicElement,
         ]
       : []),
@@ -147,7 +140,7 @@ export function registerCheckbox(
       displayName: "Aria Checkbox",
       importPath: "@plasmicpkgs/react-aria/skinny/registerCheckbox",
       importName: "BaseCheckbox",
-      interactionVariants,
+      variants,
       props: {
         ...getCommonProps<BaseCheckboxProps>("checkbox", [
           "name",

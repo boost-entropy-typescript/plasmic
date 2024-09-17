@@ -4,10 +4,6 @@ import type { RadioProps } from "react-aria-components";
 import { Radio, RadioGroup } from "react-aria-components";
 import { getCommonProps } from "./common";
 import { PlasmicRadioGroupContext } from "./contexts";
-import {
-  UpdateInteractionVariant,
-  pickAriaComponentVariants,
-} from "./interaction-variant-utils";
 import { LABEL_COMPONENT_NAME } from "./registerLabel";
 import {
   CodeComponentMetaOverrides,
@@ -16,8 +12,9 @@ import {
   makeComponentName,
   registerComponentHelper,
 } from "./utils";
+import { WithVariants, pickAriaComponentVariants } from "./variant-utils";
 
-const RADIO_INTERACTION_VARIANTS = [
+const RADIO_VARIANTS = [
   "selected" as const,
   "hovered" as const,
   "pressed" as const,
@@ -28,22 +25,18 @@ const RADIO_INTERACTION_VARIANTS = [
   "selected" as const,
 ];
 
-export interface BaseRadioProps extends RadioProps, HasControlContextData {
+export interface BaseRadioProps
+  extends RadioProps,
+    HasControlContextData,
+    WithVariants<typeof RADIO_VARIANTS> {
   children: React.ReactNode;
-  // Optional callback to update the interaction variant state
-  // as it's only provided if the component is the root of a Studio component
-  updateInteractionVariant?: UpdateInteractionVariant<
-    typeof RADIO_INTERACTION_VARIANTS
-  >;
 }
 
-const { interactionVariants, withObservedValues } = pickAriaComponentVariants(
-  RADIO_INTERACTION_VARIANTS
-);
+const { variants, withObservedValues } =
+  pickAriaComponentVariants(RADIO_VARIANTS);
 
 export function BaseRadio(props: BaseRadioProps) {
-  const { children, setControlContextData, updateInteractionVariant, ...rest } =
-    props;
+  const { children, setControlContextData, updateVariant, ...rest } = props;
   const contextProps = React.useContext(PlasmicRadioGroupContext);
   const isStandalone = !contextProps;
 
@@ -73,7 +66,7 @@ export function BaseRadio(props: BaseRadioProps) {
             disabled: isDisabled,
             readonly: isReadOnly,
           },
-          updateInteractionVariant
+          updateVariant
         )
       }
     </Radio>
@@ -131,7 +124,7 @@ export function registerRadio(
       displayName: "Aria Radio",
       importPath: "@plasmicpkgs/react-aria/skinny/registerRadio",
       importName: "BaseRadio",
-      interactionVariants,
+      variants,
       props: {
         ...getCommonProps<BaseRadioProps>("radio", [
           "isDisabled",

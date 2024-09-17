@@ -20,9 +20,9 @@ import {
   isBuiltinCodeComponentImportPath,
 } from "@/wab/shared/code-components/builtin-code-components";
 import {
-  ensureOnlyValidInteractiveVariantsInComponent,
-  getInvalidInteractiveVariantsInComponent,
-} from "@/wab/shared/code-components/interaction-variants";
+  ensureOnlyValidCodeComponentVariantsInComponent,
+  getInvalidCodeComponentVariantsInComponent,
+} from "@/wab/shared/code-components/variants";
 import { paramToVarName, toVarName } from "@/wab/shared/codegen/util";
 import {
   CustomError,
@@ -125,8 +125,8 @@ import {
   BoolType,
   Choice,
   CodeComponentHelper,
-  CodeComponentInteractionVariantMeta,
   CodeComponentMeta,
+  CodeComponentVariantMeta,
   CodeLibrary,
   CollectionExpr,
   ColorPropType,
@@ -613,7 +613,7 @@ export interface CodeComponentSyncCallbackFns {
     updatedLibraries: CodeLibrary[];
     removedLibraries: CodeLibrary[];
   }) => void;
-  confirmRemovedInteractiveVariants?: (
+  confirmRemovedCodeComponentVariants?: (
     removedSelectorsByComponent: [Component, string[]][]
   ) => Promise<IFailable<void, never>>;
 }
@@ -673,13 +673,13 @@ export async function syncCodeComponents(
     run(checkUniqueCodeComponentNames(ctx));
     run(checkWhitespacesInImportNames(ctx, fns));
     const newComponents = run(await addNewRegisteredComponents(ctx, fns));
-    // The order here is important. We first sync interactions variants so that
+    // The order here is important. We first sync code component variants so that
     // model operations like remove component and swap component can be applied
-    // based on the latest interaction variants.
-    run(await syncCodeComponentsInteractionVariants(ctx));
+    // based on the latest cc variants.
+    run(await syncCodeComponentsVariants(ctx));
     run(await fixMissingCodeComponents(ctx, fns));
     run(await fixMissingDefaultComponents(ctx, fns));
-    run(await fixCodeComponentsInteractionVariants(ctx, fns));
+    run(await fixCodeComponentsVariants(ctx, fns));
 
     // At this point, we've added all the new components and removed
     // all the removed components.
@@ -745,7 +745,7 @@ function typeCheckRegistrations(ctx: SiteCtx) {
           }
         }
 
-        run(typeCheckInteractionVariantsFromMeta(meta, errorPrefix));
+        run(typeCheckVariantsFromMeta(meta, errorPrefix));
 
         // PropTypes that can be represented as a string instead of object
         const supportedStringTypes = [
@@ -1154,35 +1154,34 @@ export async function fixMissingCodeComponents(
   });
 }
 
-// Update interaction variants meta for all the code components in the site,
+// Update CC variants meta for all the code components in the site,
 // this is done separately from the other code component metas because we need
 // special handling for model elements that depend on it
-async function syncCodeComponentsInteractionVariants(ctx: SiteCtx) {
+async function syncCodeComponentsVariants(ctx: SiteCtx) {
   return failableAsync<void, never>(async ({ success, run }) => {
     run(
       await ctx.change(
-        ({ success: syncedInteractionVariantMeta }) => {
+        ({ success: syncedCodeComponentVariantMeta }) => {
           ctx.site.components.forEach((c) => {
             if (isCodeComponent(c)) {
               const meta = ctx.codeComponentsRegistry
                 .getRegisteredComponentsAndContextsMap()
                 .get(c.name)?.meta;
-              const interactionVariants = meta
-                ? mkCodeComponentInteractionVariantsFromMeta(meta)
+              const ccVariants = meta
+                ? mkCodeComponentVariantsFromMeta(meta)
                 : {};
               if (
                 !instUtil.deepEquals(
-                  c.codeComponentMeta.interactionVariantMeta,
-                  interactionVariants,
+                  c.codeComponentMeta.variants,
+                  ccVariants,
                   true
                 )
               ) {
-                c.codeComponentMeta.interactionVariantMeta =
-                  interactionVariants;
+                c.codeComponentMeta.variants = ccVariants;
               }
             }
           });
-          return syncedInteractionVariantMeta();
+          return syncedCodeComponentVariantMeta();
         },
         { noUndoRecord: true }
       )
@@ -1192,7 +1191,7 @@ async function syncCodeComponentsInteractionVariants(ctx: SiteCtx) {
   });
 }
 
-async function fixCodeComponentsInteractionVariants(
+async function fixCodeComponentsVariants(
   ctx: SiteCtx,
   fns: CodeComponentSyncCallbackFns
 ) {
@@ -1204,7 +1203,7 @@ async function fixCodeComponentsInteractionVariants(
     ctx.site.components.forEach((c) => {
       if (!isCodeComponent(c)) {
         const { unregisterdSelectors } =
-          getInvalidInteractiveVariantsInComponent(c);
+          getInvalidCodeComponentVariantsInComponent(c);
 
         if (unregisterdSelectors.length > 0) {
           removedSelectorsByComponent.push([c, unregisterdSelectors]);
@@ -1214,7 +1213,7 @@ async function fixCodeComponentsInteractionVariants(
     });
 
     if (removedSelectorsByComponent.length > 0) {
-      await fns.confirmRemovedInteractiveVariants?.(
+      await fns.confirmRemovedCodeComponentVariants?.(
         removedSelectorsByComponent
       );
     }
@@ -1223,11 +1222,11 @@ async function fixCodeComponentsInteractionVariants(
 
     run(
       await ctx.change(
-        ({ success: removedInvalidInteractionVariants }) => {
+        ({ success: removedInvalidVariants }) => {
           componentsToObserve.forEach((c) => {
-            ensureOnlyValidInteractiveVariantsInComponent(ctx.site, c);
+            ensureOnlyValidCodeComponentVariantsInComponent(ctx.site, c);
           });
-          return removedInvalidInteractionVariants();
+          return removedInvalidVariants();
         },
         { noUndoRecord: true }
       )
@@ -3347,7 +3346,7 @@ export function mkCodeComponent(
       // explicitly not handling defaultSlotContents, which is done by
       // refreshDefaultSlotContents()
       defaultSlotContents: {},
-      interactionVariantMeta: mkCodeComponentInteractionVariantsFromMeta(meta),
+      variants: mkCodeComponentVariantsFromMeta(meta),
     }),
     figmaMappings: (isGlobalContextMeta(meta)
       ? []
@@ -3690,38 +3689,38 @@ export function mkCodeComponentHelperFromMeta(
   });
 }
 
-function typeCheckInteractionVariantsFromMeta(
+function typeCheckVariantsFromMeta(
   meta: ComponentMeta<any> | GlobalContextMeta<any>,
   errorPrefix: string
 ) {
   return failable<void, CodeComponentRegistrationTypeError>(
     ({ success, failure }) => {
-      if (!("interactionVariants" in meta) || !meta.interactionVariants) {
+      if (!("variants" in meta) || !meta.variants) {
         return success();
       }
 
-      if (!isObject(meta.interactionVariants)) {
+      if (!isObject(meta.variants)) {
         return failure(
           new CodeComponentRegistrationTypeError(
-            `${errorPrefix} interactionVariants must be an object`
+            `${errorPrefix} variants must be an object`
           )
         );
       }
 
-      const hasInvalidInteraction = Object.entries(
-        meta.interactionVariants
-      ).some(([selector, { cssSelector, displayName }]) => {
-        return (
-          !isString(selector) ||
-          !isString(cssSelector) ||
-          !isString(displayName)
-        );
-      });
+      const hasInvalidVariant = Object.entries(meta.variants).some(
+        ([selector, { cssSelector, displayName }]) => {
+          return (
+            !isString(selector) ||
+            !isString(cssSelector) ||
+            !isString(displayName)
+          );
+        }
+      );
 
-      if (hasInvalidInteraction) {
+      if (hasInvalidVariant) {
         return failure(
           new CodeComponentRegistrationTypeError(
-            `${errorPrefix} interactionVariants selector, cssSelector, displayName are required to be strings`
+            `${errorPrefix} variants selector, cssSelector, displayName are required to be strings`
           )
         );
       }
@@ -3731,21 +3730,21 @@ function typeCheckInteractionVariantsFromMeta(
   );
 }
 
-export function mkCodeComponentInteractionVariantsFromMeta(
+export function mkCodeComponentVariantsFromMeta(
   meta: ComponentMeta<any> | GlobalContextMeta<any>
 ) {
-  if (!("interactionVariants" in meta) || !meta.interactionVariants) {
+  if (!("variants" in meta) || !meta.variants) {
     return {};
   }
 
   return Object.fromEntries(
-    Object.entries(meta.interactionVariants).map(
+    Object.entries(meta.variants).map(
       ([selector, { cssSelector, displayName }]): [
         string,
-        CodeComponentInteractionVariantMeta
+        CodeComponentVariantMeta
       ] => [
         selector,
-        new CodeComponentInteractionVariantMeta({ cssSelector, displayName }),
+        new CodeComponentVariantMeta({ cssSelector, displayName }),
       ]
     )
   );

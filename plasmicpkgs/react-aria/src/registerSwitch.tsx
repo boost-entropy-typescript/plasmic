@@ -2,20 +2,17 @@ import React from "react";
 import type { SwitchProps } from "react-aria-components";
 import { Switch } from "react-aria-components";
 import { getCommonProps } from "./common";
-import {
-  UpdateInteractionVariant,
-  pickAriaComponentVariants,
-} from "./interaction-variant-utils";
 import { DESCRIPTION_COMPONENT_NAME } from "./registerDescription";
 import { LABEL_COMPONENT_NAME } from "./registerLabel";
 import {
   CodeComponentMetaOverrides,
-  Registerable,
   makeComponentName,
+  Registerable,
   registerComponentHelper,
 } from "./utils";
+import { pickAriaComponentVariants, WithVariants } from "./variant-utils";
 
-const SWITCH_INTERACTION_VARIANTS = [
+const SWITCH_VARIANTS = [
   "hovered" as const,
   "pressed" as const,
   "focused" as const,
@@ -25,21 +22,17 @@ const SWITCH_INTERACTION_VARIANTS = [
   "readonly" as const,
 ];
 
-const { interactionVariants, withObservedValues } = pickAriaComponentVariants(
-  SWITCH_INTERACTION_VARIANTS
-);
+const { variants, withObservedValues } =
+  pickAriaComponentVariants(SWITCH_VARIANTS);
 
-interface BaseSwitchProps extends SwitchProps {
+interface BaseSwitchProps
+  extends SwitchProps,
+    WithVariants<typeof SWITCH_VARIANTS> {
   children: React.ReactNode;
-  // Optional callback to update the interaction variant state
-  // as it's only provided if the component is the root of a Studio component
-  updateInteractionVariant?: UpdateInteractionVariant<
-    typeof SWITCH_INTERACTION_VARIANTS
-  >;
 }
 
 export function BaseSwitch(props: BaseSwitchProps) {
-  const { children, updateInteractionVariant, ...rest } = props;
+  const { children, updateVariant, ...rest } = props;
   return (
     <Switch {...rest}>
       {({
@@ -62,7 +55,7 @@ export function BaseSwitch(props: BaseSwitchProps) {
             disabled: isDisabled,
             readonly: isReadOnly,
           },
-          updateInteractionVariant
+          updateVariant
         )
       }
     </Switch>
@@ -81,7 +74,7 @@ export function registerSwitch(
       displayName: "Aria Switch",
       importPath: "@plasmicpkgs/react-aria/skinny/registerSwitch",
       importName: "BaseSwitch",
-      interactionVariants,
+      variants,
       defaultStyles: {
         display: "flex",
         flexDirection: "column",
@@ -162,7 +155,7 @@ export function registerSwitch(
               props: {
                 children: {
                   type: "text",
-                  value: "Add interaction variants to see it in action...",
+                  value: "Use the registered variants to see it in action...",
                 },
               },
             },

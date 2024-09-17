@@ -47,13 +47,18 @@ import ScreenIcon from "@/wab/client/plasmic/plasmic_kit_design_system/PlasmicIc
 import { StudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
 import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
 import { testIds } from "@/wab/client/test-helpers/test-ids";
+import { findNonEmptyCombos } from "@/wab/shared/cached-selectors";
+import { isTplRootWithCodeComponentVariants } from "@/wab/shared/code-components/variants";
 import { ensure, ensureInstance, partitions, spawn } from "@/wab/shared/common";
 import {
   allComponentStyleVariants,
   getSuperComponents,
   isPageComponent,
 } from "@/wab/shared/core/components";
-import { findNonEmptyCombos } from "@/wab/shared/cached-selectors";
+import {
+  isGlobalVariantGroupUsedInSplits,
+  isVariantUsedInSplits,
+} from "@/wab/shared/core/splits";
 import { ScreenSizeSpec } from "@/wab/shared/css-size";
 import {
   Component,
@@ -70,7 +75,7 @@ import { VariantPinState } from "@/wab/shared/PinManager";
 import { getPlumeVariantDef } from "@/wab/shared/plume/plume-registry";
 import { VariantOptionsType } from "@/wab/shared/TplMgr";
 import {
-  canHaveInteractionVariant,
+  canHaveRegisteredVariant,
   getBaseVariant,
   isBaseVariant,
   isGlobalVariantGroup,
@@ -80,10 +85,6 @@ import {
   moveVariantGroup,
   variantComboKey,
 } from "@/wab/shared/Variants";
-import {
-  isGlobalVariantGroupUsedInSplits,
-  isVariantUsedInSplits,
-} from "@/wab/shared/core/splits";
 import { Menu } from "antd";
 import sortBy from "lodash/sortBy";
 import { observer } from "mobx-react";
@@ -481,14 +482,22 @@ export const VariantsPanel = observer(
                 )
               )}
             </SimpleReorderableList>
-            {canHaveInteractionVariant(component) &&
+            {canHaveRegisteredVariant(component) &&
               !isPageComponent(component) && (
                 <VariantSection
                   showIcon
                   icon={<Icon icon={BoltIcon} />}
-                  title="Interaction Variants"
+                  title={
+                    isTplRootWithCodeComponentVariants(component.tplTree)
+                      ? "Registered Variants"
+                      : "Interaction Variants"
+                  }
                   emptyAddButtonText="Add variant"
-                  emptyAddButtonTooltip="Interaction variants are automatically activated when the user interacts with the component -- by hovering, focusing, pressing, etc."
+                  emptyAddButtonTooltip={
+                    isTplRootWithCodeComponentVariants(component.tplTree)
+                      ? "Registered variants are registered in code component meta"
+                      : "Interaction variants are automatically activated when the user interacts with the component -- by hovering, focusing, pressing, etc."
+                  }
                   onAddNewVariant={() =>
                     studioCtx.change(({ success }) => {
                       studioCtx.siteOps().createStyleVariant(component);

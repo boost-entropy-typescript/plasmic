@@ -1,33 +1,26 @@
 import React from "react";
 import { SliderOutput } from "react-aria-components";
 import {
-  UpdateInteractionVariant,
-  pickAriaComponentVariants,
-} from "./interaction-variant-utils";
-import {
   CodeComponentMetaOverrides,
   Registerable,
   makeComponentName,
   registerComponentHelper,
 } from "./utils";
+import { WithVariants, pickAriaComponentVariants } from "./variant-utils";
 
-const SLIDER_OUTPUT_INTERACTION_VARIANTS = ["disabled" as const];
+const SLIDER_OUTPUT_VARIANTS = ["disabled" as const];
 export interface BaseSliderOutputProps
-  extends React.ComponentProps<typeof SliderOutput> {
+  extends React.ComponentProps<typeof SliderOutput>,
+    WithVariants<typeof SLIDER_OUTPUT_VARIANTS> {
   children?: React.ReactNode;
-  // Optional callback to update the interaction variant state
-  // as it's only provided if the component is the root of a Studio component
-  updateInteractionVariant?: UpdateInteractionVariant<
-    typeof SLIDER_OUTPUT_INTERACTION_VARIANTS
-  >;
 }
 
-const { interactionVariants, withObservedValues } = pickAriaComponentVariants(
-  SLIDER_OUTPUT_INTERACTION_VARIANTS
+const { variants, withObservedValues } = pickAriaComponentVariants(
+  SLIDER_OUTPUT_VARIANTS
 );
 
 export function BaseSliderOutput(props: BaseSliderOutputProps) {
-  const { updateInteractionVariant, children, ...rest } = props;
+  const { updateVariant, children, ...rest } = props;
   return (
     <SliderOutput {...rest}>
       {({ isDisabled }) =>
@@ -36,7 +29,7 @@ export function BaseSliderOutput(props: BaseSliderOutputProps) {
           {
             disabled: isDisabled,
           },
-          updateInteractionVariant
+          updateVariant
         )
       }
     </SliderOutput>
@@ -57,7 +50,7 @@ export function registerSliderOutput(
       displayName: "Aria Slider Output",
       importPath: "@plasmicpkgs/react-aria/skinny/registerSliderOutput",
       importName: "BaseSliderOutput",
-      interactionVariants,
+      variants,
       props: {
         children: { type: "slot" },
       },

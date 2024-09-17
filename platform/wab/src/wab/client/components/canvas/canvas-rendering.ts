@@ -35,49 +35,8 @@ import { buildViewCtxPinMaps } from "@/wab/client/cseval";
 import { globalHookCtx } from "@/wab/client/react-global-hook/globalHook";
 import { StudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
 import { EditingTextContext, ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
-import {
-  assert,
-  cx,
-  ensure,
-  ensureArray,
-  ensureInstance,
-  ensureType,
-  mapEquals,
-  maybe,
-  setEquals,
-  switchType,
-  tuple,
-  unexpected,
-  withDefaultFunc,
-  withoutNils,
-} from "@/wab/shared/common";
 import { mkTokenRef } from "@/wab/commons/StyleToken";
 import { DeepReadonly } from "@/wab/commons/types";
-import {
-  allComponentVariants,
-  getComponentDisplayName,
-  getRepetitionElementName,
-  getRepetitionIndexName,
-  isCodeComponent,
-  isHostLessCodeComponent,
-} from "@/wab/shared/core/components";
-import { uniqifyClassName } from "@/wab/shared/css";
-import { DEVFLAGS, DevFlagsType } from "@/wab/shared/devflags";
-import {
-  asCode,
-  code,
-  ExprCtx,
-  extractReferencedParam,
-  getCodeExpressionWithFallback,
-  getRawCode,
-  InteractionArgLoc,
-  InteractionLoc,
-  isInteractionLoc,
-  isRealCodeExpr,
-  removeFallbackFromDataSourceOp,
-} from "@/wab/shared/core/exprs";
-import { mkParam } from "@/wab/shared/core/lang";
-import { makeSelectableKey } from "@/wab/shared/core/selection";
 import {
   componenToNonVariantParamNames,
   componentToElementNames,
@@ -114,9 +73,9 @@ import {
   tryGetStateHelpers,
 } from "@/wab/shared/code-components/code-components";
 import {
-  isTplRootWithCodeComponentInteractionVariants,
-  withoutInteractionVariantPrefix,
-} from "@/wab/shared/code-components/interaction-variants";
+  isTplRootWithCodeComponentVariants,
+  withoutCodeComponentVariantPrefix,
+} from "@/wab/shared/code-components/variants";
 import { toReactAttr } from "@/wab/shared/codegen/image-assets";
 import {
   deriveReactHookSpecs,
@@ -140,8 +99,91 @@ import {
   NodeNamer,
 } from "@/wab/shared/codegen/react-p/utils";
 import { paramToVarName, toVarName } from "@/wab/shared/codegen/util";
+import {
+  assert,
+  cx,
+  ensure,
+  ensureArray,
+  ensureInstance,
+  ensureType,
+  mapEquals,
+  maybe,
+  setEquals,
+  switchType,
+  tuple,
+  unexpected,
+  withDefaultFunc,
+  withoutNils,
+} from "@/wab/shared/common";
+import {
+  allComponentVariants,
+  getComponentDisplayName,
+  getRepetitionElementName,
+  getRepetitionIndexName,
+  isCodeComponent,
+  isHostLessCodeComponent,
+} from "@/wab/shared/core/components";
+import {
+  asCode,
+  code,
+  ExprCtx,
+  extractReferencedParam,
+  getCodeExpressionWithFallback,
+  getRawCode,
+  InteractionArgLoc,
+  InteractionLoc,
+  isInteractionLoc,
+  isRealCodeExpr,
+  removeFallbackFromDataSourceOp,
+} from "@/wab/shared/core/exprs";
+import { mkParam } from "@/wab/shared/core/lang";
+import { makeSelectableKey } from "@/wab/shared/core/selection";
+import {
+  getLastPartOfImplicitStateName,
+  getStateDisplayName,
+  getStateOnChangePropName,
+  getStateValuePropName,
+  getStateVarName,
+  getVirtualWritableStateInitialValue,
+  isReadonlyState,
+  isWritableState,
+  shouldHaveImplicitState,
+  StateVariableType,
+} from "@/wab/shared/core/states";
 import { plasmicImgAttrStyles } from "@/wab/shared/core/style-props";
+import {
+  classNameForRuleSet,
+  defaultStyleClassNames,
+  getTriggerableSelectors,
+  hasGapStyle,
+  makeCanvasRuleNamers,
+  makeDefaultStyleValuesDict,
+  makeStyleExprClassName,
+  makeStyleScopeClassName,
+  studioDefaultStylesClassNameBase,
+} from "@/wab/shared/core/styles";
+import {
+  ancestorsUp,
+  getOwnerSite,
+  isExprText,
+  isGridChild,
+  isRawText,
+  isTplCodeComponent,
+  isTplColumn,
+  isTplComponent,
+  isTplIcon,
+  isTplImage,
+  isTplRepeated,
+  isTplTag,
+  isTplTextBlock,
+  RawTextLike,
+  summarizeTpl,
+  tplHasRef,
+  TplTextTag,
+} from "@/wab/shared/core/tpls";
+import { uniqifyClassName } from "@/wab/shared/css";
 import { parseDataUrlToSvgXml } from "@/wab/shared/data-urls";
+import { DEVFLAGS, DevFlagsType } from "@/wab/shared/devflags";
 import {
   EffectiveVariantSetting,
   getEffectiveVariantSetting,
@@ -213,6 +255,7 @@ import {
   isStyledTplSlot,
   shouldWrapSlotContentInDataCtxReader,
 } from "@/wab/shared/SlotUtils";
+import { placeholderImgUrl } from "@/wab/shared/urls";
 import {
   makeVariantComboSorter,
   sortedVariantSettings,
@@ -229,49 +272,6 @@ import {
   VariantCombo,
   variantHasPrivatePseudoElementSelector,
 } from "@/wab/shared/Variants";
-import {
-  getLastPartOfImplicitStateName,
-  getStateDisplayName,
-  getStateOnChangePropName,
-  getStateValuePropName,
-  getStateVarName,
-  getVirtualWritableStateInitialValue,
-  isReadonlyState,
-  isWritableState,
-  shouldHaveImplicitState,
-  StateVariableType,
-} from "@/wab/shared/core/states";
-import {
-  classNameForRuleSet,
-  defaultStyleClassNames,
-  getTriggerableSelectors,
-  hasGapStyle,
-  makeCanvasRuleNamers,
-  makeDefaultStyleValuesDict,
-  makeStyleExprClassName,
-  makeStyleScopeClassName,
-  studioDefaultStylesClassNameBase,
-} from "@/wab/shared/core/styles";
-import {
-  ancestorsUp,
-  getOwnerSite,
-  isExprText,
-  isGridChild,
-  isRawText,
-  isTplCodeComponent,
-  isTplColumn,
-  isTplComponent,
-  isTplIcon,
-  isTplImage,
-  isTplRepeated,
-  isTplTag,
-  isTplTextBlock,
-  RawTextLike,
-  summarizeTpl,
-  tplHasRef,
-  TplTextTag,
-} from "@/wab/shared/core/tpls";
-import { placeholderImgUrl } from "@/wab/shared/urls";
 import type { usePlasmicInvalidate } from "@plasmicapp/data-sources";
 import { DataDict, mkMetaName } from "@plasmicapp/host";
 import { $StateSpec } from "@plasmicapp/react-web";
@@ -335,9 +335,9 @@ export interface RenderingCtx {
   plasmicInvalidate: ReturnType<typeof usePlasmicInvalidate> | undefined;
   stateSpecs: $StateSpec<any>[];
 
-  // This is used to enable code components interaction variants in the canvas
-  $ccInteractions: Record<string, boolean>;
-  updateInteractionVariant: (changes: Record<string, boolean>) => void;
+  // This is used to enable code components variants in the canvas
+  $ccVariants: Record<string, boolean>;
+  updateVariant: (changes: Record<string, boolean>) => void;
 }
 
 interface CanvasComponentProps
@@ -704,15 +704,11 @@ const mkTriggers = computedFn(
               // because we don't want the content to change when the user tries to edit rich text
               // while in design mode.
               if (isStyleVariant(variant) && isInteractive) {
-                if (
-                  isTplRootWithCodeComponentInteractionVariants(
-                    component.tplTree
-                  )
-                ) {
+                if (isTplRootWithCodeComponentVariants(component.tplTree)) {
                   return variant.selectors.reduce(
                     (prev, key) =>
                       prev &&
-                      ctx.$ccInteractions[withoutInteractionVariantPrefix(key)],
+                      ctx.$ccVariants[withoutCodeComponentVariantPrefix(key)],
                     true
                   );
                 }
@@ -897,13 +893,13 @@ function useCtxFromInternalComponentProps(
   const refsRef = sub.React.useRef({});
   const $refs = refsRef.current;
 
-  // We will use $ccInteractions to store the interactions that are triggered
+  // We will use $ccVariants to store the variants that are triggered
   // by the code component root, to keep the number of hooks stable. We will
   // always create these values during the canvas component initialization.
-  const [$ccInteractions, setDollarCcInteractions] = sub.React.useState({});
-  const updateInteractionVariant = sub.React.useCallback(
+  const [$ccVariants, setDollarCcVariants] = sub.React.useState({});
+  const updateVariant = sub.React.useCallback(
     (changes: Record<string, boolean>) => {
-      setDollarCcInteractions((prev) => {
+      setDollarCcVariants((prev) => {
         if (!Object.keys(changes).some((k) => prev[k] !== changes[k])) {
           return prev;
         }
@@ -1007,8 +1003,8 @@ function useCtxFromInternalComponentProps(
       viewState.forceValComponentKeysWithDefaultSlotContents,
     setDollarQueries,
     stateSpecs,
-    $ccInteractions,
-    updateInteractionVariant,
+    $ccVariants,
+    updateVariant: updateVariant,
   };
   return ctx;
 }
@@ -1216,8 +1212,8 @@ function makeEmptyRenderingCtx(viewCtx: ViewCtx, valKey: string): RenderingCtx {
     setDollarQueries: () => {},
     stateSpecs: [],
     plasmicInvalidate: undefined,
-    $ccInteractions: {},
-    updateInteractionVariant: () => {},
+    $ccVariants: {},
+    updateVariant: () => {},
   };
 }
 
@@ -1433,11 +1429,8 @@ function renderTplComponent(
       ctx.valKey
     );
 
-    if (
-      isComponentRoot &&
-      isTplRootWithCodeComponentInteractionVariants(node)
-    ) {
-      props["updateInteractionVariant"] = ctx.updateInteractionVariant;
+    if (isComponentRoot && isTplRootWithCodeComponentVariants(node)) {
+      props["updateVariant"] = ctx.updateVariant;
     }
 
     if (meta) {
