@@ -32,7 +32,7 @@ export interface BaseSliderThumbProps
 export function BaseSliderThumb({
   children,
   advanced,
-  updateVariant,
+  plasmicUpdateVariant,
   ...rest
 }: BaseSliderThumbProps) {
   const context = React.useContext(PlasmicSliderContext);
@@ -50,7 +50,7 @@ export function BaseSliderThumb({
             focusVisible: isFocusVisible,
             disabled: isDisabled,
           },
-          updateVariant
+          plasmicUpdateVariant
         )
       }
     </SliderThumb>
@@ -109,6 +109,7 @@ export function registerSliderThumb(
         },
         children: {
           type: "slot",
+          mergeWithParent: true,
           hidden: (ps: BaseSliderThumbProps) => !ps.advanced,
         },
       },
