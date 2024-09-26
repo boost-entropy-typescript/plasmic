@@ -67,6 +67,7 @@ export function BaseSelect(props: BaseSelectProps) {
     className,
     style,
     children,
+    disabledKeys,
     name,
     isOpen,
     setControlContextData,
@@ -96,6 +97,7 @@ export function BaseSelect(props: BaseSelectProps) {
       className={className}
       style={style}
       name={name}
+      disabledKeys={disabledKeys}
       aria-label={ariaLabel}
       isOpen={openProp}
       {...extractPlasmicDataProps(props)}
@@ -133,7 +135,7 @@ export function registerSelect(loader?: Registerable) {
             value: "Selected value...",
           },
         ],
-        hidden: (ps) => !ps.customize,
+        hidden: (props) => !props.customize,
       },
       className: {
         type: "class",
@@ -167,10 +169,7 @@ export function registerSelect(loader?: Registerable) {
         editOnly: true,
         uncontrolledProp: "defaultSelectedKey",
         displayName: "Initial selected key",
-        options: (
-          _props: BaseSelectProps,
-          ctx: BaseSelectControlContextData | null
-        ) => (ctx?.itemIds ? Array.from(ctx.itemIds) : []),
+        options: (_props, ctx) => (ctx?.itemIds ? Array.from(ctx.itemIds) : []),
         // React Aria Select do not support multiple selections yet
         multiSelect: false,
       },
@@ -182,10 +181,7 @@ export function registerSelect(loader?: Registerable) {
         type: "choice",
         description:
           "The item keys that are disabled. These items cannot be selected, focused, or otherwise interacted with.",
-        options: (
-          _props: BaseSelectProps,
-          ctx: BaseSelectControlContextData | null
-        ) => (ctx?.itemIds ? Array.from(ctx.itemIds) : []),
+        options: (_props, ctx) => (ctx?.itemIds ? Array.from(ctx.itemIds) : []),
         multiSelect: true,
         advanced: true,
       },
