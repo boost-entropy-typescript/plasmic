@@ -98,8 +98,8 @@
         "3378006": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "3378007": {
           "tag": "div",
@@ -894,7 +894,7 @@
         "3378109": {
           "uuid": "klXwr7zi6Ah",
           "name": "",
-          "selectors": ["Focus Visible Within"],
+          "selectors": [":focus-visible-within"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -904,7 +904,7 @@
         "3378110": {
           "uuid": "UHx_LsZ6vru",
           "name": "",
-          "selectors": ["Focused Within"],
+          "selectors": [":focus-within"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -914,7 +914,7 @@
         "3378111": {
           "uuid": "fjPTiwAqmel",
           "name": "",
-          "selectors": ["Hover"],
+          "selectors": [":hover"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -924,7 +924,7 @@
         "3378112": {
           "uuid": "HnB-ZzJEYgV",
           "name": "",
-          "selectors": ["Pressed"],
+          "selectors": [":active"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -1042,8 +1042,8 @@
         "3378124": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "3378125": {
           "name": "Show Start Icon",
@@ -1065,8 +1065,8 @@
         "3378130": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "3378131": {
           "name": "end icon",
@@ -1076,8 +1076,8 @@
         "3378132": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "3378133": {
           "name": "Is Disabled",
@@ -8015,9 +8015,9 @@
             { "__ref": "33859154" }
           ],
           "layout": null,
+          "addItemPrefs": {},
           "active": true,
-          "__type": "Theme",
-          "addItemPrefs": {}
+          "__type": "Theme"
         },
         "33859009": {
           "name": "Default Typography",
@@ -8588,6 +8588,8 @@
           "displayName": "Head",
           "importName": "PlasmicHead",
           "description": "Used to add page metadata to HTML <head />.",
+          "section": null,
+          "thumbnailUrl": null,
           "classNameProp": null,
           "refProp": null,
           "defaultStyles": null,
@@ -8601,10 +8603,8 @@
           "styleSections": false,
           "helpers": null,
           "defaultSlotContents": {},
-          "__type": "CodeComponentMeta",
-          "thumbnailUrl": null,
-          "section": null,
-          "variants": {}
+          "variants": {},
+          "__type": "CodeComponentMeta"
         },
         "36693010": {
           "type": { "__ref": "36693028" },
@@ -8736,6 +8736,8 @@
           "displayName": "Data Source Fetcher",
           "importName": "Fetcher",
           "description": null,
+          "section": null,
+          "thumbnailUrl": null,
           "classNameProp": null,
           "refProp": null,
           "defaultStyles": null,
@@ -8749,10 +8751,8 @@
           "styleSections": false,
           "helpers": null,
           "defaultSlotContents": {},
-          "__type": "CodeComponentMeta",
-          "thumbnailUrl": null,
-          "section": null,
-          "variants": {}
+          "variants": {},
+          "__type": "CodeComponentMeta"
         },
         "36693018": { "name": "title", "uuid": "nbehY6yq5O", "__type": "Var" },
         "36693019": { "name": "text", "__type": "Text" },
@@ -8794,8 +8794,8 @@
           "name": "renderFunc",
           "params": [{ "__ref": "36693040" }],
           "allowed": [],
-          "__type": "RenderFuncType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderFuncType"
         },
         "36693033": {
           "name": "pageSize",
@@ -9781,7 +9781,7 @@
         "36693159": {
           "uuid": "cK7WSA0KGZ9",
           "name": "",
-          "selectors": ["Focused"],
+          "selectors": [":focus"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -9791,7 +9791,7 @@
         "36693160": {
           "uuid": "d2et59vOict",
           "name": "",
-          "selectors": ["Hover"],
+          "selectors": [":hover"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -9801,7 +9801,7 @@
         "36693161": {
           "uuid": "cskTSW_Llxl",
           "name": "",
-          "selectors": ["Focused Within"],
+          "selectors": [":focus-within"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -9811,7 +9811,7 @@
         "36693162": {
           "uuid": "wKOeTVJf_74",
           "name": "",
-          "selectors": ["Focus Visible Within"],
+          "selectors": [":focus-visible-within"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -9821,7 +9821,7 @@
         "36693163": {
           "uuid": "SpM_t9WZcXH",
           "name": "",
-          "selectors": ["Placeholder"],
+          "selectors": ["::placeholder"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -9898,8 +9898,8 @@
         "36693178": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "36693179": {
           "name": "start icon",
@@ -9909,8 +9909,8 @@
         "36693180": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "36693181": {
           "name": "Show Start Icon",
@@ -12496,7 +12496,7 @@
         }
       },
       "deps": [],
-      "version": "233-rename-interaction-variants-for-code-components"
+      "version": "236-rename-duplicated-components"
     }
   ]
 ]

@@ -2912,7 +2912,7 @@
         "768": {
           "uuid": "vwGsDJBij",
           "name": "",
-          "selectors": ["Hover"],
+          "selectors": [":hover"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -2977,7 +2977,7 @@
         "780": {
           "uuid": "VnIexNq9z",
           "name": "",
-          "selectors": ["Focus Visible Within"],
+          "selectors": [":focus-visible-within"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -3070,7 +3070,7 @@
         "815": {
           "uuid": "tYtE5i1UX",
           "name": "",
-          "selectors": ["Focused Within"],
+          "selectors": [":focus-within"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -4111,33 +4111,33 @@
         "1037": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "1038": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "1041": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "1048": { "name": "text", "__type": "Text" },
         "1050": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "1051": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "1059": { "name": "text", "__type": "Text" },
         "1060": {
@@ -4639,8 +4639,8 @@
         "1174": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "1175": {
           "variants": [{ "__ref": "1065" }],
@@ -4940,8 +4940,8 @@
         "1227": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "1228": {
           "tag": "div",
@@ -5144,8 +5144,8 @@
         "1267": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "1268": {
           "variants": [{ "__ref": "1107" }],
@@ -5193,8 +5193,8 @@
         "1279": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "1280": {
           "tag": "div",
@@ -5856,8 +5856,8 @@
         "1410": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "1411": {
           "tag": "div",
@@ -5938,8 +5938,8 @@
         "1422": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "1423": {
           "variants": [{ "__ref": "1354" }],
@@ -6668,8 +6668,8 @@
         "1641": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "1642": {
           "variants": [{ "__ref": "1566" }],
@@ -7199,8 +7199,8 @@
         "1849": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "1850": {
           "name": "Relative placement",
@@ -7993,8 +7993,8 @@
         "1985": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "1986": {
           "name": "Relative placement",
@@ -9052,7 +9052,7 @@
         "2206": {
           "uuid": "bmn1oehVK",
           "name": "",
-          "selectors": ["Focused Within"],
+          "selectors": [":focus-within"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -9133,7 +9133,7 @@
         "2221": {
           "uuid": "gkyFUWT_t",
           "name": "",
-          "selectors": ["Focus Visible Within"],
+          "selectors": [":focus-visible-within"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -9979,7 +9979,7 @@
         "2825": {
           "uuid": "fEj-0odMZ",
           "name": "",
-          "selectors": ["Focused Within"],
+          "selectors": [":focus-within"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -10048,7 +10048,7 @@
         "2838": {
           "uuid": "W_TPLAlsn",
           "name": "",
-          "selectors": ["Focus Visible Within"],
+          "selectors": [":focus-visible-within"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -10365,7 +10365,7 @@
         "2884": {
           "uuid": "2N8HyHHo-j",
           "name": "",
-          "selectors": ["Hover"],
+          "selectors": [":hover"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -10375,7 +10375,7 @@
         "2885": {
           "uuid": "qYz5uCLLQG",
           "name": "",
-          "selectors": ["Focus Visible Within"],
+          "selectors": [":focus-visible-within"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -10385,7 +10385,7 @@
         "2886": {
           "uuid": "ycVxvMbd4_",
           "name": "",
-          "selectors": ["Focused Within"],
+          "selectors": [":focus-within"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -11929,7 +11929,7 @@
         "3474": { "values": {}, "mixins": [], "__type": "RuleSet" },
         "460001": {
           "uuid": "EgwaekvNLJd",
-          "name": "",
+          "name": "Unnamed Component",
           "params": [
             { "__ref": "1115735" },
             { "__ref": "1115736" },
@@ -12783,29 +12783,29 @@
         "1115713": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "1115714": { "name": "text", "__type": "Text" },
         "1115715": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "1115716": { "name": "bool", "__type": "BoolType" },
         "1115717": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "1115718": { "name": "bool", "__type": "BoolType" },
         "1115719": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "1115720": { "name": "bool", "__type": "BoolType" },
         "1115721": { "code": "\"\"", "fallback": null, "__type": "CustomCode" },
@@ -12813,8 +12813,8 @@
         "1115723": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "1115724": { "name": "bool", "__type": "BoolType" },
         "1115725": {
@@ -14125,8 +14125,8 @@
           "name": "renderFunc",
           "params": [{ "__ref": "7772002" }],
           "allowed": [],
-          "__type": "RenderFuncType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderFuncType"
         },
         "7772002": {
           "name": "arg",
@@ -15290,7 +15290,7 @@
         "11429020": {
           "uuid": "uWGwjgXERB",
           "name": "",
-          "selectors": ["Focus Visible Within"],
+          "selectors": [":focus-visible-within"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -15300,7 +15300,7 @@
         "11429021": {
           "uuid": "TJTq0shQTH",
           "name": "",
-          "selectors": ["Focused Within"],
+          "selectors": [":focus-within"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -15374,8 +15374,8 @@
         "11429041": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "11429042": {
           "name": "end icon",
@@ -15385,8 +15385,8 @@
         "11429043": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "11429044": {
           "name": "Is Disabled",
@@ -16354,7 +16354,7 @@
         "11430327": {
           "uuid": "gwHf6Pr84",
           "name": "",
-          "selectors": ["Hover"],
+          "selectors": [":hover"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -16425,7 +16425,7 @@
         "11430337": {
           "uuid": "myQf55PRe",
           "name": "",
-          "selectors": ["Pressed"],
+          "selectors": [":active"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -18458,7 +18458,7 @@
         "22719051": {
           "uuid": "l6uxgi_YC",
           "name": "",
-          "selectors": ["Hover"],
+          "selectors": [":hover"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -20545,7 +20545,7 @@
         "26480356": {
           "uuid": "ducEqV5nZS",
           "name": "",
-          "selectors": ["Focused"],
+          "selectors": [":focus"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -20555,7 +20555,7 @@
         "26480357": {
           "uuid": "8buPtZqaX2",
           "name": "",
-          "selectors": ["Hover"],
+          "selectors": [":hover"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -20565,7 +20565,7 @@
         "26480358": {
           "uuid": "IVmWxiwVuN",
           "name": "",
-          "selectors": ["Focused Within"],
+          "selectors": [":focus-within"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -20575,7 +20575,7 @@
         "26480359": {
           "uuid": "6gldAGbON_",
           "name": "",
-          "selectors": ["Focus Visible Within"],
+          "selectors": [":focus-visible-within"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -20585,7 +20585,7 @@
         "26480360": {
           "uuid": "wYVW4toRrU",
           "name": "",
-          "selectors": ["Placeholder"],
+          "selectors": ["::placeholder"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -20653,8 +20653,8 @@
         "26480373": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "26480374": {
           "name": "start icon",
@@ -20664,8 +20664,8 @@
         "26480375": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "26480376": {
           "name": "Show Start Icon",
@@ -24990,6 +24990,8 @@
           "displayName": "Page Metadata Override",
           "importName": "PlasmicHead",
           "description": "Set page metadata (HTML <head />) to dynamic values.",
+          "section": null,
+          "thumbnailUrl": null,
           "classNameProp": null,
           "refProp": null,
           "defaultStyles": null,
@@ -25003,10 +25005,8 @@
           "styleSections": false,
           "helpers": null,
           "defaultSlotContents": {},
-          "__type": "CodeComponentMeta",
-          "thumbnailUrl": null,
-          "section": null,
-          "variants": {}
+          "variants": {},
+          "__type": "CodeComponentMeta"
         },
         "39001010": {
           "type": { "__ref": "39001029" },
@@ -25138,6 +25138,8 @@
           "displayName": "Data Fetcher",
           "importName": "Fetcher",
           "description": null,
+          "section": null,
+          "thumbnailUrl": null,
           "classNameProp": null,
           "refProp": null,
           "defaultStyles": null,
@@ -25151,10 +25153,8 @@
           "styleSections": false,
           "helpers": null,
           "defaultSlotContents": {},
-          "__type": "CodeComponentMeta",
-          "thumbnailUrl": null,
-          "section": null,
-          "variants": {}
+          "variants": {},
+          "__type": "CodeComponentMeta"
         },
         "39001019": { "name": "title", "uuid": "48yL8HFO_K", "__type": "Var" },
         "39001020": { "name": "text", "__type": "Text" },
@@ -30213,7 +30213,7 @@
         "49229001": {
           "uuid": "HPmIUWGS1",
           "name": "",
-          "selectors": ["Hover"],
+          "selectors": [":hover"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -30241,7 +30241,7 @@
         "49229006": {
           "uuid": "b2GeTk3fo",
           "name": "",
-          "selectors": ["Pressed"],
+          "selectors": [":active"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -31436,7 +31436,7 @@
         "52699098": {
           "uuid": "oURIs0W6w",
           "name": "",
-          "selectors": ["Pressed"],
+          "selectors": [":active"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -32877,7 +32877,7 @@
         "64969233": {
           "uuid": "wTnEUQyrO0",
           "name": "",
-          "selectors": ["Focus Visible Within"],
+          "selectors": [":focus-visible-within"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -32887,7 +32887,7 @@
         "64969234": {
           "uuid": "JiI9AXwos8",
           "name": "",
-          "selectors": ["Focused Within"],
+          "selectors": [":focus-within"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -32897,7 +32897,7 @@
         "64969235": {
           "uuid": "XisA_RiyiW",
           "name": "",
-          "selectors": ["Hover"],
+          "selectors": [":hover"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -32907,7 +32907,7 @@
         "64969236": {
           "uuid": "bkk88VbyVN",
           "name": "",
-          "selectors": ["Pressed"],
+          "selectors": [":active"],
           "parent": null,
           "mediaQuery": null,
           "description": null,
@@ -33033,8 +33033,8 @@
         "64969253": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "64969254": {
           "name": "end icon",
@@ -33044,8 +33044,8 @@
         "64969255": {
           "name": "renderable",
           "params": [],
-          "__type": "RenderableType",
-          "allowRootWrapper": null
+          "allowRootWrapper": null,
+          "__type": "RenderableType"
         },
         "64969256": {
           "name": "Is Disabled",
@@ -42756,7 +42756,7 @@
         }
       },
       "deps": [],
-      "version": "233-rename-interaction-variants-for-code-components"
+      "version": "236-rename-duplicated-components"
     }
   ]
 ]

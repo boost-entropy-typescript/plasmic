@@ -14,15 +14,15 @@
 import * as React from "react";
 
 import {
-  classNames,
-  createPlasmicElementProxy,
-  deriveRenderOpts,
   Flex as Flex__,
-  hasVariant,
-  renderPlasmicSlot,
   SingleBooleanChoiceArg,
   Stack as Stack__,
   StrictProps,
+  classNames,
+  createPlasmicElementProxy,
+  deriveRenderOpts,
+  hasVariant,
+  renderPlasmicSlot,
   useDollarState,
   useTrigger,
 } from "@plasmicapp/react-web";
@@ -36,9 +36,9 @@ import plasmic_plasmic_kit_color_tokens_css from "../plasmic_kit_q_4_color_token
 import projectcss from "../PP__plasmickit_design_system.module.css"; // plasmic-import: tXkSR39sgCDWSitZxC5xFV/projectcss
 import sty from "./PlasmicInlineEditable.module.css"; // plasmic-import: btpz7A3thO/css
 
-import ClosesvgIcon from "../q_4_icons/icons/PlasmicIcon__Closesvg"; // plasmic-import: DhvEHyCHT/icon
-import EditsvgIcon from "../q_4_icons/icons/PlasmicIcon__Editsvg"; // plasmic-import: _Qa2gdunG/icon
-import SearchsvgIcon from "../q_4_icons/icons/PlasmicIcon__Searchsvg"; // plasmic-import: R5DLz11OA/icon
+import CloseSvgIcon from "../q_4_icons/icons/PlasmicIcon__Closesvg"; // plasmic-import: DhvEHyCHT/icon
+import EditSvgIcon from "../q_4_icons/icons/PlasmicIcon__Editsvg"; // plasmic-import: _Qa2gdunG/icon
+import SearchSvgIcon from "../q_4_icons/icons/PlasmicIcon__Searchsvg"; // plasmic-import: R5DLz11OA/icon
 
 createPlasmicElementProxy;
 
@@ -99,7 +99,16 @@ function PlasmicInlineEditable__RenderFunc(props: {
 }) {
   const { variants, overrides, forNode } = props;
 
-  const args = React.useMemo(() => Object.assign({}, props.args), [props.args]);
+  const args = React.useMemo(
+    () =>
+      Object.assign(
+        {},
+        Object.fromEntries(
+          Object.entries(props.args).filter(([_, v]) => v !== undefined)
+        )
+      ),
+    [props.args]
+  );
 
   const $props = {
     ...args,
@@ -202,14 +211,14 @@ function PlasmicInlineEditable__RenderFunc(props: {
           })}
           placeholder={args.placeholder}
           prefixIcon={
-            <SearchsvgIcon
+            <SearchSvgIcon
               className={classNames(projectcss.all, sty.svg__o9Tey)}
               role={"img"}
             />
           }
           styleType={["seamless"]}
           suffixIcon={
-            <ClosesvgIcon
+            <CloseSvgIcon
               className={classNames(projectcss.all, sty.svg__omIyo)}
               role={"img"}
             />
@@ -220,7 +229,7 @@ function PlasmicInlineEditable__RenderFunc(props: {
       {(triggers.hover_root ? true : false)
         ? renderPlasmicSlot({
             defaultContents: (
-              <EditsvgIcon
+              <EditSvgIcon
                 className={classNames(projectcss.all, sty.svg__rbpDt)}
                 role={"img"}
               />

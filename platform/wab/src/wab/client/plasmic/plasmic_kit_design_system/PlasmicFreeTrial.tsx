@@ -14,19 +14,26 @@
 import * as React from "react";
 
 import {
-  classNames,
-  createPlasmicElementProxy,
-  deriveRenderOpts,
   Flex as Flex__,
-  hasVariant,
   PlasmicLink as PlasmicLink__,
-  renderPlasmicSlot,
   SingleBooleanChoiceArg,
   Stack as Stack__,
   StrictProps,
+  classNames,
+  createPlasmicElementProxy,
+  deriveRenderOpts,
+  hasVariant,
+  renderPlasmicSlot,
   useDollarState,
+  usePlasmicTranslator,
+  useTrigger,
+  wrapWithClassName,
 } from "@plasmicapp/react-web";
-import { useDataEnv } from "@plasmicapp/react-web/lib/host";
+import {
+  DataCtxReader as DataCtxReader__,
+  useDataEnv,
+  useGlobalActions,
+} from "@plasmicapp/react-web/lib/host";
 
 import "@plasmicapp/react-web/lib/plasmic.css";
 
@@ -34,7 +41,7 @@ import plasmic_plasmic_kit_color_tokens_css from "../plasmic_kit_q_4_color_token
 import projectcss from "../PP__plasmickit_design_system.module.css"; // plasmic-import: tXkSR39sgCDWSitZxC5xFV/projectcss
 import sty from "./PlasmicFreeTrial.module.css"; // plasmic-import: p3GgKAlaQe/css
 
-import BookmarksvgIcon from "../q_4_icons/icons/PlasmicIcon__Bookmarksvg"; // plasmic-import: ifTRn8aE8/icon
+import BookmarkSvgIcon from "../q_4_icons/icons/PlasmicIcon__Bookmarksvg"; // plasmic-import: ifTRn8aE8/icon
 
 createPlasmicElementProxy;
 
@@ -87,7 +94,16 @@ function PlasmicFreeTrial__RenderFunc(props: {
 }) {
   const { variants, overrides, forNode } = props;
 
-  const args = React.useMemo(() => Object.assign({}, props.args), [props.args]);
+  const args = React.useMemo(
+    () =>
+      Object.assign(
+        {},
+        Object.fromEntries(
+          Object.entries(props.args).filter(([_, v]) => v !== undefined)
+        )
+      ),
+    [props.args]
+  );
 
   const $props = {
     ...args,
@@ -176,7 +192,7 @@ function PlasmicFreeTrial__RenderFunc(props: {
           ),
         })}
       >
-        <BookmarksvgIcon
+        <BookmarkSvgIcon
           data-plasmic-name={"svg"}
           data-plasmic-override={overrides.svg}
           className={classNames(projectcss.all, sty.svg, {

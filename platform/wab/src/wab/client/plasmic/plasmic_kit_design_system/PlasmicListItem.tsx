@@ -14,16 +14,16 @@
 import * as React from "react";
 
 import {
-  classNames,
-  createPlasmicElementProxy,
-  deriveRenderOpts,
   Flex as Flex__,
-  hasVariant,
-  renderPlasmicSlot,
   SingleBooleanChoiceArg,
   SingleChoiceArg,
   Stack as Stack__,
   StrictProps,
+  classNames,
+  createPlasmicElementProxy,
+  deriveRenderOpts,
+  hasVariant,
+  renderPlasmicSlot,
   useDollarState,
   useTrigger,
 } from "@plasmicapp/react-web";
@@ -40,8 +40,8 @@ import sty from "./PlasmicListItem.module.css"; // plasmic-import: v31d9_ANqk/cs
 
 import ComponentIcon from "../plasmic_kit/PlasmicIcon__Component"; // plasmic-import: nNWEF4jI3s5DI/icon
 import EyeIcon from "../plasmic_kit/PlasmicIcon__Eye"; // plasmic-import: A2FnGYgDh4e3U/icon
-import GripsvgIcon from "../plasmic_kit_q_4_icons/icons/PlasmicIcon__Gripsvg"; // plasmic-import: jxIRSIMqs/icon
-import ChevronDownsvgIcon from "../q_4_icons/icons/PlasmicIcon__ChevronDownsvg"; // plasmic-import: xZrB9_0ir/icon
+import GripSvgIcon from "../plasmic_kit_q_4_icons/icons/PlasmicIcon__Gripsvg"; // plasmic-import: jxIRSIMqs/icon
+import ChevronDownSvgIcon from "../q_4_icons/icons/PlasmicIcon__ChevronDownsvg"; // plasmic-import: xZrB9_0ir/icon
 
 createPlasmicElementProxy;
 
@@ -158,7 +158,16 @@ function PlasmicListItem__RenderFunc(props: {
 }) {
   const { variants, overrides, forNode } = props;
 
-  const args = React.useMemo(() => Object.assign({}, props.args), [props.args]);
+  const args = React.useMemo(
+    () =>
+      Object.assign(
+        {},
+        Object.fromEntries(
+          Object.entries(props.args).filter(([_, v]) => v !== undefined)
+        )
+      ),
+    [props.args]
+  );
 
   const $props = {
     ...args,
@@ -253,7 +262,6 @@ function PlasmicListItem__RenderFunc(props: {
         initFunc: ({ $props, $state, $queries, $ctx }) => $props.isHighlighted,
       },
     ],
-
     [$props, $ctx, $refs]
   );
   const $state = useDollarState(stateSpecs, {
@@ -453,7 +461,7 @@ function PlasmicListItem__RenderFunc(props: {
               ),
             })}
           >
-            <GripsvgIcon
+            <GripSvgIcon
               data-plasmic-name={"svg"}
               data-plasmic-override={overrides.svg}
               className={classNames(projectcss.all, sty.svg, {
@@ -954,7 +962,7 @@ function PlasmicListItem__RenderFunc(props: {
               defaultContents: (
                 <IconButton
                   children2={
-                    <ChevronDownsvgIcon
+                    <ChevronDownSvgIcon
                       className={classNames(projectcss.all, sty.svg__iuQ8O)}
                       role={"img"}
                     />
@@ -972,7 +980,6 @@ function PlasmicListItem__RenderFunc(props: {
                   />
                 </IconButton>
               ),
-
               value: args.actions,
               className: classNames(sty.slotTargetActions, {
                 [sty.slotTargetActionscolor_variant]: hasVariant(
@@ -1161,7 +1168,6 @@ const PlasmicDescendants = {
     "menuButton",
     "additional",
   ],
-
   main: [
     "main",
     "dragHandle",
@@ -1174,7 +1180,6 @@ const PlasmicDescendants = {
     "actionsContainer",
     "menuButton",
   ],
-
   dragHandle: ["dragHandle", "svg"],
   svg: ["svg"],
   iconContainer: ["iconContainer"],
@@ -1209,7 +1214,6 @@ type NodeOverridesType<T extends NodeNameType> = Pick<
   PlasmicListItem__OverridesType,
   DescendantsType<T>
 >;
-
 type NodeComponentProps<T extends NodeNameType> =
   // Explicitly specify variants, args, and overrides as objects
   {
