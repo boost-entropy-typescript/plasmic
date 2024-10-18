@@ -14,16 +14,16 @@
 import * as React from "react";
 
 import {
-  classNames,
-  createPlasmicElementProxy,
-  deriveRenderOpts,
   Flex as Flex__,
-  hasVariant,
   MultiChoiceArg,
-  renderPlasmicSlot,
   SingleBooleanChoiceArg,
   SingleChoiceArg,
   StrictProps,
+  classNames,
+  createPlasmicElementProxy,
+  deriveRenderOpts,
+  hasVariant,
+  renderPlasmicSlot,
   useDollarState,
 } from "@plasmicapp/react-web";
 import { useDataEnv } from "@plasmicapp/react-web/lib/host";
@@ -34,8 +34,8 @@ import plasmic_plasmic_kit_color_tokens_css from "../plasmic_kit_q_4_color_token
 import projectcss from "../PP__plasmickit_design_system.module.css"; // plasmic-import: tXkSR39sgCDWSitZxC5xFV/projectcss
 import sty from "./PlasmicTextbox.module.css"; // plasmic-import: pA22NEzDCsn_/css
 
-import ClosesvgIcon from "../q_4_icons/icons/PlasmicIcon__Closesvg"; // plasmic-import: DhvEHyCHT/icon
-import SearchsvgIcon from "../q_4_icons/icons/PlasmicIcon__Searchsvg"; // plasmic-import: R5DLz11OA/icon
+import CloseSvgIcon from "../q_4_icons/icons/PlasmicIcon__Closesvg"; // plasmic-import: DhvEHyCHT/icon
+import SearchSvgIcon from "../q_4_icons/icons/PlasmicIcon__Searchsvg"; // plasmic-import: R5DLz11OA/icon
 
 createPlasmicElementProxy;
 
@@ -178,7 +178,9 @@ function PlasmicTextbox__RenderFunc(props: {
         {
           placeholder: "",
         },
-        props.args
+        Object.fromEntries(
+          Object.entries(props.args).filter(([_, v]) => v !== undefined)
+        )
       ),
     [props.args]
   );
@@ -407,7 +409,7 @@ function PlasmicTextbox__RenderFunc(props: {
         >
           {renderPlasmicSlot({
             defaultContents: (
-              <SearchsvgIcon
+              <SearchSvgIcon
                 className={classNames(projectcss.all, sty.svg__soWu)}
                 role={"img"}
               />
@@ -651,7 +653,7 @@ function PlasmicTextbox__RenderFunc(props: {
         >
           {renderPlasmicSlot({
             defaultContents: (
-              <ClosesvgIcon
+              <CloseSvgIcon
                 className={classNames(projectcss.all, sty.svg__nNaeY)}
                 role={"img"}
               />
