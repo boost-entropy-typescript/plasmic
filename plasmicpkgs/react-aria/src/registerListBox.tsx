@@ -71,7 +71,7 @@ export function BaseListBox(props: BaseListBoxProps) {
       itemIds: ids,
       isStandalone,
     });
-  }, [ids, isStandalone]);
+  }, [ids, isStandalone, setControlContextData]);
 
   useEffect(() => {
     idManager.subscribe((_ids: string[]) => {

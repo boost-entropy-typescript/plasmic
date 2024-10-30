@@ -1,4 +1,7 @@
-import { usePlasmicCanvasContext } from "@plasmicapp/host";
+import {
+  usePlasmicCanvasComponentInfo,
+  usePlasmicCanvasContext,
+} from "@plasmicapp/host";
 import React, { forwardRef, useImperativeHandle } from "react";
 import { mergeProps } from "react-aria";
 import {
@@ -45,13 +48,25 @@ export const BaseModal = forwardRef<BaseModalActions, BaseModalProps>(
       isOpen,
       resetClassName,
       setControlContextData,
+      isDismissable,
       ...rest
     } = props;
+
+    const { isSelected } = usePlasmicCanvasComponentInfo(props) ?? {};
 
     const contextProps = React.useContext(PlasmicDialogTriggerContext);
     const isStandalone = !contextProps;
     const mergedProps = mergeProps(contextProps, rest, {
-      isOpen: isStandalone ? isOpen : contextProps.isOpen,
+      isOpen: isStandalone ? isSelected || isOpen : contextProps.isOpen,
+      /*
+        isDismissable on canvas (non-interactive mode) causes the following two issues:
+        1. Clicking anywhere inside the modal dismisses it
+        2. If the modal is auto-opened due to selection in outline tab, the modal stays open despite issue #1, but the text elements inside the modal are no longer selectable, and therefore the text or headings inside the modal are not editable.
+
+        To fix the above issue, we set an interim isDismissable state to false while the modal is auto-open (`isSelected` is true).
+        Also note that `isSelected` can only be true in canvas (non-interactive mode), so we can safely (temporarily) set `isDismissable` to false in this case, because it only matters in interactive mode.
+      */
+      isDismissable: isSelected ? false : isDismissable,
     });
 
     setControlContextData?.({
@@ -174,7 +189,7 @@ export function registerModal(
           type: "boolean",
           editOnly: true,
           uncontrolledProp: "defaultOpen",
-          defaultValueHint: false,
+          defaultValueHint: true,
           defaultValue: true,
           hidden: hasParent,
         },
