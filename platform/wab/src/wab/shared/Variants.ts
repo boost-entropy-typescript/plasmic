@@ -236,6 +236,16 @@ export function isStyleVariant(variant: Variant): variant is StyleVariant {
   return !!variant.selectors;
 }
 
+export function isMaybeInteractiveStyleVariant(variant: Variant): boolean {
+  const interactionKeywords = ["hover", "focus", "press"];
+  return (
+    isStyleVariant(variant) &&
+    variant.selectors.some((s) =>
+      interactionKeywords.some((keyword) => s.toLowerCase().includes(keyword))
+    )
+  );
+}
+
 export function hasStyleVariant(variantCombo: VariantCombo) {
   return variantCombo.some((v) => isStyleVariant(v));
 }
@@ -690,6 +700,11 @@ export function ensureValidCombo(component: Component, combo: VariantCombo) {
     combo = [getBaseVariant(component)];
   }
   return combo;
+}
+
+export function isValidComboForToken(combo: VariantCombo) {
+  // The Studio UI and codegen only support varianted tokens with 1 variant.
+  return combo.length === 1;
 }
 
 /**

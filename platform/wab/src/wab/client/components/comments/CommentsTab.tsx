@@ -6,8 +6,8 @@ import CommentPost from "@/wab/client/components/comments/CommentPost";
 import CommentPostForm from "@/wab/client/components/comments/CommentPostForm";
 import { useCommentsCtx } from "@/wab/client/components/comments/CommentsProvider";
 import ThreadComments from "@/wab/client/components/comments/ThreadComments";
+import RootComment from "@/wab/client/components/comments/RootComment";
 import {
-  getThreadsFromComments,
   getThreadsFromFocusedComponent,
   TplComment,
 } from "@/wab/client/components/comments/utils";
@@ -53,46 +53,12 @@ export const CommentsTab = observer(function CommentsTab(
 
   const currentComponent = studioCtx.currentComponent;
 
-  const { allComments, selfNotificationSettings, refreshComments } =
+  const { selfNotificationSettings, refreshComments, threads } =
     useCommentsCtx();
 
   if (!currentComponent) {
     return null;
   }
-
-  function renderRootComment(threadComments: TplComment[]) {
-    const [comment] = threadComments;
-
-    const threadId = comment.threadId;
-
-    return (
-      <CommentPost
-        comment={comment}
-        subjectLabel={comment.label}
-        isThread
-        repliesLinkLabel={
-          threadComments.length > 1
-            ? `${threadComments.length - 1} replies`
-            : "Reply"
-        }
-        onClick={async () => {
-          const ownerComponent = studioCtx
-            .tplMgr()
-            .findComponentContainingTpl(comment.subject);
-          if (ownerComponent) {
-            await studioCtx.setStudioFocusOnTpl(
-              ownerComponent,
-              comment.subject
-            );
-            studioCtx.centerFocusedFrame(1);
-          }
-          setShownThreadId(threadId);
-        }}
-      />
-    );
-  }
-
-  const threads = getThreadsFromComments(allComments);
 
   const {
     focusedSubjectThreads,
@@ -178,9 +144,12 @@ export const CommentsTab = observer(function CommentsTab(
               : { children: "Comment on selected" }
           }
           currentThreadsList={{
-            children: currentFocusThreads.map((threadComments) =>
-              renderRootComment(threadComments)
-            ),
+            children: currentFocusThreads.map((threadComments) => (
+              <RootComment
+                threadComments={threadComments}
+                onThreadSelect={setShownThreadId}
+              />
+            )),
           }}
           newThreadForm={{
             render: () => (focusedTpl ? <CommentPostForm /> : null),
@@ -189,9 +158,12 @@ export const CommentsTab = observer(function CommentsTab(
             wrap: (node) => otherComponentsThreads.length > 0 && node,
           }}
           restThreadsList={{
-            children: otherComponentsThreads.map((threadComments) =>
-              renderRootComment(threadComments)
-            ),
+            children: otherComponentsThreads.map((threadComments) => (
+              <RootComment
+                threadComments={threadComments}
+                onThreadSelect={setShownThreadId}
+              />
+            )),
           }}
         />
         {shownThreadId && (

@@ -21,7 +21,7 @@ export function BaseDialogTrigger(props: BaseDialogTriggerProps) {
   const { trigger, dialog, isOpen, ...rest } = props;
 
   const { isSelected, selectedSlotName } =
-    usePlasmicCanvasComponentInfo(props) ?? {};
+    usePlasmicCanvasComponentInfo?.(props) ?? {};
   const isAutoOpen = selectedSlotName !== "trigger" && isSelected;
 
   const mergedProps = {
@@ -51,6 +51,7 @@ export function registerDialogTrigger(
       displayName: "Aria Dialog Trigger",
       importPath: "@plasmicpkgs/react-aria/skinny/registerDialogTrigger",
       importName: "BaseDialogTrigger",
+      styleSections: false,
       isAttachment: true,
       props: {
         trigger: {

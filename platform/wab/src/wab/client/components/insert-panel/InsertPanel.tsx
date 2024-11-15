@@ -104,6 +104,7 @@ import {
   HostLessPackageInfo,
   InsertableTemplatesGroup,
 } from "@/wab/shared/devflags";
+import { PLEXUS_INSERTABLE_ID } from "@/wab/shared/insertables";
 import { FRAMES_CAP } from "@/wab/shared/Labels";
 import {
   Component,
@@ -1047,6 +1048,10 @@ export function buildAddItemGroups({
     return undefined;
   }
 
+  // This is a temporary flag to hide the Plexus Design System for installation until it is ready for public use.
+  // Once Plexus is released for all users, this flag can be removed.
+  const hasPlexus = studioCtx.appCtx.appConfig.plexus;
+
   let groupedItems: AddItemGroup[] = filterFalsy([
     // This is the main section/groups.
     // It's meant to list all the basic, "built-in" components.
@@ -1075,6 +1080,7 @@ export function buildAddItemGroups({
                 return undefined;
               }
               const resolved = insertPanelAliases.get(alias as any);
+              const aliasImageUrl = `https://plasmic-static1.s3.us-west-2.amazonaws.com/insertables/${alias}.svg`;
 
               // Is this a built-in insertable?
               if (!resolved) {
@@ -1096,7 +1102,7 @@ export function buildAddItemGroups({
                 }
                 return {
                   ...createAddTplComponent(component),
-                  previewImageUrl: `https://plasmic-static1.s3.us-west-2.amazonaws.com/insertables/${alias}.svg`,
+                  previewImageUrl: aliasImageUrl,
                   isCompact: true,
                 };
               }
@@ -1120,25 +1126,22 @@ export function buildAddItemGroups({
                 } else if (
                   canInsertHostlessPackage(uiConfig, "plume", canInsertContext)
                 ) {
-                  const defaultInsertable =
-                    studioCtx.site.flags.defaultInsertable ?? "plume";
-
-                  if (
-                    defaultInsertable === "plume" ||
-                    DEVFLAGS.runningInCypress
-                  ) {
+                  if (!hasPlexus || DEVFLAGS.runningInCypress) {
                     return {
                       ...only(makePlumeInsertables(studioCtx, kind)),
                       isCompact: true,
                     };
                   }
 
-                  // The template name for default insertables need to be of format "<defaultInsertable>/<kind>". E.g. For Plexus button, it will be "plexus/button".
+                  // The template name needs to be of format "<PLEXUS_INSERTABLE_ID>/<kind>". E.g. For Plexus button, it will be "plexus/button".
                   // The template name will be fetched from devflags.insertableTemplates.
-                  return handleTemplateAlias(
-                    `${defaultInsertable}/${kind}`,
-                    kind
-                  );
+                  return {
+                    previewImageUrl: aliasImageUrl,
+                    ...handleTemplateAlias(
+                      `${PLEXUS_INSERTABLE_ID}/${kind}`,
+                      kind
+                    ),
+                  };
                 } else {
                   return undefined;
                 }
@@ -1283,25 +1286,21 @@ export function buildAddItemGroups({
         ),
       },
     (() => {
-      const defaultInsertable = studioCtx.appCtx.appConfig.defaultInsertable;
-
-      return defaultInsertable
+      return hasPlexus
         ? {
-            key: defaultInsertable,
-            sectionLabel: capitalize(defaultInsertable),
-            sectionKey: defaultInsertable,
+            key: PLEXUS_INSERTABLE_ID,
+            sectionLabel: capitalize(PLEXUS_INSERTABLE_ID),
+            sectionKey: PLEXUS_INSERTABLE_ID,
             items: getTemplateComponents(studioCtx)
-              .filter((item) => item.templateName.startsWith(defaultInsertable))
+              .filter((item) =>
+                item.templateName.startsWith(PLEXUS_INSERTABLE_ID)
+              )
               .map((item) => handleTemplateAlias(item.templateName)),
           }
         : undefined;
     })(),
 
-    /**
-     * NOTE: The plexusEnabled flag can be removed once Plexus is released for all users.
-     * Its only here to hide the Plexus Design System for installation until it is ready for public use.
-     */
-    studioCtx.appCtx.appConfig.plexusEnabled
+    hasPlexus
       ? {
           key: "ui-kits",
           sectionLabel: "Design systems",
@@ -1309,11 +1308,10 @@ export function buildAddItemGroups({
           familyKey: "hostless-packages",
           familyLabel: "Browse component store",
           items: studioCtx.appCtx.appConfig.installables
-            .filter((item) => item.type === "ui-kit")
+            .filter((meta) => meta.type === "ui-kit")
             .map(createAddInstallable),
         }
       : undefined,
-
     canInsertHostlessPackage(uiConfig, "unstyled", canInsertContext) &&
       studioCtx.shownSyntheticSections.get("unstyled") && {
         key: "synthetic-unstyled",

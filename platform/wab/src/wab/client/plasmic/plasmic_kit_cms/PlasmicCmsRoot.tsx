@@ -33,10 +33,10 @@ import CmsTopBar from "../../components/cms/CmsTopBar"; // plasmic-import: FxC1c
 
 import "@plasmicapp/react-web/lib/plasmic.css";
 
-import plasmic_plasmic_kit_color_tokens_css from "../plasmic_kit_q_4_color_tokens/plasmic_plasmic_kit_q_4_color_tokens.module.css"; // plasmic-import: 95xp9cYcv7HrNWpFWWhbcv/projectcss
 import plasmic_plasmic_kit_design_system_css from "../PP__plasmickit_design_system.module.css"; // plasmic-import: tXkSR39sgCDWSitZxC5xFV/projectcss
-import projectcss from "./plasmic_plasmic_kit_cms.module.css"; // plasmic-import: ieacQ3Z46z4gwo1FnaB5vY/projectcss
+import plasmic_plasmic_kit_color_tokens_css from "../plasmic_kit_q_4_color_tokens/plasmic_plasmic_kit_q_4_color_tokens.module.css"; // plasmic-import: 95xp9cYcv7HrNWpFWWhbcv/projectcss
 import sty from "./PlasmicCmsRoot.module.css"; // plasmic-import: FiuFB1wXjp/css
+import projectcss from "./plasmic_plasmic_kit_cms.module.css"; // plasmic-import: ieacQ3Z46z4gwo1FnaB5vY/projectcss
 
 createPlasmicElementProxy;
 
@@ -80,7 +80,16 @@ function PlasmicCmsRoot__RenderFunc(props: {
 }) {
   const { variants, overrides, forNode } = props;
 
-  const args = React.useMemo(() => Object.assign({}, props.args), [props.args]);
+  const args = React.useMemo(
+    () =>
+      Object.assign(
+        {},
+        Object.fromEntries(
+          Object.entries(props.args).filter(([_, v]) => v !== undefined)
+        )
+      ),
+    [props.args]
+  );
 
   const $props = {
     ...args,
@@ -100,6 +109,7 @@ function PlasmicCmsRoot__RenderFunc(props: {
         initFunc: ({ $props, $state, $queries, $ctx }) => $props.activeTab,
       },
     ],
+
     [$props, $ctx, $refs]
   );
   const $state = useDollarState(stateSpecs, {
@@ -249,6 +259,7 @@ const PlasmicDescendants = {
     "cmsSchemaPage",
     "cmsSettingsPage",
   ],
+
   cmsTopBar: ["cmsTopBar"],
   freeBox: [
     "freeBox",
@@ -257,6 +268,7 @@ const PlasmicDescendants = {
     "cmsSchemaPage",
     "cmsSettingsPage",
   ],
+
   cmsLeftTabs: ["cmsLeftTabs"],
   cmsContentPage: ["cmsContentPage"],
   cmsSchemaPage: ["cmsSchemaPage"],
@@ -280,6 +292,7 @@ type NodeOverridesType<T extends NodeNameType> = Pick<
   PlasmicCmsRoot__OverridesType,
   DescendantsType<T>
 >;
+
 type NodeComponentProps<T extends NodeNameType> =
   // Explicitly specify variants, args, and overrides as objects
   {

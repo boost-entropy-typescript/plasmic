@@ -1,8 +1,15 @@
-import { usePlasmicCanvasComponentInfo } from "@plasmicapp/host";
 import React, { useEffect, useMemo } from "react";
-import { Select, SelectProps, SelectValue } from "react-aria-components";
+import {
+  Select,
+  SelectProps,
+  SelectStateContext,
+  SelectValue,
+} from "react-aria-components";
 import { getCommonProps } from "./common";
-import { PlasmicListBoxContext, PlasmicPopoverContext } from "./contexts";
+import {
+  PlasmicListBoxContext,
+  PlasmicPopoverTriggerContext,
+} from "./contexts";
 import { ListBoxItemIdManager } from "./ListBoxItemIdManager";
 import { BUTTON_COMPONENT_NAME } from "./registerButton";
 import { LABEL_COMPONENT_NAME } from "./registerLabel";
@@ -14,7 +21,18 @@ import {
   makeComponentName,
   Registerable,
   registerComponentHelper,
+  useAutoOpen,
 } from "./utils";
+import { pickAriaComponentVariants, WithVariants } from "./variant-utils";
+
+// It cannot be used as a hook like useAutoOpen() within the BaseSelect component
+// because it needs access to SelectStateContext, which is only created in the BaseSelect component's render function.
+function SelectAutoOpen(props: any) {
+  const { open, close } = React.useContext(SelectStateContext) ?? {};
+  useAutoOpen({ props, open, close });
+
+  return null;
+}
 
 export interface BaseSelectValueProps
   extends React.ComponentProps<typeof SelectValue> {
@@ -22,22 +40,12 @@ export interface BaseSelectValueProps
 }
 
 export const BaseSelectValue = (props: BaseSelectValueProps) => {
-  const { children, customize } = props;
+  const { children, customize, className } = props;
+  const placeholder = customize ? children : "Select an item";
   return (
-    <SelectValue>
+    <SelectValue className={className}>
       {({ isPlaceholder, selectedText }) => (
-        <>
-          {isPlaceholder ? (
-            <span>Select an item</span>
-          ) : (
-            <>
-              <span>
-                {customize ? (children as React.ReactNode) : selectedText}
-              </span>
-            </>
-          )}
-          {}
-        </>
+        <>{isPlaceholder ? placeholder : selectedText}</>
       )}
     </SelectValue>
   );
@@ -49,10 +57,17 @@ export interface BaseSelectControlContextData {
   itemIds: string[];
 }
 
+const SELECT_VARIANTS = ["disabled" as const];
+
+const { variants: SELECT_VARIANTS_DATA } =
+  pickAriaComponentVariants(SELECT_VARIANTS);
+
 export interface BaseSelectProps
   extends SelectProps<{}>, // NOTE: We don't need generic type here since we don't use items prop (that needs it). We just need to make the type checker happy
+    WithVariants<typeof SELECT_VARIANTS>,
     HasControlContextData<BaseSelectControlContextData> {
   children?: React.ReactNode;
+  className?: string;
 }
 
 export function BaseSelect(props: BaseSelectProps) {
@@ -67,15 +82,12 @@ export function BaseSelect(props: BaseSelectProps) {
     children,
     disabledKeys,
     name,
-    isOpen,
     setControlContextData,
+    plasmicUpdateVariant,
     "aria-label": ariaLabel,
   } = props;
 
-  const { isSelected } = usePlasmicCanvasComponentInfo(props) ?? {};
-  const _isOpen = (isSelected || isOpen) ?? false;
-
-  let idManager = useMemo(() => new ListBoxItemIdManager(), []);
+  const idManager = useMemo(() => new ListBoxItemIdManager(), []);
 
   useEffect(() => {
     idManager.subscribe((ids: string[]) => {
@@ -85,6 +97,13 @@ export function BaseSelect(props: BaseSelectProps) {
     });
   }, []);
 
+  // NOTE: Aria <Select> does not support render props, neither does it provide an onDisabledChange event, so we have to manually update the disabled state.
+  useEffect(() => {
+    plasmicUpdateVariant?.({
+      disabled: isDisabled,
+    });
+  }, [isDisabled, plasmicUpdateVariant]);
+
   return (
     <Select
       placeholder={placeholder}
@@ -92,17 +111,16 @@ export function BaseSelect(props: BaseSelectProps) {
       onSelectionChange={onSelectionChange}
       onOpenChange={onOpenChange}
       isDisabled={isDisabled}
+      // Not calling plasmicUpdateVariant within className callback (which has access to render props) because it would then run on every render
       className={className}
       style={style}
       name={name}
       disabledKeys={disabledKeys}
       aria-label={ariaLabel}
-      isOpen={_isOpen}
       {...extractPlasmicDataProps(props)}
     >
-      <PlasmicPopoverContext.Provider
-        value={{ isOpen: _isOpen, defaultShouldFlip: false }}
-      >
+      <SelectAutoOpen {...props} />
+      <PlasmicPopoverTriggerContext.Provider value={true}>
         <PlasmicListBoxContext.Provider
           value={{
             idManager,
@@ -110,7 +128,7 @@ export function BaseSelect(props: BaseSelectProps) {
         >
           {children}
         </PlasmicListBoxContext.Provider>
-      </PlasmicPopoverContext.Provider>
+      </PlasmicPopoverTriggerContext.Provider>
     </Select>
   );
 }
@@ -137,15 +155,6 @@ export function registerSelect(loader?: Registerable) {
         ],
         hidden: (props) => !props.customize,
       },
-      className: {
-        type: "class",
-        selectors: [
-          {
-            selector: ":self[data-placeholder]",
-            label: "Placeholder",
-          },
-        ],
-      },
     },
     trapsFocus: true,
   });
@@ -155,6 +164,7 @@ export function registerSelect(loader?: Registerable) {
     displayName: "Aria Select",
     importPath: "@plasmicpkgs/react-aria/skinny/registerSelect",
     importName: "BaseSelect",
+    variants: SELECT_VARIANTS_DATA,
     props: {
       ...getCommonProps<BaseSelectProps>("Select", [
         "name",
@@ -165,22 +175,22 @@ export function registerSelect(loader?: Registerable) {
       ]),
       selectedKey: {
         type: "choice",
-        description: "The selected keys of the listbox",
         editOnly: true,
         uncontrolledProp: "defaultSelectedKey",
-        displayName: "Initial selected key",
+        displayName: "Initial selected item",
         options: (_props, ctx) => (ctx?.itemIds ? Array.from(ctx.itemIds) : []),
         // React Aria Select do not support multiple selections yet
         multiSelect: false,
       },
       onSelectionChange: {
         type: "eventHandler",
-        argTypes: [{ name: "value", type: "string" }],
+        argTypes: [{ name: "selectedValue", type: "string" }],
       },
       disabledKeys: {
         type: "choice",
+        displayName: "Disabled values",
         description:
-          "The item keys that are disabled. These items cannot be selected, focused, or otherwise interacted with.",
+          "The items that are disabled. These items cannot be selected, focused, or otherwise interacted with.",
         options: (_props, ctx) => (ctx?.itemIds ? Array.from(ctx.itemIds) : []),
         multiSelect: true,
         advanced: true,
@@ -258,6 +268,7 @@ export function registerSelect(loader?: Registerable) {
                   backgroundColor: "white",
                   padding: "10px",
                   overflow: "scroll",
+                  width: "unset",
                 },
                 props: {
                   children: [
@@ -281,7 +292,7 @@ export function registerSelect(loader?: Registerable) {
       },
     },
     states: {
-      selectedKey: {
+      selectedValue: {
         type: "writable",
         valueProp: "selectedKey",
         onChangeProp: "onSelectionChange",

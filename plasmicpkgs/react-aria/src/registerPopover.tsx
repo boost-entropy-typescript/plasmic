@@ -1,8 +1,8 @@
 import { PlasmicElement, usePlasmicCanvasContext } from "@plasmicapp/host";
 import { mergeProps } from "@react-aria/utils";
-import React from "react";
+import React, { useEffect } from "react";
 import { Popover, PopoverContext } from "react-aria-components";
-import { PlasmicPopoverContext } from "./contexts";
+import { PlasmicPopoverTriggerContext } from "./contexts";
 import {
   CodeComponentMetaOverrides,
   HasControlContextData,
@@ -10,38 +10,57 @@ import {
   Registerable,
   registerComponentHelper,
 } from "./utils";
+import { pickAriaComponentVariants, WithVariants } from "./variant-utils";
 
-export interface PopoverControlContextData {
-  defaultShouldFlip?: boolean;
+/*
+    NOTE: Placement should be managed as variants, not just props.
+    When `shouldFlip` is true, the placement prop may not represent the final position
+    (e.g., if placement is set to "bottom" but lacks space, the popover may flip to "top").
+    However, data-selectors will consistently indicate the actual placement of the popover.
+  */
+const POPOVER_VARIANTS = [
+  "placementTop" as const,
+  "placementBottom" as const,
+  "placementLeft" as const,
+  "placementRight" as const,
+];
+
+const { variants, withObservedValues } =
+  pickAriaComponentVariants(POPOVER_VARIANTS);
+
+export interface BasePopoverControlContextData {
+  canMatchTriggerWidth?: boolean;
 }
-
 export interface BasePopoverProps
   extends React.ComponentProps<typeof Popover>,
-    HasControlContextData<PopoverControlContextData> {
+    WithVariants<typeof POPOVER_VARIANTS>,
+    HasControlContextData<BasePopoverControlContextData> {
   className?: string;
   resetClassName?: string;
-  defaultShouldFlip?: boolean;
+  children?: React.ReactNode;
+  matchTriggerWidth?: boolean;
 }
 
 export function BasePopover(props: BasePopoverProps) {
-  const { resetClassName, setControlContextData, ...restProps } = props;
+  const {
+    resetClassName,
+    plasmicUpdateVariant,
+    setControlContextData,
+    matchTriggerWidth,
+    ...restProps
+  } = props;
   // Popover can be inside DialogTrigger, Select, Combobox, etc. So we can't just use a particular context like DialogTrigger (like we do in Modal) to decide if it is standalone
   const isStandalone = !React.useContext(PopoverContext);
-  const context = React.useContext(PlasmicPopoverContext);
+  const hasTrigger = !!React.useContext(PlasmicPopoverTriggerContext);
   const triggerRef = React.useRef<any>(null);
-  const isEditMode = !!usePlasmicCanvasContext();
-
-  const mergedProps = mergeProps(
+  const canvasContext = usePlasmicCanvasContext();
+  const matchTriggerWidthProp = hasTrigger && matchTriggerWidth;
+  const { children, ...mergedProps } = mergeProps(
     {
-      isOpen: context?.isOpen,
-      shouldFlip: context?.defaultShouldFlip,
+      // isNonModal: Whether the popover is non-modal, i.e. elements outside the popover may be interacted with by assistive technologies.
+      // Setting isNonModal to true in edit mode (canvas) means that the popover will not prevent the user from interacting with the canvas while the popover is open.
+      isNonModal: canvasContext && !canvasContext.interactive,
     },
-    /**
-     * isNonModal: Whether the popover is non-modal, i.e. elements outside the popover may be interacted with by assistive technologies. *
-     *
-     * Setting isNonModal to true in edit mode (canvas) means that the popover will not prevent the user from interacting with the canvas while the popover is open.
-     */
-    isEditMode ? { isNonModal: true } : null,
     restProps,
     { className: `${resetClassName}` },
     // Override some props if the popover is standalone
@@ -49,24 +68,42 @@ export function BasePopover(props: BasePopoverProps) {
       ? {
           triggerRef,
           isNonModal: true,
-          /**
-           * Always true, because we assume that popover is always going to be controlled by a parent like Select, Combobox, DialogTrigger, etc, and its only really standalone in component view
-           * In component view, we never want to start with an empty artboard, so isOpen has to be true
-           *  */
-
+          // Always true, because we assume that popover is always going to be controlled by a parent like Select, Combobox, DialogTrigger, etc, and its only really standalone in component view
+          // In component view, we never want to start with an empty artboard, so isOpen has to be true
           isOpen: true,
         }
       : null
   );
 
-  setControlContextData?.({
-    defaultShouldFlip: context?.defaultShouldFlip ?? true,
-  });
+  useEffect(() => {
+    setControlContextData?.({
+      canMatchTriggerWidth: hasTrigger,
+    });
+  }, [hasTrigger, setControlContextData]);
 
   return (
     <>
       {isStandalone && <div ref={triggerRef} />}
-      <Popover {...mergedProps} />
+      <Popover
+        // more about `--trigger-width` here: https://react-spectrum.adobe.com/react-aria/Select.html#popover-1
+        style={
+          matchTriggerWidthProp ? { width: `var(--trigger-width)` } : undefined
+        }
+        {...mergedProps}
+      >
+        {({ placement }) =>
+          withObservedValues(
+            children,
+            {
+              placementTop: placement === "top",
+              placementBottom: placement === "bottom",
+              placementLeft: placement === "left",
+              placementRight: placement === "right",
+            },
+            plasmicUpdateVariant
+          )
+        }
+      </Popover>
     </>
   );
 }
@@ -97,6 +134,7 @@ export function registerPopover(
       displayName: "Aria Popover",
       importPath: "@plasmicpkgs/react-aria/skinny/registerPopover",
       importName: "BasePopover",
+      variants,
       defaultStyles: {
         borderWidth: "1px",
         borderStyle: "solid",
@@ -150,7 +188,7 @@ export function registerPopover(
           type: "boolean",
           description:
             "Whether the element should flip its orientation (e.g. top to bottom or left to right) when there is insufficient room for it to render completely.",
-          defaultValueHint: (_props, ctx) => ctx?.defaultShouldFlip,
+          defaultValueHint: true,
         },
         placement: {
           type: "choice",
@@ -158,16 +196,20 @@ export function registerPopover(
             "Default placement of the popover relative to the trigger, if there is enough space",
           defaultValueHint: "bottom",
           options: [
-            "bottom",
-            "bottom left",
-            "bottom right",
+            // Not allowing other placement options here because of https://github.com/adobe/react-spectrum/issues/6825
             "top",
-            "top left",
-            "top right",
+            "bottom",
+            "left",
+            "right",
           ],
         },
         resetClassName: {
           type: "themeResetClass",
+        },
+        matchTriggerWidth: {
+          type: "boolean",
+          defaultValue: true,
+          hidden: (_props, ctx) => !ctx?.canMatchTriggerWidth,
         },
       },
       // No isOpen state for popover, because we assume that its open state is always going to be controlled by a parent like Select, Combobox, DialogTrigger, etc.

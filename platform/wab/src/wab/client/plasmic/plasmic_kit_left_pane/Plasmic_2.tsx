@@ -25,16 +25,16 @@ import { useDataEnv } from "@plasmicapp/react-web/lib/host";
 
 import ListSectionHeader from "../../components/ListSectionHeader"; // plasmic-import: wNvxk7eOak/component
 import ListSectionSeparator from "../../components/ListSectionSeparator"; // plasmic-import: uG5_fPM0sK/component
-import LeftSearchPanel from "../../components/studio/LeftSearchPanel"; // plasmic-import: TqAPn0srTq/component
 import AddDrawerItem from "../../components/studio/add-drawer/AddDrawerItem"; // plasmic-import: isQPD0RPCw/component
+import LeftSearchPanel from "../../components/studio/LeftSearchPanel"; // plasmic-import: TqAPn0srTq/component
 import IconButton from "../../components/widgets/IconButton"; // plasmic-import: LPry-TF4j22a/component
 
 import "@plasmicapp/react-web/lib/plasmic.css";
 
-import plasmic_plasmic_kit_design_system_deprecated_css from "../PP__plasmickit_design_system.module.css"; // plasmic-import: tXkSR39sgCDWSitZxC5xFV/projectcss
-import projectcss from "../PP__plasmickit_left_pane.module.css"; // plasmic-import: aukbrhkegRkQ6KizvhdUPT/projectcss
 import plasmic_plasmic_kit_color_tokens_css from "../plasmic_kit_q_4_color_tokens/plasmic_plasmic_kit_q_4_color_tokens.module.css"; // plasmic-import: 95xp9cYcv7HrNWpFWWhbcv/projectcss
 import plasmic_plasmic_kit_new_design_system_former_style_controls_css from "../plasmic_kit_style_controls/plasmic_plasmic_kit_styles_pane.module.css"; // plasmic-import: gYEVvAzCcLMHDVPvuYxkFh/projectcss
+import plasmic_plasmic_kit_design_system_deprecated_css from "../PP__plasmickit_design_system.module.css"; // plasmic-import: tXkSR39sgCDWSitZxC5xFV/projectcss
+import projectcss from "../PP__plasmickit_left_pane.module.css"; // plasmic-import: aukbrhkegRkQ6KizvhdUPT/projectcss
 import sty from "./Plasmic_2.module.css"; // plasmic-import: cJ8w1eDWyZ/css
 
 import AfterIcon from "../plasmic_kit/PlasmicIcon__After"; // plasmic-import: yzAFS1IyVvChx/icon
@@ -43,16 +43,16 @@ import BeforeIcon from "../plasmic_kit/PlasmicIcon__Before"; // plasmic-import: 
 import ButtonInputIcon from "../plasmic_kit/PlasmicIcon__ButtonInput"; // plasmic-import: _bmaLjOFc6A0c/icon
 import ComponentIcon from "../plasmic_kit/PlasmicIcon__Component"; // plasmic-import: nNWEF4jI3s5DI/icon
 import FrameIcon from "../plasmic_kit/PlasmicIcon__Frame"; // plasmic-import: nMkHNFwp_HRuJ/icon
-import HStackBlockIcon from "../plasmic_kit/PlasmicIcon__HStackBlock"; // plasmic-import: vrE0GHgUiSGkm/icon
 import HeadingIcon from "../plasmic_kit/PlasmicIcon__Heading"; // plasmic-import: 52oeoNiO91g3E/icon
+import HStackBlockIcon from "../plasmic_kit/PlasmicIcon__HStackBlock"; // plasmic-import: vrE0GHgUiSGkm/icon
 import ImageBlockIcon from "../plasmic_kit/PlasmicIcon__ImageBlock"; // plasmic-import: Sta1tgTjp-AlG/icon
 import LinkIcon from "../plasmic_kit/PlasmicIcon__Link"; // plasmic-import: BQBWbw0fg66Lw/icon
 import PassInputIcon from "../plasmic_kit/PlasmicIcon__PassInput"; // plasmic-import: X561BmD81oKJV/icon
 import TextBlockIcon from "../plasmic_kit/PlasmicIcon__TextBlock"; // plasmic-import: nzc8B7oWFfsYG/icon
 import VStackBlockIcon from "../plasmic_kit/PlasmicIcon__VStackBlock"; // plasmic-import: DTUk351ydDQGv/icon
 import image49X6ZsC5Ww5 from "../plasmic_kit_design_system/images/image4.svg"; // plasmic-import: 9X6ZsC5ww5/picture
-import ChevronDownSvgIcon from "../q_4_icons/icons/PlasmicIcon__ChevronDownsvg"; // plasmic-import: xZrB9_0ir/icon
-import PlusCircleSvgIcon from "../q_4_icons/icons/PlasmicIcon__PlusCirclesvg"; // plasmic-import: tPPI666-2/icon
+import ChevronDownSvgIcon from "../plasmic_kit_icons/icons/PlasmicIcon__ChevronDownSvg"; // plasmic-import: xZrB9_0ir/icon
+import PlusCircleSvgIcon from "../plasmic_kit_icons/icons/PlasmicIcon__PlusCircleSvg"; // plasmic-import: tPPI666-2/icon
 
 createPlasmicElementProxy;
 

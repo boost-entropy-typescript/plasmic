@@ -468,10 +468,39 @@ export class ProjectDependencyManager {
     return this._objToDep.get(thing);
   }
 
+  ensureCanUpgradeDeps(targetDeps: ProjectDependency[]) {
+    const result: Dict<ProjectDependency> = {};
+    const queue = this.directDeps.get().map((d) => {
+      const newDep = targetDeps.find((t) => t.pkgId === d.model.pkgId);
+      return newDep ?? d.model;
+    });
+    while (queue.length > 0) {
+      const dep = ensure(queue.shift(), "Queue should not be empty");
+      // If we've already seen this pkgId, make sure its the right version
+      if (result[dep.pkgId]) {
+        if (result[dep.pkgId].version !== dep.version) {
+          throw new Error(
+            `Upgrading '${dep.name}' (${
+              dep.projectId
+            }) failed due to conflicting dependencies. ${
+              dep.name
+            } has two conflicting versions: ${dep.version} and ${
+              result[dep.pkgId].version
+            }. Please reconcile these versions before trying again.`
+          );
+        }
+        continue;
+      }
+      result[dep.pkgId] = dep;
+      queue.push(...dep.site.projectDependencies);
+    }
+  }
+
   async upgradeProjectDeps(
     targetDeps: ProjectDependency[],
     opts?: { noUndoRecord?: boolean }
   ) {
+    this.ensureCanUpgradeDeps(targetDeps);
     await this._sc.siteOps().upgradeProjectDeps(targetDeps, opts);
     await this._fetchData();
     // invalidate cache after upgrading dep

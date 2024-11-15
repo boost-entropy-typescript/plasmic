@@ -30,11 +30,13 @@ import RowItem from "../../components/RowItem"; // plasmic-import: gkx-PRZnjFPo/
 
 import "@plasmicapp/react-web/lib/plasmic.css";
 
-import plasmic_plasmic_kit_design_system_deprecated_css from "../PP__plasmickit_design_system.module.css"; // plasmic-import: tXkSR39sgCDWSitZxC5xFV/projectcss
-import projectcss from "../PP__plasmickit_left_pane.module.css"; // plasmic-import: aukbrhkegRkQ6KizvhdUPT/projectcss
 import plasmic_plasmic_kit_color_tokens_css from "../plasmic_kit_q_4_color_tokens/plasmic_plasmic_kit_q_4_color_tokens.module.css"; // plasmic-import: 95xp9cYcv7HrNWpFWWhbcv/projectcss
 import plasmic_plasmic_kit_new_design_system_former_style_controls_css from "../plasmic_kit_style_controls/plasmic_plasmic_kit_styles_pane.module.css"; // plasmic-import: gYEVvAzCcLMHDVPvuYxkFh/projectcss
+import plasmic_plasmic_kit_design_system_deprecated_css from "../PP__plasmickit_design_system.module.css"; // plasmic-import: tXkSR39sgCDWSitZxC5xFV/projectcss
+import projectcss from "../PP__plasmickit_left_pane.module.css"; // plasmic-import: aukbrhkegRkQ6KizvhdUPT/projectcss
 import sty from "./PlasmicGeneralTokenControl.module.css"; // plasmic-import: 0LQGzuFK6d/css
+
+import ComponentsSvgIcon from "../plasmic_kit_icons/icons/PlasmicIcon__ComponentsSvg"; // plasmic-import: coPzxnFyi/icon
 
 createPlasmicElementProxy;
 
@@ -61,6 +63,7 @@ export const PlasmicGeneralTokenControl__ArgProps = new Array<ArgPropType>(
 export type PlasmicGeneralTokenControl__OverridesType = {
   root?: Flex__<"div">;
   rowItem?: Flex__<typeof RowItem>;
+  svg?: Flex__<"svg">;
 };
 
 export interface DefaultGeneralTokenControlProps {
@@ -147,6 +150,14 @@ function PlasmicGeneralTokenControl__RenderFunc(props: {
           [sty.rowItemshowIcon]: hasVariant($state, "showIcon", "showIcon"),
         })}
         hideIcon={hasVariant($state, "showIcon", "showIcon") ? undefined : true}
+        icon={
+          <ComponentsSvgIcon
+            data-plasmic-name={"svg"}
+            data-plasmic-override={overrides.svg}
+            className={classNames(projectcss.all, sty.svg)}
+            role={"img"}
+          />
+        }
         menuSize={"small"}
         showAddendum={true}
       >
@@ -160,8 +171,9 @@ function PlasmicGeneralTokenControl__RenderFunc(props: {
 }
 
 const PlasmicDescendants = {
-  root: ["root", "rowItem"],
-  rowItem: ["rowItem"],
+  root: ["root", "rowItem", "svg"],
+  rowItem: ["rowItem", "svg"],
+  svg: ["svg"],
 } as const;
 type NodeNameType = keyof typeof PlasmicDescendants;
 type DescendantsType<T extends NodeNameType> =
@@ -169,6 +181,7 @@ type DescendantsType<T extends NodeNameType> =
 type NodeDefaultElementType = {
   root: "div";
   rowItem: typeof RowItem;
+  svg: "svg";
 };
 
 type ReservedPropsType = "variants" | "args" | "overrides";
@@ -232,6 +245,7 @@ export const PlasmicGeneralTokenControl = Object.assign(
   {
     // Helper components rendering sub-elements
     rowItem: makeNodeComponent("rowItem"),
+    svg: makeNodeComponent("svg"),
 
     // Metadata about props expected for PlasmicGeneralTokenControl
     internalVariantProps: PlasmicGeneralTokenControl__VariantProps,

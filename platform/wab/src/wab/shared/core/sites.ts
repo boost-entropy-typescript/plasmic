@@ -16,6 +16,7 @@ import {
 import { ARENA_CAP } from "@/wab/shared/Labels";
 import { getSlotArgs } from "@/wab/shared/SlotUtils";
 import { mkScreenVariantGroup } from "@/wab/shared/SpecialVariants";
+import { VariantedStylesHelper } from "@/wab/shared/VariantedStylesHelper";
 import {
   isGlobalVariant,
   isGlobalVariantGroup,
@@ -96,10 +97,10 @@ import {
 } from "@/wab/shared/core/tpls";
 import { getCssInitial } from "@/wab/shared/css";
 import { parseScreenSpec } from "@/wab/shared/css-size";
-import { DEVFLAGS } from "@/wab/shared/devflags";
 import { getRshContainerType } from "@/wab/shared/layoututils";
 import { maybeComputedFn } from "@/wab/shared/mobx-util";
 import {
+  Arena,
   ArenaFrame,
   ArenaFrameCell,
   ArenaFrameGrid,
@@ -170,7 +171,6 @@ import {
   isKnownPageHref,
   isKnownRenderExpr,
   isKnownStrongFunctionArg,
-  isKnownStyleToken,
   isKnownTplComponent,
   isKnownTplNode,
   isKnownTplRef,
@@ -227,7 +227,6 @@ export function createSite({
     flags: {
       usePlasmicImg: true,
       useLoadingState: true,
-      defaultInsertable: DEVFLAGS.defaultInsertable,
     },
     hostLessPackageInfo: hostLessPackageInfo ?? null,
     globalContexts: [],
@@ -1442,6 +1441,21 @@ export function getArenaByNameOrUuidOrPath(
 }
 
 /**
+ * Returns whether the given arena still exists in the site
+ */
+export const isValidArena = maybeComputedFn((site: Site, arena: AnyArena) => {
+  return switchType(arena)
+    .when(ComponentArena, (componentArena) =>
+      site.componentArenas.find((it) => it === componentArena)
+    )
+    .when(PageArena, (pageArena) =>
+      site.pageArenas.find((it) => it === pageArena)
+    )
+    .when(Arena, (customArena) => site.arenas.find((it) => it === customArena))
+    .result();
+});
+
+/**
  * Traverse site.components and remove ComponentInstance types referencing a
  * given component.
  */
@@ -1993,13 +2007,12 @@ export function allImportedStyleTokensWithProjectInfo(site: Site) {
 // Only editable if owned in my site, not a dependency
 export function isEditable(
   site: Site,
-  asset: Component | StyleToken | Mixin | ImageAsset
+  asset: Component | Mixin | ImageAsset
 ): boolean {
   return (
     (isKnownComponent(asset) &&
       !isCodeComponent(asset) &&
       localComponents(site).includes(asset)) ||
-    (isKnownStyleToken(asset) && isStyleTokenEditable(site, asset)) ||
     (isKnownMixin(asset) && localMixins(site).includes(asset)) ||
     (isKnownImageAsset(asset) && localImageAssets(site).includes(asset))
   );
@@ -2007,10 +2020,13 @@ export function isEditable(
 
 export function isStyleTokenEditable(
   site: Site,
-  styleToken: StyleToken
+  styleToken: StyleToken,
+  vsh: VariantedStylesHelper | undefined
 ): boolean {
   return (
-    !styleToken.isRegistered && localStyleTokens(site).includes(styleToken)
+    !styleToken.isRegistered &&
+    localStyleTokens(site).includes(styleToken) &&
+    (vsh === undefined || vsh.canUpdateToken())
   );
 }
 

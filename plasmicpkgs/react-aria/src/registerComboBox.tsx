@@ -1,7 +1,3 @@
-import {
-  usePlasmicCanvasComponentInfo,
-  usePlasmicCanvasContext,
-} from "@plasmicapp/host";
 import React, { useEffect, useMemo } from "react";
 import {
   ComboBox,
@@ -12,7 +8,7 @@ import { getCommonProps } from "./common";
 import {
   PlasmicInputContext,
   PlasmicListBoxContext,
-  PlasmicPopoverContext,
+  PlasmicPopoverTriggerContext,
 } from "./contexts";
 import { ListBoxItemIdManager } from "./ListBoxItemIdManager";
 import { BUTTON_COMPONENT_NAME } from "./registerButton";
@@ -25,7 +21,9 @@ import {
   makeComponentName,
   Registerable,
   registerComponentHelper,
+  useAutoOpen,
 } from "./utils";
+import { pickAriaComponentVariants, WithVariants } from "./variant-utils";
 
 const COMBOBOX_NAME = makeComponentName("combobox");
 
@@ -33,44 +31,50 @@ export interface BaseComboboxControlContextData {
   itemIds: string[];
 }
 
+const COMBOBOX_VARIANTS = ["disabled" as const];
+
+const { variants: COMBOBOX_VARIANTS_DATA } =
+  pickAriaComponentVariants(COMBOBOX_VARIANTS);
+
 export interface BaseComboboxProps
   extends ComboBoxProps<{}>,
+    WithVariants<typeof COMBOBOX_VARIANTS>,
     HasControlContextData<BaseComboboxControlContextData> {
   placeholder?: string;
   children?: React.ReactNode;
   isOpen?: boolean;
+  className?: string;
 }
 
-/**
- * This React Hook is used to help with auto-opening the combobox when the canvas component is selected.
- * Currently, there is a bug in react-aria combobox (https://github.com/adobe/react-spectrum/issues/7149) where, when the combobox's popover is auto-opened, it is unable to render any listbox items.
- * Setting popover's open state to true in not enough unless, unless it has previously been opened via user interaction with combobox.
- * Also, <Combobox> does not support an `isOpen` prop either.
- *
- * So, we use this custom hook to access the combobox's internal state via ComboBoxStateContext and change the `open` state manually via tha available `open` method.
- *  */
+/*
+  This React Hook is used to help with auto-opening the combobox when the canvas component is selected.
+  Currently, there is a bug in react-aria combobox (https://github.com/adobe/react-spectrum/issues/7149) where, when the combobox's popover is auto-opened, it is unable to render any listbox items.
+  Setting popover's open state to true in not enough unless, unless it has previously been opened via user interaction with combobox.
+  Also, <Combobox> does not support an `isOpen` prop either.
+
+  So, we use this custom hook to access the combobox's internal state via ComboBoxStateContext and change the `open` state manually via tha available `open` method.
+
+  Note: It cannot be used as a hook like useAutoOpen() within the BaseSelect component
+  because it needs access to SelectStateContext, which is only created in the BaseSelect component's render function.
+  */
 function ComboboxAutoOpen(props: any) {
-  const isEditMode = !!usePlasmicCanvasContext();
-  const { isSelected } = usePlasmicCanvasComponentInfo(props) ?? {};
   const { open, close } = React.useContext(ComboBoxStateContext) ?? {};
 
-  useEffect(() => {
-    if (!isEditMode) {
-      return;
-    }
-    if (isSelected) {
-      open?.(undefined, "manual");
-    } else {
-      close?.();
-    }
-    // Not putting open and close in the useEffect dependencies array, because it causes a re-render loop.
-  }, [isSelected, isEditMode]);
+  useAutoOpen({ props, open, close });
 
   return null;
 }
 
 export function BaseComboBox(props: BaseComboboxProps) {
-  const { children, setControlContextData, isOpen, ...rest } = props;
+  const {
+    children,
+    setControlContextData,
+    plasmicUpdateVariant,
+    className,
+    isDisabled,
+    isOpen: _isOpen, // uncontrolled if not selected in canvas/edit mode
+    ...rest
+  } = props;
 
   const idManager = useMemo(() => new ListBoxItemIdManager(), []);
 
@@ -82,11 +86,21 @@ export function BaseComboBox(props: BaseComboboxProps) {
     });
   }, []);
 
+  // NOTE: Aria <Combobox> does not support render props, neither does it provide an onDisabledChange event, so we have to manually update the disabled state.
+  useEffect(() => {
+    plasmicUpdateVariant?.({
+      disabled: isDisabled,
+    });
+  }, [isDisabled, plasmicUpdateVariant]);
+
   return (
-    <ComboBox {...rest}>
-      <PlasmicPopoverContext.Provider
-        value={{ isOpen, defaultShouldFlip: false }}
-      >
+    <ComboBox
+      isDisabled={isDisabled}
+      // Not calling plasmicUpdateVariant within className callback (which has access to render props) because it would then run on every render
+      className={className}
+      {...rest}
+    >
+      <PlasmicPopoverTriggerContext.Provider value={true}>
         <PlasmicListBoxContext.Provider
           value={{
             idManager,
@@ -97,7 +111,7 @@ export function BaseComboBox(props: BaseComboboxProps) {
             {children}
           </PlasmicInputContext.Provider>
         </PlasmicListBoxContext.Provider>
-      </PlasmicPopoverContext.Provider>
+      </PlasmicPopoverTriggerContext.Provider>
     </ComboBox>
   );
 }
@@ -108,6 +122,7 @@ export function registerComboBox(loader?: Registerable) {
     displayName: "Aria ComboBox",
     importPath: "@plasmicpkgs/react-aria/skinny/registerComboBox",
     importName: "BaseComboBox",
+    variants: COMBOBOX_VARIANTS_DATA,
     props: {
       ...getCommonProps<BaseComboboxProps>("ComboBox", [
         "name",
@@ -117,18 +132,18 @@ export function registerComboBox(loader?: Registerable) {
       ]),
       selectedKey: {
         type: "choice",
-        description: "The selected keys of the listbox",
         editOnly: true,
         uncontrolledProp: "defaultSelectedKey",
-        displayName: "Initial selected key",
+        displayName: "Initial selected item",
         options: (_props, ctx) => (ctx?.itemIds ? Array.from(ctx.itemIds) : []),
-        // React Aria ComboBox do not support multiple comboBoxions yet
+        // React Aria ComboBox do not support multiple selections yet
         multiSelect: false,
       },
       disabledKeys: {
         type: "choice",
+        displayName: "Disabled values",
         description:
-          "The item keys that are disabled. These items cannot be selected, focused, or otherwise interacted with.",
+          "The items that are disabled. These items cannot be selected, focused, or otherwise interacted with.",
         options: (_props, ctx) => (ctx?.itemIds ? Array.from(ctx.itemIds) : []),
         multiSelect: true,
         advanced: true,
@@ -141,7 +156,7 @@ export function registerComboBox(loader?: Registerable) {
       },
       onSelectionChange: {
         type: "eventHandler",
-        argTypes: [{ name: "selectedKey", type: "string" }],
+        argTypes: [{ name: "selectedValue", type: "string" }],
       },
       onOpenChange: {
         type: "eventHandler",
@@ -204,6 +219,7 @@ export function registerComboBox(loader?: Registerable) {
                   backgroundColor: "white",
                   padding: "10px",
                   overflow: "scroll",
+                  width: "unset",
                 },
                 props: {
                   offset: 0,
@@ -228,7 +244,7 @@ export function registerComboBox(loader?: Registerable) {
       },
     },
     states: {
-      selectedKey: {
+      selectedValue: {
         type: "writable",
         valueProp: "selectedKey",
         onChangeProp: "onSelectionChange",

@@ -39,6 +39,7 @@ import {
   spawn,
   unexpected,
 } from "@/wab/shared/common";
+import { isStyleTokenEditable } from "@/wab/shared/core/sites";
 import * as css from "@/wab/shared/css";
 import {
   lengthCssUnits,
@@ -223,7 +224,7 @@ export const DimTokenSpinner = observer(
     );
 
     const isNumberMode = !isNaN(parseFloat(inputValue));
-    const matcher = new Matcher(isNumberMode ? "" : typedInputValue ?? "");
+    const matcher = new Matcher(typedInputValue ?? "");
     const showCurrentToken = hasParsedToken && typedInputValue === undefined;
     const skipChangeOnBlur = React.useRef(false);
     const [explicitHighlightedIndex, setExplicitHighlightedIndex] =
@@ -288,19 +289,22 @@ export const DimTokenSpinner = observer(
         return [];
       }
 
+      const selectedToken =
+        editableTokens.length > 0 ? editableTokens[0] : undefined;
+
       return filterFalsy([
         // Always show create token option
         { type: "add-token" } as const,
-        // Only show edit token option if a token is currently selected, and the user
-        // hasn't typed anything yet
-        inputValue.length === 0 &&
-          editableTokens.length > 0 &&
-          ({ type: "edit-token", token: editableTokens[0] } as const),
+        // Only show edit token option if , and
+        inputValue.length === 0 && // the user hasn't typed anything yet
+          selectedToken && // a token is currently selected
+          isStyleTokenEditable(studioCtx.site, selectedToken, vsh) && // the token is editable
+          ({ type: "edit-token", token: selectedToken } as const),
 
-        // In number mode, always show all tokens; else only show tokens that match
+        // show tokens that match name or value
         ...naturalSort(
           tokens
-            .filter((t) => isNumberMode || matcher.matches(t.name))
+            .filter((t) => matcher.matches(t.value) || matcher.matches(t.name))
             .map((token) => ({ type: "token", token } as const)),
           (item) => item.token.name
         ),
@@ -898,7 +902,13 @@ const Row = React.memo(function Row(props: {
             <ListItem
               isFocused={isFocused}
               showAddendums
-              addendum={<code>{realValue}</code>}
+              addendum={
+                <code>
+                  <MiddleEllipsis tailLength={8} matcher={matcher}>
+                    {realValue}
+                  </MiddleEllipsis>
+                </code>
+              }
               hideIcon
             >
               <MiddleEllipsis tailLength={8} matcher={matcher}>
