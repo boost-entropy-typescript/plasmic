@@ -48,12 +48,13 @@ import {
   VariantCombo,
   getActiveVariantSettings,
   isBaseVariant,
+  isCodeComponentVariant,
   isDisabledPseudoSelectorVariantForTpl,
   isGlobalVariant,
-  isMaybeInteractiveStyleVariant,
+  isMaybeInteractiveCodeComponentVariant,
   isPseudoElementVariantForTpl,
   isScreenVariant,
-  isStyleVariant,
+  isStyleOrCodeComponentVariant,
   variantHasPrivatePseudoElementSelector,
 } from "@/wab/shared/Variants";
 import {
@@ -92,10 +93,7 @@ import {
   isPlainObjectPropType,
   tryGetStateHelpers,
 } from "@/wab/shared/code-components/code-components";
-import {
-  isTplRootWithCodeComponentVariants,
-  withoutCodeComponentVariantPrefix,
-} from "@/wab/shared/code-components/variants";
+import { isTplRootWithCodeComponentVariants } from "@/wab/shared/code-components/variants";
 import { toReactAttr } from "@/wab/shared/codegen/image-assets";
 import { makeCssClassNameForVariantCombo } from "@/wab/shared/codegen/react-p/class-names";
 import { nodeNameBackwardsCompatibility } from "@/wab/shared/codegen/react-p/constants";
@@ -706,7 +704,7 @@ const mkTriggers = computedFn(
           activeVariants: new Set([
             ...ctx.activeVariants.keys(),
             ...component.variants.filter((variant) => {
-              if (!isStyleVariant(variant)) {
+              if (!isStyleOrCodeComponentVariant(variant)) {
                 return false;
               }
               // We include the style variants dynamically here to handle changes that require JS
@@ -716,7 +714,7 @@ const mkTriggers = computedFn(
               // while in design mode.
 
               // Style variants of built-in components (like vertical stack's hover)
-              if (!isTplRootWithCodeComponentVariants(component.tplTree)) {
+              if (!isCodeComponentVariant(variant)) {
                 const hook = ctx.reactHookSpecs.find(
                   (spec) => spec.sv === variant
                 );
@@ -724,15 +722,16 @@ const mkTriggers = computedFn(
               }
 
               // Interactive registered variants (like a Button CC's hover) can not be applied in non-interactive mode
-              if (isMaybeInteractiveStyleVariant(variant) && !isInteractive) {
+              if (
+                isMaybeInteractiveCodeComponentVariant(variant) &&
+                !isInteractive
+              ) {
                 return false;
               }
 
               // Non-interactive registered variants (like Button CC's disabled) do no harm to rich-text editing and can be applied in non-interactive mode
-              return variant.selectors.reduce(
-                (prev, key) =>
-                  prev &&
-                  ctx.$ccVariants[withoutCodeComponentVariantPrefix(key)],
+              return variant.codeComponentVariantKeys.reduce(
+                (prev, key) => prev && ctx.$ccVariants[key],
                 true
               );
             }),

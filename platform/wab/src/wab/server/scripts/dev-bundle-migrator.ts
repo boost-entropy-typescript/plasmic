@@ -70,13 +70,17 @@ const paths = [
   "src/wab/shared/site-diffs/__tests__/global-context-merge.json",
   "src/wab/shared/site-diffs/__tests__/style-tokens-conflict.json",
   "src/wab/shared/insertable-templates/__tests__/bundles/copy-and-paste.json",
-  "src/wab/server/__tests__/bundle-migrations/fixtures/style-variants.json",
   "src/wab/server/__tests__/bundle-migrations/fixtures/style-variants.migrated.json",
+  "src/wab/server/__tests__/bundle-migrations/fixtures/code-component-variants.migrated.json",
 ];
 
 async function migrate() {
   process.env["DEV_BUNDLE_MIGRATION"] = "true";
   for (const path of paths) {
+    /*
+      The stale-bundle.json is exempted from migration, because it is used to
+      test if the stale bundle (representing very old projects, revived) can be migrated to the latest no matter how old it is.
+    */
     assert(
       !path.includes("/stale-bundle.json"),
       () =>
