@@ -59,6 +59,7 @@ import { DbCtx, WithDbCtx } from "@/wab/client/db";
 import {
   AddFakeItem,
   AddTplItem,
+  ExtraInfoOpts,
   INSERTABLES_MAP,
 } from "@/wab/client/definitions/insertables";
 import {
@@ -4313,11 +4314,14 @@ export class StudioCtx extends WithDbCtx {
   //
   // Inserting new tpl nodes
   //
-  async tryInsertTplItem(item: AddTplItem): Promise<void> {
+  async tryInsertTplItem(
+    item: AddTplItem,
+    opts?: ExtraInfoOpts
+  ): Promise<TplNode | null> {
     const vc = this.focusedViewCtx();
     if (!vc) {
       if (item.type === "tpl") {
-        const dragMgr = await DragInsertManager.build(this, item);
+        const dragMgr = await DragInsertManager.build(this, item, opts);
         await this.changeUnsafe(() => {
           this.setDragInsertState(new DragInsertState(dragMgr, item));
         });
@@ -4326,7 +4330,7 @@ export class StudioCtx extends WithDbCtx {
           message: "First select an element you want to insert to.",
         });
       }
-      return;
+      return null;
     }
 
     // If inserting a template, then insert at innermost main-content-slot, or else root.
@@ -4395,17 +4399,17 @@ export class StudioCtx extends WithDbCtx {
       notification.error({
         message: "Cannot insert this at the current location.",
       });
-      return;
+      return null;
     }
     const extraInfo = item.asyncExtraInfo
-      ? await item.asyncExtraInfo(vc.studioCtx)
+      ? await item.asyncExtraInfo(vc.studioCtx, opts)
       : undefined;
     if (extraInfo === false) {
-      return;
+      return null;
     }
-    await this.changeUnsafe(() => {
-      vc.getViewOps().tryInsertInsertableSpec(item, locs[0], extraInfo, target);
-    });
+    return await this.changeUnsafe(() =>
+      vc.getViewOps().tryInsertInsertableSpec(item, locs[0], extraInfo, target)
+    );
   }
 
   async runFakeItem(item: AddFakeItem): Promise<any> {

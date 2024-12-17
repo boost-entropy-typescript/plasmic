@@ -82,6 +82,7 @@ import {
   Side,
   sideToOrient,
 } from "@/wab/shared/geom";
+import { CloneOpts } from "@/wab/shared/insertable-templates/types";
 import {
   ContainerLayoutType,
   ContainerType,
@@ -785,11 +786,15 @@ export class DragInsertManager {
 
   public static async build(
     studioCtx: StudioCtx,
-    spec: AddTplItem
+    spec: AddTplItem,
+    opts?: CloneOpts
   ): Promise<DragInsertManager> {
     const targeters: NodeTargeter[] = [];
     const extraInfo = spec.asyncExtraInfo
-      ? await spec.asyncExtraInfo(studioCtx, { isDragging: true })
+      ? await spec.asyncExtraInfo(studioCtx, {
+          isDragging: true,
+          ...(opts ?? {}),
+        })
       : undefined;
     for (const vc of studioCtx.viewCtxs) {
       // Ignore ViewCtx whose root is invisible.
@@ -832,21 +837,21 @@ export class DragInsertManager {
    * On drag end, if there was a valid insertion, then invokes the factory
    * to create the new TplNode and inserts it at the insertion point.
    */
-  endDrag(spec?: AddTplItem, extraInfo?: any) {
+  endDrag(spec?: AddTplItem, extraInfo?: any): [ViewCtx, TplNode] | undefined {
     this.clearTargeters();
     if (
       this.tentativeVc &&
       this.tentativeInsertion &&
       this.tentativeInsertion.type !== "ErrorInsertion"
     ) {
-      const tpl = spec?.factory(this.tentativeVc, extraInfo, undefined);
+      const tpl = spec?.factory(this.tentativeVc, extraInfo);
       if (tpl) {
         this.studioCtx.setStudioFocusOnFrameContents(
           this.tentativeVc.arenaFrame()
         );
         insertBySpec(this.tentativeVc, this.tentativeInsertion, tpl, true);
+        return tuple(this.tentativeVc, tpl);
       }
-      return tuple(this.tentativeVc, tpl);
     }
     return undefined;
   }
