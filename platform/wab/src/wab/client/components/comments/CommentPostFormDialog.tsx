@@ -5,7 +5,6 @@ import {
   PlasmicCommentPostFormDialog,
 } from "@/wab/client/plasmic/plasmic_kit_comments/PlasmicCommentPostFormDialog";
 import { useStudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
-import { summarizeTpl } from "@/wab/shared/core/tpls";
 import { observer } from "mobx-react";
 import * as React from "react";
 
@@ -54,21 +53,16 @@ export const CommentPostFormDialog = observer(function CommentPostFormDialog(
   }
 
   return (
-    <div className="CommentDialog">
+    <div className="CommentDialogContainer">
       <PlasmicCommentPostFormDialog
         {...props}
         commentsDialogHead={{
           close: {
             onClick: () => commentsCtx.closeCommentDialogs(),
           },
-          name: {
-            children: focusedTpl.name || "unnamed",
-          },
-          type: {
-            children: summarizeTpl(
-              focusedTpl,
-              viewCtx.effectiveCurrentVariantSetting(focusedTpl).rsh()
-            ),
+          selectedSubjectHead: {
+            tpl: focusedTpl,
+            viewCtx,
           },
         }}
       />
