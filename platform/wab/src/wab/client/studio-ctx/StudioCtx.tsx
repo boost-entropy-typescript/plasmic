@@ -30,6 +30,7 @@ import {
   getFocusedInsertAnchor,
   getPreferredInsertLocs,
 } from "@/wab/client/components/canvas/view-ops";
+import { TplCommentThread } from "@/wab/client/components/comments/utils";
 import {
   clearDarkMask,
   createDarkMask,
@@ -2777,6 +2778,30 @@ export class StudioCtx extends WithDbCtx {
   }
 
   //
+  // Comments
+  //
+  showComments() {
+    const team = this.appCtx
+      .getAllTeams()
+      .find((t) => t.id === this.siteInfo.teamId);
+    const accessLevel = getAccessLevelToResource(
+      { type: "project", resource: this.siteInfo },
+      this.appCtx.selfInfo,
+      this.siteInfo.perms
+    );
+    return (
+      this.appCtx.appConfig.comments ||
+      (accessLevelRank(accessLevel) >= accessLevelRank("commenter") &&
+        ((this.siteInfo.teamId &&
+          this.appCtx.appConfig.commentsTeamIds.includes(
+            this.siteInfo.teamId
+          )) ||
+          (team?.parentTeamId &&
+            this.appCtx.appConfig.commentsTeamIds.includes(team.parentTeamId))))
+    );
+  }
+
+  //
   // Managing the "Add Drawer"
   //
   private _showAddDrawer = observable.box(false);
@@ -5477,13 +5502,16 @@ export class StudioCtx extends WithDbCtx {
   /**
    * For this projectId, fetch all available releases from the server,
    * sorted by [latest => oldest]
+   *
+   * @param opts - if mainBranchOnly is true, only return releases from the main branch
    **/
-  async getProjectReleases(): Promise<PkgVersionInfoMeta[]> {
+  async getProjectReleases(
+    opts = { mainBranchOnly: false }
+  ): Promise<PkgVersionInfoMeta[]> {
     const projectId = this.siteInfo.id;
     const appCtx = this.appCtx;
-    // ASK: Why send branchId? Do we ever have releases for branchIds? Because as far as I know, the branch can only be merged to main, then published
-    // const branchId = this.branchInfo()?.id;
-    return await getProjectReleases(appCtx, projectId, undefined);
+    const branchId = opts.mainBranchOnly ? undefined : this.branchInfo()?.id;
+    return await getProjectReleases(appCtx, projectId, branchId);
   }
 
   async hasChangesSinceLastPublish() {
@@ -6977,6 +7005,19 @@ export function isUserProjectContentEditor(
   perms: ApiPermission[]
 ) {
   return checkAccessLevelRank(user, project, perms, "content");
+}
+
+export function canUpdateHistory(
+  studioCtx: StudioCtx,
+  thread: TplCommentThread
+): boolean {
+  const appCtx = studioCtx.appCtx;
+  const isProjectContentEditor = isUserProjectContentEditor(
+    appCtx.selfInfo,
+    studioCtx.siteInfo,
+    studioCtx.siteInfo.perms
+  );
+  return isProjectContentEditor || appCtx.selfInfo?.id === thread.createdById;
 }
 
 export function isUserProjectEditor(
