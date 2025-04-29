@@ -236,6 +236,10 @@ export interface CustomFunctionMeta<F extends (...args: any[]) => any> {
    */
   namespace?: string;
   /**
+   * A display name for the function. It will be shown only in studio.
+   */
+  displayName?: string;
+  /**
    * Documentation for the registered function.
    */
   description?: string;
