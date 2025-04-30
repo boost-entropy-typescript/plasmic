@@ -2,9 +2,7 @@ import { DataProvider, useDataEnv } from "@plasmicapp/host";
 import registerComponent, {
   ComponentMeta,
 } from "@plasmicapp/host/registerComponent";
-import * as plasmicQuery from "@plasmicapp/query";
-import React, { Suspense, useState } from "react";
-import { useIsomorphicLayoutEffect } from "./common";
+import React, { Suspense } from "react";
 
 interface LoadingBoundaryProps {
   loadingState?: React.ReactNode;
@@ -20,14 +18,6 @@ if (reactMajorVersion < 18) {
 
 const enableLoadingBoundaryKey = "plasmicInternalEnableLoadingBoundary";
 const hasLoadingBoundaryKey = "plasmicInternalHasLoadingBoundary";
-
-function useIsClient() {
-  const [loaded, setLoaded] = useState(false);
-  useIsomorphicLayoutEffect(() => {
-    setLoaded(true);
-  }, []);
-  return loaded;
-}
 
 let hasWarnedDisabledLoadingBoundary = false;
 
@@ -45,12 +35,7 @@ export function LoadingBoundary({
   forceLoading,
   loadingState,
 }: LoadingBoundaryProps) {
-  const isClient = useIsClient();
   const enableLoadingBoundary = !!useDataEnv()?.[enableLoadingBoundaryKey];
-
-  if (!isClient && !plasmicQuery.isPlasmicPrepass?.()) {
-    return null;
-  }
 
   if (forceLoading) {
     return <>{loadingState ?? null}</>;
