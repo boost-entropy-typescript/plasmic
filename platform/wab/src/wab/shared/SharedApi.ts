@@ -171,6 +171,7 @@ import {
   TrustedHostsListResponse,
   TryMergeRequest,
   TryMergeResponse,
+  UniqueFieldCheck,
   UpdateHostUrlRequest,
   UpdateHostUrlResponse,
   UpdateNotificationSettingsRequest,
@@ -1709,6 +1710,13 @@ export abstract class SharedApi {
     }
   ) {
     return (await this.post(`/cmse/rows/${rowId}/clone`, opts)) as ApiCmseRow;
+  }
+
+  async checkUniqueFields(
+    tableId: CmsTableId,
+    opts: { rowId: CmsRowId; uniqueFieldsData: Dict<unknown> }
+  ): Promise<UniqueFieldCheck[]> {
+    return await this.post(`/cmse/tables/${tableId}/check-unique-fields`, opts);
   }
 
   async deleteCmsRow(rowId: CmsRowId) {
