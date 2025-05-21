@@ -1,11 +1,14 @@
 {
   "name": "@plasmicpkgs/fetch",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Plasmic registration call for fetch function",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/plasmicapp/plasmic.git",
     "directory": "plasmicpkgs/fetch"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
