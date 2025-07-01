@@ -1,6 +1,7 @@
 import ContextMenuIndicator from "@/wab/client/components/ContextMenuIndicator/ContextMenuIndicator";
 import { ComponentPropModal } from "@/wab/client/components/modals/ComponentPropModal";
 import { DataPickerEditor } from "@/wab/client/components/sidebar-tabs/ComponentProps/DataPickerEditor";
+import { HrefQueryPopover } from "@/wab/client/components/sidebar-tabs/ComponentProps/HrefQueryPopover";
 import {
   AUTOCOMPLETE_OPTIONS,
   FallbackEditor,
@@ -11,6 +12,10 @@ import {
 import { ValuePreview } from "@/wab/client/components/sidebar-tabs/data-tab";
 import { DataPickerTypesSchema } from "@/wab/client/components/sidebar-tabs/DataBinding/DataPicker";
 import { getInputTagType } from "@/wab/client/components/sidebar-tabs/HTMLAttributesSection";
+import {
+  URLParamTooltip,
+  URLParamType,
+} from "@/wab/client/components/sidebar-tabs/PageURLParametersSection";
 import { PropValueEditor } from "@/wab/client/components/sidebar-tabs/PropValueEditor";
 import WarningIcon from "@/wab/client/plasmic/plasmic_kit_icons/icons/PlasmicIcon__WarningTriangleSvg";
 
@@ -23,6 +28,7 @@ import {
 } from "@/wab/client/components/sidebar/sidebar-helpers";
 import { TplExpsProvider } from "@/wab/client/components/style-controls/StyleComponent";
 import { InlineIcon } from "@/wab/client/components/widgets";
+import Button from "@/wab/client/components/widgets/Button";
 import { Icon } from "@/wab/client/components/widgets/Icon";
 import InfoIcon from "@/wab/client/plasmic/plasmic_kit/PlasmicIcon__Info";
 import LinkIcon from "@/wab/client/plasmic/plasmic_kit/PlasmicIcon__Link";
@@ -61,7 +67,6 @@ import {
 } from "@/wab/shared/common";
 import { getContextDependentValue } from "@/wab/shared/context-dependent-value";
 import {
-  extractParamsFromPagePath,
   getComponentDisplayName,
   getParamDisplayName,
   getRealParams,
@@ -154,6 +159,10 @@ import {
 import { hashExpr } from "@/wab/shared/site-diffs";
 import { getTplComponentArg, unsetTplComponentArg } from "@/wab/shared/TplMgr";
 import { $$$ } from "@/wab/shared/TplQuery";
+import {
+  evalPageHrefPath,
+  EvalPageHrefProps,
+} from "@/wab/shared/utils/url-utils";
 import { isBaseVariant } from "@/wab/shared/Variants";
 import { ensureBaseVariantSetting } from "@/wab/shared/VariantTplMgr";
 import { Menu, Tooltip } from "antd";
@@ -551,6 +560,7 @@ const isMenuEmpty = (menu: React.ReactElement) => {
 interface PropEditorRowProps {
   expr: DeepReadonly<Expr> | undefined;
   label: string;
+  subtitle?: React.ReactNode;
   definedIndicator?: DefinedIndicatorType;
   valueSetState?: ValueSetState;
   onChange: (expr: Expr | undefined) => void;
@@ -605,6 +615,7 @@ function InnerPropEditorRow_(props: PropEditorRowProps) {
   const {
     about = maybePropTypeToAbout(props.propType),
     label,
+    subtitle,
     attr,
     definedIndicator = { source: "none" },
     propType,
@@ -677,7 +688,7 @@ function InnerPropEditorRow_(props: PropEditorRowProps) {
 
   const schema = studioCtx.customFunctionsSchema();
 
-  const exprCtx = {
+  const exprCtx: ExprCtx = {
     projectFlags: studioCtx.projectFlags(),
     component: ownerComponent ?? null,
     inStudio: true,
@@ -849,7 +860,7 @@ function InnerPropEditorRow_(props: PropEditorRowProps) {
   const renderEditorForReferencedParam = () => {
     assert(
       referencedParam,
-      "trying to render a referencedParam editor without a referecend param"
+      "trying to render a referencedParam editor without a referenced param"
     );
     assert(ownerComponent, "referenced params should have an owner component");
     return (
@@ -975,6 +986,7 @@ function InnerPropEditorRow_(props: PropEditorRowProps) {
                 ) : null}
               </div>
             }
+            subtitle={subtitle}
             definedIndicator={definedIndicator}
             layout={layout}
             menu={!isMenuEmpty(contextMenu) ? contextMenu : undefined}
@@ -1049,47 +1061,18 @@ function InnerPropEditorRow_(props: PropEditorRowProps) {
               }}
             />
           )}
-          {isPageHref(expr) &&
-            extractParamsFromPagePath(
-              ensure(
-                expr.page.pageMeta,
-                "PageHref is expected to contain a page"
-              ).path
-            ).map((param) => {
-              return (
-                <InnerPropEditorRow
-                  key={param}
-                  expr={expr.params[param]}
-                  attr={param}
-                  propType={"string"}
-                  label={param}
-                  definedIndicator={definedIndicator}
-                  onChange={(paramValue) => {
-                    const newExpr = clone(expr);
-                    if (paramValue) {
-                      newExpr.params[param] = ensureInstance(
-                        paramValue,
-                        TemplatedString,
-                        CustomCode,
-                        ObjectPath,
-                        VarRef
-                      );
-                    } else {
-                      delete newExpr.params[param];
-                    }
-                    onChange(maybeWrapExpr(newExpr));
-                  }}
-                  onDelete={() => {
-                    const newExpr = clone(expr) as PageHref;
-                    delete newExpr.params[param];
-                    onChange(maybeWrapExpr(newExpr));
-                  }}
-                  disableLinkToProp={props.disableLinkToProp}
-                  disableDynamicValue={props.disableDynamicValue}
-                  icon={<div className="property-connector-line-icon" />}
-                />
-              );
-            })}
+          {isPageHref(expr) && (
+            <PageHrefRows
+              expr={expr}
+              exprCtx={exprCtx}
+              canvasEnv={canvasEnv}
+              definedIndicator={definedIndicator}
+              disableLinkToProp={props.disableLinkToProp}
+              disableDynamicValue={props.disableDynamicValue}
+              maybeWrapExpr={maybeWrapExpr}
+              onChange={onChange}
+            />
+          )}
           {isCustomCode &&
             !(isKnownQueryData(wabType) && isQuery(expr)) &&
             allowDynamicValue &&
@@ -1169,7 +1152,7 @@ function InnerPropEditorRow_(props: PropEditorRowProps) {
             (() => {
               assert(
                 referencedParam,
-                "trying to render a referencedParam editor without a referecend param"
+                "trying to render a referencedParam editor without a referenced param"
               );
               assert(
                 ownerComponent,
@@ -1232,6 +1215,211 @@ function InnerPropEditorRow_(props: PropEditorRowProps) {
   );
 }
 
+interface PageHrefRowsProps
+  extends Pick<
+    PropEditorRowProps,
+    | "onChange"
+    | "definedIndicator"
+    | "disableLinkToProp"
+    | "disableDynamicValue"
+  > {
+  expr: PageHref;
+  exprCtx: ExprCtx;
+  canvasEnv: Record<string, any>;
+  maybeWrapExpr: MaybeUnwrapExpr;
+}
+
+type TypedURLParams = {
+  param: string;
+  type: URLParamType;
+  showIndicator: boolean;
+}[];
+
+type DeletePageHrefProps =
+  | { type: "Fragment" }
+  | { type: "Path" | "Query"; param: string };
+
+type UpdatePageHrefProps = DeletePageHrefProps & {
+  paramValue: Expr | undefined;
+};
+
+function PageHrefRows({
+  expr,
+  exprCtx,
+  canvasEnv,
+  definedIndicator,
+  disableLinkToProp,
+  disableDynamicValue,
+  maybeWrapExpr,
+  onChange,
+}: PageHrefRowsProps) {
+  const meta = ensure(
+    expr.page.pageMeta,
+    "PageHref is expected to contain a page"
+  );
+  const pathParams: TypedURLParams = Object.keys(meta.params).map((param) => ({
+    param,
+    type: "Path",
+    showIndicator: true,
+  }));
+  const queryParams: TypedURLParams = Object.keys(expr.query).map((param) => ({
+    param,
+    type: "Query",
+    showIndicator: !!meta.query[param],
+  }));
+
+  const updatePageHrefField = (props: UpdatePageHrefProps) => {
+    const { type, paramValue } = props;
+    const newExpr = clone(expr);
+    const newValue = ensureInstance(
+      paramValue,
+      TemplatedString,
+      CustomCode,
+      ObjectPath,
+      VarRef
+    );
+    if (type === "Path") {
+      newExpr.params[props.param] = newValue;
+    } else if (type === "Query") {
+      newExpr.query[props.param] = newValue;
+    } else if (type === "Fragment") {
+      newExpr.fragment = newValue;
+    }
+    onChange(maybeWrapExpr(newExpr));
+  };
+
+  const deletePageHrefField = (props: DeletePageHrefProps) => {
+    const newExpr = clone(expr);
+    if (props.type === "Path") {
+      delete newExpr.params[props.param];
+    } else if (props.type === "Query") {
+      delete newExpr.query[props.param];
+    } else if (props.type === "Fragment") {
+      newExpr.fragment = null;
+    }
+    onChange(maybeWrapExpr(newExpr));
+  };
+
+  const ParamRows = [...pathParams, ...queryParams].map(
+    ({ param, type, showIndicator }) => {
+      return (
+        <InnerPropEditorRow
+          key={param}
+          expr={type === "Path" ? expr.params[param] : expr.query[param]}
+          attr={param}
+          propType={"string"}
+          label={param}
+          subtitle={<URLParamTooltip type={type} />}
+          definedIndicator={showIndicator ? definedIndicator : undefined}
+          onChange={(paramValue) => {
+            if (paramValue) {
+              updatePageHrefField({ type, param, paramValue });
+            } else {
+              deletePageHrefField({ type, param });
+            }
+          }}
+          onDelete={() => {
+            deletePageHrefField({ type, param });
+          }}
+          disableLinkToProp={disableLinkToProp}
+          disableDynamicValue={disableDynamicValue}
+          icon={<div className="property-connector-line-icon" />}
+        />
+      );
+    }
+  );
+  return (
+    <>
+      <PageHrefPreview expr={expr} exprCtx={exprCtx} canvasEnv={canvasEnv} />
+      {ParamRows}
+      {expr.fragment != null && (
+        <InnerPropEditorRow
+          key={"fragment"}
+          expr={expr.fragment}
+          attr={"fragment"}
+          propType={"string"}
+          label={"Fragment"}
+          onChange={(paramValue) => {
+            updatePageHrefField({ type: "Fragment", paramValue });
+          }}
+          onDelete={() => {
+            deletePageHrefField({ type: "Fragment" });
+          }}
+          disableLinkToProp={disableLinkToProp}
+          disableDynamicValue={disableDynamicValue}
+          icon={<div className="property-connector-line-icon" />}
+        />
+      )}
+      <div className="panel-row flex-hcenter">
+        <HrefQueryPopover
+          expr={expr}
+          pageQuery={meta.query}
+          onAdd={(key) => {
+            const newExpr = clone(expr);
+            newExpr.query[key] = new TemplatedString({ text: [""] });
+            onChange(maybeWrapExpr(newExpr));
+          }}
+        >
+          <Button
+            data-test-id="add-query-param"
+            font={"dim"}
+            size="small"
+            tooltip={
+              <div>
+                Add a query param, used in the URL as:
+                <p>
+                  <span style={{ opacity: 0.5 }}>abc.com</span>
+                  <strong>?page=3</strong>
+                </p>{" "}
+              </div>
+            }
+          >
+            <span className="text-set">Add Query</span>
+          </Button>
+        </HrefQueryPopover>
+        {expr.fragment == null && (
+          <Button
+            className="ml-sm"
+            size="small"
+            data-test-id="add-fragment"
+            tooltip={
+              <div>
+                Add a fragment, used in the URL as:
+                <p>
+                  <span style={{ opacity: 0.5 }}>abc.com</span>
+                  <strong>#fragment</strong>
+                </p>{" "}
+              </div>
+            }
+            onClick={() => {
+              const newExpr = clone(expr);
+              newExpr.fragment = codeLit("");
+              onChange(maybeWrapExpr(newExpr));
+            }}
+          >
+            <span className="text-set">Add Fragment</span>
+          </Button>
+        )}
+      </div>
+    </>
+  );
+}
+
+function PageHrefPreview(props: EvalPageHrefProps) {
+  const { val, err } = evalPageHrefPath(props);
+  return (
+    <LabeledItemRow
+      data-test-id={`prop-editor-row-href-preview`}
+      label={"Preview"}
+      noMenuButton
+    >
+      <div className="flex flex-vcenter justify-start flex-fill token-ref-cycle-item">
+        <span className={err && "value-preview--error"}>{val ?? err}</span>
+      </div>
+    </LabeledItemRow>
+  );
+}
+
 function isBooleanPropType(propType: StudioPropType<any>) {
   if (["boolean", "target"].includes(getPropTypeType(propType) ?? "")) {
     return true;
@@ -1283,7 +1471,13 @@ export function getExtraEnvFromPropType(
   }
 }
 
-function getExprTransformationBasedOnPropType(propType: StudioPropType<any>) {
+type MaybeWrapExpr = (x: Expr | undefined | null) => Expr | undefined;
+type MaybeUnwrapExpr = (x: Expr | undefined | null) => Expr | undefined;
+
+function getExprTransformationBasedOnPropType(propType: StudioPropType<any>): {
+  maybeWrapExpr: MaybeWrapExpr;
+  maybeUnwrapExpr: MaybeUnwrapExpr;
+} {
   if (isPlainObjectPropType(propType) && propType.type === "function") {
     const argNames =
       "argTypes" in propType
