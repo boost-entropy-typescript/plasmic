@@ -25,7 +25,6 @@ import {
   CustomFunctionConfig,
   PlasmicContext,
   createProjectConfig,
-  DependencyVersions,
   getOrAddProjectConfig,
   getOrAddProjectLock,
   updateConfig,
@@ -353,7 +352,7 @@ export async function sync(
     }
 
     // Now we know config.components are all correct, so we can go ahead and fix up all the import statements
-    await fixAllImportStatements(context, summary);
+    await fixAllImportStatements(context, opts.baseDir, summary);
 
     const codegenVersion = await context.api.latestCodegenVersion();
     context.lock.projects.forEach((p) => {
@@ -366,7 +365,7 @@ export async function sync(
       }
     });
     // Write the new ComponentConfigs to disk
-    await updateConfig(context, context.config);
+    await updateConfig(context, context.config, baseDir);
   };
 
   // Perform the actual sync
@@ -514,7 +513,7 @@ async function syncProject(
   branchName: string,
   componentIds: string[],
   projectVersion: string,
-  dependencies: DependencyVersions,
+  dependencies: { [projectId: string]: string },
   summary: Map<string, ComponentUpdateSummary>,
   indirect: boolean,
   externalNpmPackages: Set<string>,
@@ -580,41 +579,47 @@ async function syncProject(
 
   // Convert from TSX => JSX
   if (context.config.code.lang === "js") {
-    for (const c of projectBundle.components) {
-      [c.renderModuleFileName, c.renderModule] = await maybeConvertTsxToJsx(
+    projectBundle.components.forEach((c) => {
+      [c.renderModuleFileName, c.renderModule] = maybeConvertTsxToJsx(
         c.renderModuleFileName,
-        c.renderModule
+        c.renderModule,
+        opts.baseDir
       );
-      [c.skeletonModuleFileName, c.skeletonModule] = await maybeConvertTsxToJsx(
+      [c.skeletonModuleFileName, c.skeletonModule] = maybeConvertTsxToJsx(
         c.skeletonModuleFileName,
-        c.skeletonModule
+        c.skeletonModule,
+        opts.baseDir
       );
-    }
-    for (const icon of projectBundle.iconAssets) {
-      [icon.fileName, icon.module] = await maybeConvertTsxToJsx(
+    });
+    projectBundle.iconAssets.forEach((icon) => {
+      [icon.fileName, icon.module] = maybeConvertTsxToJsx(
         icon.fileName,
-        icon.module
+        icon.module,
+        opts.baseDir
       );
-    }
-    for (const gv of projectBundle.globalVariants) {
-      [gv.contextFileName, gv.contextModule] = await maybeConvertTsxToJsx(
+    });
+    projectBundle.globalVariants.forEach((gv) => {
+      [gv.contextFileName, gv.contextModule] = maybeConvertTsxToJsx(
         gv.contextFileName,
-        gv.contextModule
+        gv.contextModule,
+        opts.baseDir
       );
-    }
-    for (const theme of projectBundle.projectConfig.jsBundleThemes || []) {
-      [theme.themeFileName, theme.themeModule] = await maybeConvertTsxToJsx(
+    });
+    (projectBundle.projectConfig.jsBundleThemes || []).forEach((theme) => {
+      [theme.themeFileName, theme.themeModule] = maybeConvertTsxToJsx(
         theme.themeFileName,
-        theme.themeModule
+        theme.themeModule,
+        opts.baseDir
       );
-    }
+    });
   }
   await syncGlobalVariants(
     context,
     projectBundle.projectConfig,
     projectBundle.globalVariants,
     projectBundle.checksums,
-    branchName
+    branchName,
+    opts.baseDir
   );
 
   await syncProjectConfig(
@@ -628,10 +633,11 @@ async function syncProject(
     opts.forceOverwrite,
     summary,
     projectBundle.checksums,
+    opts.baseDir,
     indirect
   );
   syncCodeComponentsMeta(context, projectId, projectBundle.codeComponentMetas);
-  syncCustomFunctionsMeta(
+  await syncCustomFunctionsMeta(
     context,
     projectId,
     projectBundle.customFunctionMetas
@@ -647,7 +653,8 @@ async function syncProject(
     branchName,
     projectVersion,
     projectBundle.iconAssets,
-    projectBundle.checksums
+    projectBundle.checksums,
+    opts.baseDir
   );
   await syncProjectImageAssets(
     context,
@@ -687,11 +694,12 @@ async function syncProjectConfig(
   projectApiToken: string,
   branchName: string,
   version: string,
-  dependencies: DependencyVersions,
+  dependencies: { [projectId: string]: string },
   componentBundles: ComponentBundle[],
   forceOverwrite: boolean,
   summary: Map<string, ComponentUpdateSummary>,
   checksums: ChecksumBundle,
+  baseDir: string,
   indirect: boolean
 ) {
   const defaultCssFilePath = defaultResourcePath(
@@ -733,9 +741,10 @@ async function syncProjectConfig(
   projectLock.lang = context.config.code.lang;
 
   if (projectBundle.cssRules) {
-    const formattedCssRules = await formatAsLocal(
+    const formattedCssRules = formatAsLocal(
       projectBundle.cssRules,
-      projectConfig.cssFilePath
+      projectConfig.cssFilePath,
+      baseDir
     );
 
     // Write out project css
@@ -774,7 +783,7 @@ async function syncProjectConfig(
       themeConfig = { themeFilePath, bundleName: theme.bundleName };
       projectConfig.jsBundleThemes.push(themeConfig);
     }
-    const formatted = await formatAsLocal(
+    const formatted = formatAsLocal(
       theme.themeModule,
       themeConfig.themeFilePath
     );
@@ -796,7 +805,8 @@ async function syncProjectConfig(
     projectBundle,
     projectConfig,
     projectLock,
-    checksums
+    checksums,
+    baseDir
   );
 
   await syncSplitsProvider(
@@ -804,7 +814,8 @@ async function syncProjectConfig(
     projectBundle,
     projectConfig,
     projectLock,
-    checksums
+    checksums,
+    baseDir
   );
 
   // Write out components
@@ -816,7 +827,8 @@ async function syncProjectConfig(
     forceOverwrite,
     summary,
     projectLock,
-    checksums
+    checksums,
+    baseDir
   );
 }
 

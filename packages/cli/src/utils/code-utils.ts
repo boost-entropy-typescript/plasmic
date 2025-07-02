@@ -4,8 +4,8 @@ import * as parser from "@babel/parser";
 import traverse, { Node } from "@babel/traverse";
 import { ImportDeclaration } from "@babel/types";
 import L from "lodash";
-import type { Options } from "prettier";
 import * as Prettier from "prettier";
+import { Options } from "prettier";
 import * as ts from "typescript";
 import path from "upath";
 import { getGlobalContextsResourcePath } from "../actions/sync-global-contexts";
@@ -38,11 +38,12 @@ import {
 } from "./file-utils";
 import { assert, flatMap } from "./lang-utils";
 
-export async function formatAsLocal(
+export const formatAsLocal = (
   content: string,
   filePath: string,
-  defaultOpts?: Options
-): Promise<string> {
+  baseDir: string,
+  defaultOpts: Options = {}
+) => {
   if (GLOBAL_SETTINGS.skipFormatting) {
     return content;
   }
@@ -52,36 +53,34 @@ export async function formatAsLocal(
   // createPlasmicElementProxy.  So we're going to stop for now until we find
   // a better solution, like maybe letting user specify a prettier config
   // file in plasmic.json
-  // const opts = resolveConfig.sync() || defaultOpts;
-  const opts: Options = {
-    trailingComma: "none",
-    ...defaultOpts,
-    pluginSearchDirs: false,
-  };
+  // const opts = resolveConfig.sync(baseDir) || defaultOpts;
+  const opts: Options = { ...defaultOpts, pluginSearchDirs: false };
   opts.filepath = filePath;
 
   // Running Prettier multiple times may actually yield different results!
   // Here we run it twice, just to be safe... :-/
-  const res = await Prettier.format(content, opts);
-  const res2 = await Prettier.format(res, opts);
+  const res = Prettier.format(content, opts);
+  const res2 = Prettier.format(res, opts);
   return res2;
-}
+};
 
-async function nodeToFormattedCode(
+const nodeToFormattedCode = (
   n: Node,
+  baseDir: string,
   unformatted?: boolean,
   commentsToRemove?: Set<string>
-): Promise<string> {
+) => {
   const c = generate(n, {
     retainLines: true,
     shouldPrintComment: (c) => !commentsToRemove || !commentsToRemove.has(c),
   }).code;
   return unformatted
     ? c
-    : await formatAsLocal(c, "/tmp/x.tsx", {
+    : formatAsLocal(c, "/tmp/x.tsx", baseDir, {
+        trailingComma: "none",
         arrowParens: "avoid",
       });
-}
+};
 
 function findImportSpecifierWithAlias(
   importDecl: ImportDeclaration,
@@ -227,14 +226,15 @@ function filterUnformattedMarker(code: string, changed: boolean) {
  * Given the argument `code` string, for module at `fromPath`, replaces all Plasmic imports
  * for modules found in `compConfigsMap`.
  */
-export async function replaceImports(
+export function replaceImports(
   context: PlasmicContext,
   code: string,
   fromPath: string,
   fixImportContext: FixImportContext,
   removeImportDirective: boolean,
+  baseDir: string,
   changed = false
-): Promise<string> {
+) {
   [code, changed] = filterUnformattedMarker(code, changed);
   const file = parser.parse(code, {
     strictMode: true,
@@ -260,18 +260,9 @@ export async function replaceImports(
       return;
     }
     changed = true;
-
-    // Remove Plasmic import directives after import statements, like in
-    // `import Button from "./Button"; // plasmic-import: 4SYnkOQLd5/component`
-    // Import directives should be removed for skeleton files, since they are
-    // edited by the user and therefore run through linters.
-    // When linters remove unused imports, these comments might be left intact.
-    // To avoid this, remove the comments.
-    // https://linear.app/plasmic/issue/PLA-427
     if (removeImportDirective) {
       commentsToRemove.add(stmt.trailingComments?.[0].value || "");
     }
-
     const type = spec.type;
     const uuid = spec.id;
     if (type === "component") {
@@ -497,7 +488,7 @@ export async function replaceImports(
     return code;
   }
 
-  return nodeToFormattedCode(file, !changed, commentsToRemove);
+  return nodeToFormattedCode(file, baseDir, !changed, commentsToRemove);
 }
 
 function throwMissingReference(
@@ -621,6 +612,7 @@ export const mkFixImportContext = (config: PlasmicConfig): FixImportContext => {
  */
 export async function fixAllImportStatements(
   context: PlasmicContext,
+  baseDir: string,
   summary?: Map<string, ComponentUpdateSummary>
 ) {
   logger.info("Fixing import statements...");
@@ -630,7 +622,12 @@ export async function fixAllImportStatements(
   for (const project of config.projects) {
     for (const compConfig of project.components) {
       try {
-        await fixRscModulesImports(context, fixImportContext, compConfig);
+        await fixRscModulesImports(
+          context,
+          baseDir,
+          fixImportContext,
+          compConfig
+        );
       } catch (err) {
         lastError = err;
       }
@@ -648,7 +645,8 @@ export async function fixAllImportStatements(
             context,
             compConfig,
             fixImportContext,
-            fixSkeletonModule
+            fixSkeletonModule,
+            baseDir
           );
         } catch (err) {
           logger.error(
@@ -661,7 +659,7 @@ export async function fixAllImportStatements(
   }
 
   try {
-    await fixGlobalContextImportStatements(context, fixImportContext);
+    fixGlobalContextImportStatements(context, fixImportContext, baseDir);
   } catch (err) {
     logger.error(
       `Error encountered while fixing imports for global contexts: ${err}`
@@ -670,7 +668,7 @@ export async function fixAllImportStatements(
   }
 
   try {
-    await fixSplitsProviderImportStatements(context, fixImportContext);
+    fixSplitsProviderImportStatements(context, fixImportContext, baseDir);
   } catch (err) {
     logger.error(
       `Error encountered while fixing imports for splits provider: ${err}`
@@ -687,7 +685,8 @@ async function fixComponentImportStatements(
   context: PlasmicContext,
   compConfig: ComponentConfig,
   fixImportContext: FixImportContext,
-  fixSkeletonModule: boolean
+  fixSkeletonModule: boolean,
+  baseDir: string
 ) {
   // If ComponentConfig.importPath is still a local file, we best-effort also fix up the import statements there.
   if (
@@ -699,7 +698,8 @@ async function fixComponentImportStatements(
       context,
       compConfig.importSpec.modulePath,
       fixImportContext,
-      true
+      true,
+      baseDir
     );
   }
 
@@ -726,6 +726,7 @@ async function fixComponentImportStatements(
     compConfig.renderModuleFilePath,
     fixImportContext,
     false,
+    baseDir,
     renderModuleChanged
   );
 }
@@ -735,6 +736,7 @@ async function fixFileImportStatements(
   srcDirFilePath: string,
   fixImportContext: FixImportContext,
   removeImportDirective: boolean,
+  baseDir: string,
   fileHasChanged = false
 ) {
   const filePath = makeFilePath(context, srcDirFilePath);
@@ -747,12 +749,13 @@ async function fixFileImportStatements(
 
   const prevContent = readFileText(filePath).toString();
 
-  const newContent = await replaceImports(
+  const newContent = replaceImports(
     context,
     prevContent,
     srcDirFilePath,
     fixImportContext,
     removeImportDirective,
+    baseDir,
     fileHasChanged
   );
   if (prevContent !== newContent) {
@@ -812,19 +815,20 @@ export const tsxToJsx = (code: string) => {
   return fixPostTranspile(result.outputText);
 };
 
-export async function maybeConvertTsxToJsx(
+export function maybeConvertTsxToJsx(
   fileName: string,
-  content: string
-): Promise<[string, string]> {
+  content: string,
+  baseDir: string
+) {
   if (fileName.endsWith("tsx")) {
     const jsFileName = stripExtension(fileName) + ".jsx";
-    const jsContent = await formatScript(tsxToJsx(content));
+    const jsContent = formatScript(tsxToJsx(content), baseDir);
     return [jsFileName, jsContent];
   }
   return [fileName, content];
 }
 
-export async function formatScript(code: string): Promise<string> {
+export const formatScript = (code: string, baseDir: string) => {
   const file = parser.parse(code, {
     strictMode: true,
     sourceType: "module",
@@ -846,21 +850,22 @@ export async function formatScript(code: string): Promise<string> {
     },
   });
 
-  const withmarkers = await nodeToFormattedCode(file, true);
+  const withmarkers = nodeToFormattedCode(file, baseDir, true);
   const withNewLines = withmarkers.replace(
     new RegExp(`"${newLineMarker}"`, "g"),
     "\n"
   );
-  return await formatAsLocal(withNewLines, "/tmp/x.tsx", {
+  return formatAsLocal(withNewLines, "/tmp/x.tsx", baseDir, {
     printWidth: 80,
     tabWidth: 2,
     useTabs: false,
   });
-}
+};
 
 async function fixGlobalContextImportStatements(
   context: PlasmicContext,
-  fixImportContext: FixImportContext
+  fixImportContext: FixImportContext,
+  baseDir: string
 ) {
   for (const project of context.config.projects) {
     if (!project.globalContextsFilePath) continue;
@@ -878,12 +883,13 @@ async function fixGlobalContextImportStatements(
       throw e;
     }
 
-    const newContent = await replaceImports(
+    const newContent = replaceImports(
       context,
       prevContent,
       resourcePath,
       fixImportContext,
       false,
+      baseDir,
       true
     );
 
@@ -897,7 +903,8 @@ async function fixGlobalContextImportStatements(
 
 async function fixSplitsProviderImportStatements(
   context: PlasmicContext,
-  fixImportContext: FixImportContext
+  fixImportContext: FixImportContext,
+  baseDir: string
 ) {
   for (const project of context.config.projects) {
     if (!project.splitsProviderFilePath) continue;
@@ -915,12 +922,13 @@ async function fixSplitsProviderImportStatements(
       throw e;
     }
 
-    const newContent = await replaceImports(
+    const newContent = replaceImports(
       context,
       prevContent,
       resourcePath,
       fixImportContext,
       false,
+      baseDir,
       true
     );
 
@@ -934,6 +942,7 @@ async function fixSplitsProviderImportStatements(
 
 export async function fixRscModulesImports(
   context: PlasmicContext,
+  baseDir: string,
   fixImportContext: FixImportContext,
   compConfig: ComponentConfig
 ) {
@@ -952,7 +961,8 @@ export async function fixRscModulesImports(
         context,
         modulePath,
         fixImportContext,
-        false
+        false,
+        baseDir
       );
     } catch (err) {
       logger.error(

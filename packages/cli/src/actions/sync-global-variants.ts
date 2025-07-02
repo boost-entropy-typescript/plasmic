@@ -18,7 +18,8 @@ export async function syncGlobalVariants(
   projectMeta: ProjectMetaBundle,
   bundles: GlobalVariantBundle[],
   checksums: ChecksumBundle,
-  branchName: string
+  branchName: string,
+  baseDir: string
 ) {
   const projectId = projectMeta.projectId;
   const projectLock = getOrAddProjectLock(context, projectId, branchName);
@@ -100,7 +101,11 @@ export async function syncGlobalVariants(
     await writeFileContent(
       context,
       variantConfig.contextFilePath,
-      await formatAsLocal(bundle.contextModule, variantConfig.contextFilePath),
+      formatAsLocal(
+        bundle.contextModule,
+        variantConfig.contextFilePath,
+        baseDir
+      ),
       { force: !isNew }
     );
   }
@@ -116,10 +121,9 @@ export async function syncGlobalVariants(
       deletedVariantsFiles.add(deletedGlobalVariant.id);
     }
   }
-  context.config.globalVariants.variantGroups =
-    context.config.globalVariants.variantGroups.filter(
-      (v) => !deletedVariantsFiles.has(v.id)
-    );
+  context.config.globalVariants.variantGroups = context.config.globalVariants.variantGroups.filter(
+    (v) => !deletedVariantsFiles.has(v.id)
+  );
 
   const deletedVariantIds = new Set(deletedGlobalVariants.map((i) => i.id));
   projectLock.fileLocks = projectLock.fileLocks.filter(

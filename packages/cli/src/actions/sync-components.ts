@@ -32,7 +32,8 @@ export async function syncProjectComponents(
   forceOverwrite: boolean,
   summary: Map<string, ComponentUpdateSummary>,
   projectLock: ProjectLock,
-  checksums: ChecksumBundle
+  checksums: ChecksumBundle,
+  baseDir: string
 ) {
   const componentsFromChecksums = new Set([
     ...checksums.cssRulesChecksums.map(([id, _]) => id),
@@ -309,9 +310,10 @@ export async function syncProjectComponents(
           force: !shouldRegenerate,
         }
       );
-      const formattedCssRules = await formatAsLocal(
+      const formattedCssRules = formatAsLocal(
         cssRules,
-        compConfig.cssFilePath
+        compConfig.cssFilePath,
+        baseDir
       );
       await writeFileContent(
         context,
