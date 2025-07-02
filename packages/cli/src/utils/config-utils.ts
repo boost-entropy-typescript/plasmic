@@ -368,15 +368,17 @@ export interface FileLock {
   assetId: string;
 }
 
+/** Maps projectId to version. */
+export interface DependencyVersions {
+  [projectId: string]: string;
+}
+
 export interface ProjectLock {
   projectId: string;
   branchName: string;
   // The exact version that was last synced
   version: string;
-  dependencies: {
-    // Maps from projectId => exact version
-    [projectId: string]: string;
-  };
+  dependencies: DependencyVersions;
   // The language during last sync
   lang: "ts" | "js";
   // One for each file whose checksum is computed
@@ -539,14 +541,10 @@ export function readConfig(
   }
 }
 
-export async function writeConfig(
-  configFile: string,
-  config: PlasmicConfig,
-  baseDir: string
-) {
+export async function writeConfig(configFile: string, config: PlasmicConfig) {
   await writeFileContentRaw(
     configFile,
-    formatAsLocal(
+    await formatAsLocal(
       JSON.stringify(
         {
           ...config,
@@ -555,8 +553,7 @@ export async function writeConfig(
         undefined,
         2
       ),
-      configFile,
-      baseDir
+      configFile
     ),
     {
       force: true,
@@ -564,14 +561,10 @@ export async function writeConfig(
   );
 }
 
-export async function writeLock(
-  lockFile: string,
-  lock: PlasmicLock,
-  baseDir: string
-) {
+export async function writeLock(lockFile: string, lock: PlasmicLock) {
   await writeFileContentRaw(
     lockFile,
-    formatAsLocal(JSON.stringify(lock, undefined, 2), "/tmp/x.json", baseDir),
+    await formatAsLocal(JSON.stringify(lock, undefined, 2), "/tmp/x.json"),
     {
       force: true,
     }
@@ -580,15 +573,14 @@ export async function writeLock(
 
 export async function updateConfig(
   context: PlasmicContext,
-  newConfig: PlasmicConfig,
-  baseDir: string
+  newConfig: PlasmicConfig
 ) {
   // plasmic.json
-  await writeConfig(context.configFile, newConfig, baseDir);
+  await writeConfig(context.configFile, newConfig);
   context.config = newConfig;
 
   // plasmic.lock
-  await writeLock(context.lockFile, context.lock, baseDir);
+  await writeLock(context.lockFile, context.lock);
 }
 
 export function getOrAddProjectConfig(

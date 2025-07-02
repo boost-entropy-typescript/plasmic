@@ -22,8 +22,7 @@ export async function syncGlobalContexts(
   projectMeta: ProjectMetaBundle,
   projectConfig: ProjectConfig,
   projectLock: ProjectLock,
-  checksums: ChecksumBundle,
-  baseDir: string
+  checksums: ChecksumBundle
 ) {
   const resourcePath = getGlobalContextsResourcePath(context, projectConfig);
   if (checksums.globalContextsChecksum && projectMeta.globalContextBundle) {
@@ -33,12 +32,11 @@ export async function syncGlobalContexts(
       );
     }
     if (context.config.code.lang === "js") {
-      projectMeta.globalContextBundle.contextModule = formatScript(
-        tsxToJsx(projectMeta.globalContextBundle.contextModule),
-        baseDir
+      projectMeta.globalContextBundle.contextModule = await formatScript(
+        tsxToJsx(projectMeta.globalContextBundle.contextModule)
       );
     }
-    writeFileContent(
+    await writeFileContent(
       context,
       resourcePath,
       projectMeta.globalContextBundle.contextModule,

@@ -92,47 +92,42 @@ export async function exportProjectsCli(opts: ExportArgs): Promise<void> {
   const writeProj = async (bundle: ProjectBundle) => {
     await ensureImageAssetContents(bundle.imageAssets);
     const outPath = path.resolve(opts.outDir);
-    const promises: Promise<void>[] = [];
-    const writeFile = (fileName: string, content: string | Buffer) => {
+    const writeFile = async (fileName: string, content: string | Buffer) => {
       if (typeof content === "string" && !opts.skipFormatting) {
-        content = formatAsLocal(content, fileName, opts.outDir);
+        content = await formatAsLocal(content, fileName);
       }
       const projectName = snakeCase(bundle.projectConfig.projectName);
-      promises.push(
-        (async () => {
-          await fs.mkdir(path.join(outPath, projectName), { recursive: true });
-          await fs.writeFile(
-            path.join(outPath, projectName, fileName),
-            content
-          );
-        })()
-      );
+      await fs.mkdir(path.join(outPath, projectName), { recursive: true });
+      await fs.writeFile(path.join(outPath, projectName, fileName), content);
     };
     for (const comp of bundle.components) {
-      writeFile(comp.skeletonModuleFileName, comp.skeletonModule);
-      writeFile(comp.cssFileName, comp.cssRules);
+      await writeFile(comp.skeletonModuleFileName, comp.skeletonModule);
+      await writeFile(comp.cssFileName, comp.cssRules);
     }
     for (const icon of bundle.iconAssets) {
-      writeFile(icon.fileName, icon.module);
+      await writeFile(icon.fileName, icon.module);
     }
     for (const gv of bundle.globalVariants) {
-      writeFile(gv.contextFileName, gv.contextModule);
+      await writeFile(gv.contextFileName, gv.contextModule);
     }
 
     for (const img of bundle.imageAssets) {
-      writeFile(img.fileName, Buffer.from(img.blob, "base64"));
+      await writeFile(img.fileName, Buffer.from(img.blob, "base64"));
     }
 
-    writeFile(bundle.projectConfig.cssFileName, bundle.projectConfig.cssRules);
+    await writeFile(
+      bundle.projectConfig.cssFileName,
+      bundle.projectConfig.cssRules
+    );
     if (bundle.projectConfig.globalContextBundle) {
-      writeFile(
+      await writeFile(
         `${DEFAULT_GLOBAL_CONTEXTS_NAME}.${extx}`,
         bundle.projectConfig.globalContextBundle.contextModule
       );
     }
 
     if (bundle.projectConfig.splitsProviderBundle) {
-      writeFile(
+      await writeFile(
         `${DEFAULT_SPLITS_PROVIDER_NAME}.${extx}`,
         bundle.projectConfig.splitsProviderBundle.module
       );
@@ -140,114 +135,109 @@ export async function exportProjectsCli(opts: ExportArgs): Promise<void> {
 
     if (bundle.projectConfig.reactWebExportedFiles) {
       for (const file of bundle.projectConfig.reactWebExportedFiles) {
-        writeFile(file.fileName, file.content);
+        await writeFile(file.fileName, file.content);
       }
     }
-
-    await Promise.all(promises);
   };
 
   await Promise.all(result.map((res) => writeProj(res)));
 
-  await fixAllImportStatements(
-    {
-      configFile: "",
-      lockFile: "",
-      rootDir: path.resolve(opts.outDir),
-      absoluteSrcDir: path.resolve(opts.outDir),
-      config: {
-        platform: opts.platform || "react",
-        srcDir: "./",
-        defaultPlasmicDir: "./",
-        code: {
-          lang: opts.codeLang || "ts",
-          scheme: "blackbox",
-          reactRuntime: "classic",
-        },
-        images: {
-          scheme: opts.imagesScheme || "files",
-        },
-        style: {
-          scheme: opts.styleScheme || "css-modules",
-          defaultStyleCssFilePath: "",
-        },
-        tokens: {} as any,
-        globalVariants: {
-          variantGroups: result.flatMap((bundle) => {
-            const projectName = snakeCase(bundle.projectConfig.projectName);
-            return bundle.globalVariants.map((gv) => ({
-              id: gv.id,
-              name: gv.name,
-              projectId: bundle.projectConfig.projectId,
-              contextFilePath: `./${projectName}/${gv.contextFileName}`,
-            }));
-          }),
-        },
-        projects: result.map((bundle) => {
-          const projectName = snakeCase(bundle.projectConfig.projectName);
-          return {
-            projectId: bundle.projectConfig.projectId,
-            projectName: bundle.projectConfig.projectName,
-            version: "latest",
-            cssFilePath: `${projectName}/${bundle.projectConfig.cssFileName}`,
-            globalContextsFilePath: bundle.projectConfig.globalContextBundle
-              ? `${projectName}/${DEFAULT_GLOBAL_CONTEXTS_NAME}.${extx}`
-              : "",
-            splitsProviderFilePath: bundle.projectConfig.splitsProviderBundle
-              ? `${projectName}/${DEFAULT_SPLITS_PROVIDER_NAME}.${extx}`
-              : "",
-            components: bundle.components.map((comp) => ({
-              id: comp.id,
-              name: comp.componentName,
-              projectId: bundle.projectConfig.projectId,
-              type: "managed",
-              importSpec: {
-                modulePath: `${projectName}/${comp.skeletonModuleFileName}`,
-              },
-              renderModuleFilePath: `${projectName}/${comp.skeletonModuleFileName}`,
-              cssFilePath: `${projectName}/${comp.cssFileName}`,
-              scheme: "blackbox",
-              componentType: `${comp.isPage ? "page" : "component"}`,
-              plumeType: comp.plumeType,
-            })),
-            codeComponents: bundle.codeComponentMetas.map((comp) => ({
-              id: comp.id,
-              name: comp.name,
-              displayName: comp.displayName,
-              componentImportPath: comp.importPath,
-              helper: comp.helper,
-            })),
-            customFunctionMetas: (bundle.customFunctionMetas ?? []).map(
-              (meta) => ({
-                id: meta.id,
-                name: meta.name,
-                importPath: meta.importPath,
-                defaultExport: meta.defaultExport,
-                namespace: meta.namespace ?? null,
-              })
-            ),
-            icons: bundle.iconAssets.map((icon) => ({
-              id: icon.id,
-              name: icon.name,
-              moduleFilePath: `${projectName}/${icon.fileName}`,
-            })),
-            images: bundle.imageAssets.map((image) => ({
-              id: image.id,
-              name: image.name,
-              filePath: `${projectName}/${image.fileName}`,
-            })),
-            indirect: false,
-          };
-        }),
-        wrapPagesWithGlobalContexts: true,
+  await fixAllImportStatements({
+    configFile: "",
+    lockFile: "",
+    rootDir: path.resolve(opts.outDir),
+    absoluteSrcDir: path.resolve(opts.outDir),
+    config: {
+      platform: opts.platform || "react",
+      srcDir: "./",
+      defaultPlasmicDir: "./",
+      code: {
+        lang: opts.codeLang || "ts",
+        scheme: "blackbox",
+        reactRuntime: "classic",
       },
-      lock: {} as any,
-      auth: {} as any,
-      api: api,
-      cliArgs: {} as any,
+      images: {
+        scheme: opts.imagesScheme || "files",
+      },
+      style: {
+        scheme: opts.styleScheme || "css-modules",
+        defaultStyleCssFilePath: "",
+      },
+      tokens: {} as any,
+      globalVariants: {
+        variantGroups: result.flatMap((bundle) => {
+          const projectName = snakeCase(bundle.projectConfig.projectName);
+          return bundle.globalVariants.map((gv) => ({
+            id: gv.id,
+            name: gv.name,
+            projectId: bundle.projectConfig.projectId,
+            contextFilePath: `./${projectName}/${gv.contextFileName}`,
+          }));
+        }),
+      },
+      projects: result.map((bundle) => {
+        const projectName = snakeCase(bundle.projectConfig.projectName);
+        return {
+          projectId: bundle.projectConfig.projectId,
+          projectName: bundle.projectConfig.projectName,
+          version: "latest",
+          cssFilePath: `${projectName}/${bundle.projectConfig.cssFileName}`,
+          globalContextsFilePath: bundle.projectConfig.globalContextBundle
+            ? `${projectName}/${DEFAULT_GLOBAL_CONTEXTS_NAME}.${extx}`
+            : "",
+          splitsProviderFilePath: bundle.projectConfig.splitsProviderBundle
+            ? `${projectName}/${DEFAULT_SPLITS_PROVIDER_NAME}.${extx}`
+            : "",
+          components: bundle.components.map((comp) => ({
+            id: comp.id,
+            name: comp.componentName,
+            projectId: bundle.projectConfig.projectId,
+            type: "managed",
+            importSpec: {
+              modulePath: `${projectName}/${comp.skeletonModuleFileName}`,
+            },
+            renderModuleFilePath: `${projectName}/${comp.skeletonModuleFileName}`,
+            cssFilePath: `${projectName}/${comp.cssFileName}`,
+            scheme: "blackbox",
+            componentType: `${comp.isPage ? "page" : "component"}`,
+            plumeType: comp.plumeType,
+          })),
+          codeComponents: bundle.codeComponentMetas.map((comp) => ({
+            id: comp.id,
+            name: comp.name,
+            displayName: comp.displayName,
+            componentImportPath: comp.importPath,
+            helper: comp.helper,
+          })),
+          customFunctionMetas: (bundle.customFunctionMetas ?? []).map(
+            (meta) => ({
+              id: meta.id,
+              name: meta.name,
+              importPath: meta.importPath,
+              defaultExport: meta.defaultExport,
+              namespace: meta.namespace ?? null,
+            })
+          ),
+          icons: bundle.iconAssets.map((icon) => ({
+            id: icon.id,
+            name: icon.name,
+            moduleFilePath: `${projectName}/${icon.fileName}`,
+          })),
+          images: bundle.imageAssets.map((image) => ({
+            id: image.id,
+            name: image.name,
+            filePath: `${projectName}/${image.fileName}`,
+          })),
+          indirect: false,
+        };
+      }),
+      wrapPagesWithGlobalContexts: true,
     },
-    opts.outDir
-  );
+    lock: {} as any,
+    auth: {} as any,
+    api: api,
+    cliArgs: {} as any,
+  });
 }
 
 interface ExportOpts {
@@ -315,39 +305,34 @@ async function exportProjects(api: PlasmicApi, opts: ExportOpts) {
     for (const proj of result) {
       for (const comp of proj.components) {
         [comp.skeletonModuleFileName, comp.skeletonModule] =
-          maybeConvertTsxToJsx(
+          await maybeConvertTsxToJsx(
             comp.skeletonModuleFileName,
-            comp.skeletonModule,
-            "."
+            comp.skeletonModule
           );
       }
       for (const icon of proj.iconAssets) {
-        [icon.fileName, icon.module] = maybeConvertTsxToJsx(
+        [icon.fileName, icon.module] = await maybeConvertTsxToJsx(
           icon.fileName,
-          icon.module,
-          "."
+          icon.module
         );
       }
       for (const gv of proj.globalVariants) {
-        [gv.contextFileName, gv.contextModule] = maybeConvertTsxToJsx(
+        [gv.contextFileName, gv.contextModule] = await maybeConvertTsxToJsx(
           gv.contextFileName,
-          gv.contextModule,
-          "."
+          gv.contextModule
         );
       }
       if (proj.projectConfig.globalContextBundle) {
-        const res = maybeConvertTsxToJsx(
+        const res = await maybeConvertTsxToJsx(
           `${DEFAULT_GLOBAL_CONTEXTS_NAME}.tsx`,
-          proj.projectConfig.globalContextBundle.contextModule,
-          "."
+          proj.projectConfig.globalContextBundle.contextModule
         );
         proj.projectConfig.globalContextBundle.contextModule = res[1];
       }
       if (proj.projectConfig.splitsProviderBundle) {
-        const res = maybeConvertTsxToJsx(
+        const res = await maybeConvertTsxToJsx(
           `${DEFAULT_SPLITS_PROVIDER_NAME}.tsx`,
-          proj.projectConfig.splitsProviderBundle.module,
-          "."
+          proj.projectConfig.splitsProviderBundle.module
         );
         proj.projectConfig.splitsProviderBundle.module = res[1];
       }
