@@ -8,4 +8,12 @@ export abstract class BaseModel {
       .frameLocator("iframe.studio-frame")
       .frameLocator("iframe.__wab_studio-frame");
   }
+
+  get componentFrame(): FrameLocator {
+    return this.studioFrame.frameLocator("iframe").first();
+  }
+
+  getComponentFrameByIndex(index: number): FrameLocator {
+    return this.studioFrame.frameLocator("iframe").nth(index);
+  }
 }
