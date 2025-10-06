@@ -1,6 +1,6 @@
 {
   "name": "create-plasmic-app",
-  "version": "0.0.117",
+  "version": "0.0.118",
   "description": "Create Plasmic-powered React apps",
   "main": "./dist/lib.js",
   "types": "./dist/lib.d.ts",
@@ -15,8 +15,8 @@
     "test": "TEST_CWD=`pwd` yarn --cwd=../.. test --passWithNoTests",
     "coverage": "TEST_CWD=`pwd` yarn --cwd=../.. test --coverage --passWithNoTests",
     "build": "eslint 'src/**' && tsc",
-    "run-cpa": "yarn build && ts-node run-cpa.ts",
-    "create-plasmic-app": "ts-node src/index.ts",
+    "run-cpa": "yarn build && tsx run-cpa.ts",
+    "create-plasmic-app": "tsx src/index.ts",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
@@ -29,10 +29,11 @@
     "@types/semver": "^7.3.5",
     "@types/update-notifier": "^5.0.0",
     "@types/validate-npm-package-name": "^3.0.2",
-    "@types/yargs": "^16.0.0"
+    "@types/yargs": "^16.0.0",
+    "tsx": "^4.20.6"
   },
   "dependencies": {
-    "@plasmicapp/cli": "0.1.346",
+    "@plasmicapp/cli": "0.1.347",
     "@sentry/node": "^6.2.2",
     "chalk": "^4.1.0",
     "execa": "^5.0.0",
