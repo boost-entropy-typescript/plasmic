@@ -12,16 +12,13 @@ import registerComponent from '@plasmicapp/host/registerComponent';
 import registerGlobalContext from '@plasmicapp/host/registerGlobalContext';
 
 // @public (undocumented)
-export function queryWordpress(wordpressUrl: string, type: "pages" | "posts", queryOperator?: QueryOperator, filterValue?: string, limit?: number): Promise<any>;
-
-// @public (undocumented)
 export function registerAll(loader?: {
     registerComponent: typeof registerComponent;
     registerGlobalContext: typeof registerGlobalContext;
 }): void;
 
 // @public (undocumented)
-export function registerAllCustomFunctions(loader?: {
+export function registerWordpress(loader?: {
     registerFunction: any;
 }): void;
 
