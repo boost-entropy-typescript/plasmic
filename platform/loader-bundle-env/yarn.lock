@@ -1873,10 +1873,10 @@
   resolved "https://registry.yarnpkg.com/@plasmicpkgs/contentful/-/contentful-0.0.8.tgz#5f92841f5b1da8a250973984bca6e83986c14cc0"
   integrity sha512-ja8i2cZvQXJmKrarp/W+s2CATRbd5Bu/IPfCVcpsbxryhCVJ8yVMZV3aU2Wm/VflIgIM76m+1vgPxkwBKq0Ngw==
 
-"@plasmicpkgs/fetch@^0.0.26":
-  version "0.0.26"
-  resolved "https://registry.yarnpkg.com/@plasmicpkgs/fetch/-/fetch-0.0.26.tgz#7da47020ef927a16b765c6d2c254a35f360f935e"
-  integrity sha512-JZElBvE18+fLpo4HbA1iUWa90fqZ8q/6w/y0SuQiEp9EEHRxrrUoBG8uQ9G0akI5M3U98dUDmagnoOSfVxh1og==
+"@plasmicpkgs/fetch@^0.0.27":
+  version "0.0.27"
+  resolved "https://registry.yarnpkg.com/@plasmicpkgs/fetch/-/fetch-0.0.27.tgz#1aac16b76aed2e55399f7ce40e9138594455ba8e"
+  integrity sha512-ToTAPrx6/htUeunUcVouHKaEJ2YY0PnaWltkEZPfqcVHt1F7Pn2VDjDO0OLmxGARInISAbGud15ZOxsgGVaKEA==
 
 "@plasmicpkgs/framer-motion@^0.0.235":
   version "0.0.235"
@@ -1885,10 +1885,10 @@
   dependencies:
     framer-motion "^5.3.0"
 
-"@plasmicpkgs/graphql@^0.0.20":
-  version "0.0.20"
-  resolved "https://registry.yarnpkg.com/@plasmicpkgs/graphql/-/graphql-0.0.20.tgz#5d274cc6c96faa82d395c9b81c56eb426f967435"
-  integrity sha512-JnJqXyHDsO+25U3bfYXa0Xg/jIJ9Wq8CCna3CQgRTdWEmnXduysnX4XXJWF4q0HVxNNpalYhTRnKwCp1SR4OFA==
+"@plasmicpkgs/graphql@^0.0.21":
+  version "0.0.21"
+  resolved "https://registry.yarnpkg.com/@plasmicpkgs/graphql/-/graphql-0.0.21.tgz#9d840b5447c093b55adf4bbe8b3ec5659f1b9c86"
+  integrity sha512-g8cBjjJjdxeYxoXw9c3fJYkIQEOwPX7Aj4jwx7ITQxJmLpxQmak/m/9bu3BZqAH0YNYvyUjwKb7c/Y0t56/0IQ==
 
 "@plasmicpkgs/lottie-react@^0.0.229":
   version "0.0.229"
@@ -2017,10 +2017,10 @@
     "@types/dlv" "^1.1.2"
     dlv "^1.1.3"
 
-"@plasmicpkgs/plasmic-wordpress@^0.0.161":
-  version "0.0.161"
-  resolved "https://registry.yarnpkg.com/@plasmicpkgs/plasmic-wordpress/-/plasmic-wordpress-0.0.161.tgz#a2c895f3d9a00ccdb557a71d4be11e39681766c6"
-  integrity sha512-oRj9ppT3RCgmdl9ycuCpOF2tNpEez8rHRXvm7ZeT3fGJxCAEYfWs0HrnYfRglYLJtwlTZSVgn5Mk7emOyvnSwQ==
+"@plasmicpkgs/plasmic-wordpress@^0.0.162":
+  version "0.0.162"
+  resolved "https://registry.yarnpkg.com/@plasmicpkgs/plasmic-wordpress/-/plasmic-wordpress-0.0.162.tgz#6a1c16b18e9905a3fbf09a0d25d987bf5bcc3bea"
+  integrity sha512-L8O6qIxyT6O+njJ4HKkGpaekWcJi5CdvL1tvGhzoGxLyCwNlPkXMP1a8v7TXS1nry9JD5pNU8RNg2pSPecrxZg==
   dependencies:
     "@types/dlv" "^1.1.2"
     dlv "^1.1.3"
@@ -2157,10 +2157,10 @@
   dependencies:
     vanilla-cookieconsent "^3.1.0"
 
-"@plasmicpkgs/wordpress@^0.0.11":
-  version "0.0.11"
-  resolved "https://registry.yarnpkg.com/@plasmicpkgs/wordpress/-/wordpress-0.0.11.tgz#964a860ed34c818fd0ecfa63934775f7ae7da2f6"
-  integrity sha512-igaS9Rk+IgFp64seJt1i4ybvHMr8Pc99PDfBqHDy2A6WTWtgh2sOd1BySPHfv5k2amecaVobmr6jioIqY4XhUA==
+"@plasmicpkgs/wordpress@^0.0.12":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@plasmicpkgs/wordpress/-/wordpress-0.0.12.tgz#fd710b7439b37630b60be574444e5db7a11bb681"
+  integrity sha512-0h6nuJ5Y2sUGYHEbOreNnk31k6WOVGupXtKXuwha9swgeo48jtLDqg55P2GYuxdtiVQZZ4n/TLq1SlB5qFhxjQ==
 
 "@popperjs/core@^2.9.0":
   version "2.11.8"
