@@ -3760,25 +3760,39 @@ const mkComponentLevelQueryFetcher = computedFn(
             ),
         ]);
 
-        // Memoize queries similar to codegen output code.
-        // Keep the tree identity stable and read the latest render context via ref
-        // so query state isn't recreated on every canvas render.
+        // Memoize queries similar to codegen output. Keep the tree identity stable and
+        // read the latest ctx via ref so query state isn't recreated every render.
         // const queryCtxRef = sub.React.useRef(ctx);
         // queryCtxRef.current = ctx;
+
+        // Rebuild the tree when any query's id, name, or op changes (e.g. on rename)
+        // otherwise `usePlasmicQueries` returns results keyed by stale names.
+        const serverQueriesByKey = component.serverQueries
+          .filter(isServerQueryWithOperation)
+          .map((query) => {
+            const varName = toVarName(query.name);
+            const uuidName = `${query.uuid}:${varName}`;
+            return {
+              query,
+              varName,
+              key: isKnownCustomCode(query.op)
+                ? `custom:${uuidName}:${query.op.code}`
+                : `func::${uuidName}${customFunctionId(query.op.func)}`,
+            };
+          });
         const serverQueryTree = sub.React.useMemo(
           (): QueryComponentNode => ({
             type: "component",
             queries: Object.fromEntries(
-              component.serverQueries
-                .filter(isServerQueryWithOperation)
-                .map((query) => {
+              serverQueriesByKey
+                .map(({ query, varName }) => {
                   if (isKnownCustomCode(query.op)) {
                     const depQueryNames = getReferencedQueryNamesInCustomCode(
                       query,
                       component
                     );
                     return [
-                      toVarName(query.name),
+                      varName,
                       {
                         id: `custom:${query.uuid}:${query.op.code}`,
                         fn: buildCustomCodeFn(query.op.code, ctx.env),
@@ -3796,7 +3810,7 @@ const mkComponentLevelQueryFetcher = computedFn(
                     return null;
                   }
                   return [
-                    toVarName(query.name),
+                    varName,
                     {
                       id: funcId,
                       fn: funcReg.function,
@@ -3830,7 +3844,11 @@ const mkComponentLevelQueryFetcher = computedFn(
             propsContext: {},
             children: [],
           }),
-          [component, ctx.viewCtx.canvasCtx]
+          [
+            component,
+            ctx.viewCtx.canvasCtx,
+            serverQueriesByKey.map((q) => q.key).join("|"),
+          ]
         );
         const new$Q =
           sub.dataSources?.unstable_usePlasmicQueries?.(
