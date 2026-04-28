@@ -81,6 +81,11 @@ function getLoaderVersion(req: Request) {
 }
 
 function getLoaderOptions(req: Request) {
+  const projectIdSpecs = ensureArray(req.query.projectId) as string[];
+  if (projectIdSpecs.length === 0) {
+    throw new BadRequestError("At least one projectId must be specified");
+  }
+
   return {
     platform:
       req.query.platform === "nextjs" || req.query.platform === "gatsby"
@@ -88,7 +93,7 @@ function getLoaderOptions(req: Request) {
         : "react",
     nextjsAppDir: req.query.nextjsAppDir === "true",
     browserOnly: req.query.browserOnly === "true",
-    projectIdSpecs: ensureArray(req.query.projectId) as string[],
+    projectIdSpecs,
     loaderVersion: getLoaderVersion(req),
     i18nKeyScheme: req.query.i18nKeyScheme as LocalizationKeyScheme | undefined,
     i18nTagPrefix: req.query.i18nTagPrefix as string | undefined,
@@ -884,10 +889,6 @@ export function checkEtagSkippable(req: Request, res: Response, etag: string) {
     logger().info("Etag mechanism is disabled");
     return false;
   }
-  if (req.headers["x-plasmic-uptime-check"]) {
-    // Never skip uptime checks
-    return false;
-  }
 
   // Always set the same ETag, even for 304 Not Modified, so that it'll be used
   // next time as well.
@@ -899,6 +900,11 @@ export function checkEtagSkippable(req: Request, res: Response, etag: string) {
   // disable request collapsing that cloudfront does for simultaneous
   // requests.
   res.setHeader("Cache-Control", "max-age=5");
+
+  if (req.headers["x-plasmic-uptime-check"]) {
+    // Never skip uptime checks, but still set cache headers above
+    return false;
+  }
 
   if (req.headers["if-none-match"] === etag) {
     // We got a match!  We can skip codegen.
