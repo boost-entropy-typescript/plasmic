@@ -1,6 +1,6 @@
 {
   "name": "@plasmicapp/loader-react",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Plasmic loader SDK for React",
   "license": "MIT",
   "repository": {
@@ -60,7 +60,7 @@
   },
   "dependencies": {
     "@plasmicapp/data-sources-context": "0.1.23",
-    "@plasmicapp/host": "2.0.1",
+    "@plasmicapp/host": "2.0.2",
     "@plasmicapp/loader-core": "2.0.0",
     "@plasmicapp/loader-fetcher": "2.0.0",
     "@plasmicapp/loader-splits": "1.0.70",
@@ -71,7 +71,7 @@
   },
   "devDependencies": {
     "@types/node": "^22",
-    "@types/pascalcase": "^1.0.0",
+    "@types/pascalcase": "^1.0.3",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "react": "18.3.1",
