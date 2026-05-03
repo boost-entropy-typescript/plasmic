@@ -110,6 +110,7 @@ import {
   getPlatformImportComponents,
   getReactWebNamedImportsForRender,
   getSkeletonModuleFileName,
+  isDynamicPagePath,
   isPageAwarePlatform,
   makeArgPropsName,
   makeArgsTypeName,
@@ -159,6 +160,7 @@ import {
   getPageRouterSkeletonImports,
   getRscMetadata,
   serializeAppRouterGenerateMetadata,
+  serializeAppRouterGenerateStaticParamsSkeleton,
   serializePageQueryTree,
   serializePagesRouterGetStaticPaths,
   serializePagesRouterGetStaticProps,
@@ -2646,7 +2648,7 @@ function serializePageAwareSkeletonWrapperTs(
   const isNextJs = isPlatformNextJs(ctx);
   const isNextJsPage = isPageComponent(component) && isNextJs;
 
-  const isDynamicRoute = /\[.+\]/.test(component.pageMeta?.path ?? "");
+  const isDynamicRoute = isDynamicPagePath(component.pageMeta?.path);
 
   const pagesRouterGetStaticProps =
     isNextJsPage &&
@@ -2671,6 +2673,7 @@ function serializePageAwareSkeletonWrapperTs(
       : `<${nodeComponentName} />`,
     serverExports = "",
     componentPropsSig = "",
+    componentBodyPrefix = "",
     tanstackRouteInfo = "";
 
   if (ctx.projectConfig.hasStyleTokenOverrides) {
@@ -2680,11 +2683,15 @@ function serializePageAwareSkeletonWrapperTs(
     if (ctx.useRSC) {
       const skeletonPropsName = makeServerPageSkeletonPropsName(component);
       componentPropsSig = `{ params, searchParams }: ${skeletonPropsName}`;
+      componentBodyPrefix = `const ctx = await makeAppRouterPageCtx({ params, searchParams });`;
       serverExports = serializeAppRouterGenerateMetadata(ctx);
+      if (isDynamicRoute) {
+        serverExports = `${serializeAppRouterGenerateStaticParamsSkeleton()}\n${serverExports}`;
+      }
       content = `<PageParamsProvider__
-        route="${component.pageMeta?.path ?? ""}"
-        params={await params}
-        query={await searchParams}
+        route={ctx.pageRoute}
+        params={ctx.params}
+        query={ctx.query}
       >
         ${content}
       </PageParamsProvider__>`;
@@ -2847,6 +2854,7 @@ function serializePageAwareSkeletonWrapperTs(
       // 4. Props to set on the root node.
       ${globalGroupsComment}
 
+      ${componentBodyPrefix}
       return (${content});
     }
 

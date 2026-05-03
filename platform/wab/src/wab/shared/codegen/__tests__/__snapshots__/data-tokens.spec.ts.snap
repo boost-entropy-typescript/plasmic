@@ -498,7 +498,7 @@ export async function makeAppRouterPageCtx({ params, searchParams }: SeoServerSk
     pageRoute,
     pagePath,
     params: pageParams,
-    query: (await searchParams) ?? {},
+    query: {},
   };
   return ctx;
 }
@@ -642,7 +642,7 @@ export async function makeAppRouterPageCtx({ params, searchParams }: GenerateMet
     pageRoute,
     pagePath,
     params: pageParams,
-    query: (await searchParams) ?? {},
+    query: {},
   };
   return ctx;
 }
@@ -1184,10 +1184,11 @@ export async function generateMetadata(
       // 4. Props to set on the root node.
       
 
+      const ctx = await makeAppRouterPageCtx({ params, searchParams });
       return (<PageParamsProvider__
-        route="/seo"
-        params={await params}
-        query={await searchParams}
+        route={ctx.pageRoute}
+        params={ctx.params}
+        query={ctx.query}
       >
         <PlasmicSeoServer />
       </PageParamsProvider__>);
