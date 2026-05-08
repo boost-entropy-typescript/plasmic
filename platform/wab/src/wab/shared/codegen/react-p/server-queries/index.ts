@@ -14,7 +14,6 @@ import {
 } from "@/wab/shared/codegen/react-p/page-metadata";
 import { serializeGeneratePageMetadataBody } from "@/wab/shared/codegen/react-p/page-metadata/serializer";
 import {
-  getReactWebNamedImportsForRender,
   makeDefaultExternalPropsName,
   makePlasmicComponentName,
   makeServerPageSkeletonPropsName,
@@ -41,7 +40,6 @@ import {
 } from "@/wab/shared/codegen/react-p/server-queries/serializer";
 import { isServerQueryWithOperation } from "@/wab/shared/codegen/react-p/server-queries/utils";
 import { SerializerBaseContext } from "@/wab/shared/codegen/react-p/types";
-import { getReactWebPackageName } from "@/wab/shared/codegen/react-p/utils";
 import { ComponentExportOutput, ExportOpts } from "@/wab/shared/codegen/types";
 import { assert } from "@/wab/shared/common";
 import { isPageComponent } from "@/wab/shared/core/components";
@@ -132,10 +130,6 @@ ${makeTaggedPlasmicImport(
   component.uuid,
   "rscClient"
 )}
-
-import {
-  ${getReactWebNamedImportsForRender()}
-} from "${getReactWebPackageName(opts)}";
 
 ${serializeServerPageQueries(ctx)}
 
@@ -394,6 +388,18 @@ export function getAppRouterSkeletonImports({
   return `import type { Metadata, ResolvingMetadata } from "next";${
     hasServerQueries
       ? `\nimport { unstable_executePlasmicQueries } from "${getDataSourcesPackageName()}";`
+      : ""
+  }`;
+}
+
+export function getTanStackSkeletonImports({
+  hasServerQueries,
+}: Pick<SerializerBaseContext, "hasServerQueries">) {
+  return `import { createFileRoute } from "@tanstack/react-router";${
+    hasServerQueries
+      ? `
+import { unstable_executePlasmicQueries } from "${getDataSourcesPackageName()}";
+import { PlasmicQueryDataProvider } from "@plasmicapp/react-web/lib/query";`
       : ""
   }`;
 }
