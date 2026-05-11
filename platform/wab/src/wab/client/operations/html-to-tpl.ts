@@ -9,6 +9,7 @@ import { parseHtmlToWebImporterTree } from "@/wab/client/web-importer/html-parse
 import {
   isWIBaseVariantSettings,
   WIAnimationSequence,
+  WIBase,
   WIElement,
   WIFragment,
   WIScreenVariant,
@@ -16,13 +17,14 @@ import {
   WIVariant,
 } from "@/wab/client/web-importer/types";
 import { paramToVarName, toVarName } from "@/wab/shared/codegen/util";
+import { filterObject } from "@/wab/shared/collections";
 import { assertNever, mkShortId, withoutNils } from "@/wab/shared/common";
 import { code, customCode } from "@/wab/shared/core/exprs";
 import { ImageAssetType } from "@/wab/shared/core/image-asset-type";
 import { getTagAttrForImageAsset } from "@/wab/shared/core/image-assets";
 import { getResponsiveStrategy } from "@/wab/shared/core/sites";
 import { mkRuleSet } from "@/wab/shared/core/styles";
-import { TplTagType } from "@/wab/shared/core/tpls";
+import { AttrsSpec, TplTagType } from "@/wab/shared/core/tpls";
 import { camelCssPropsToKebab } from "@/wab/shared/css";
 import {
   AnimationProperty,
@@ -197,6 +199,20 @@ export async function htmlToTpl(
   };
 }
 
+// Attrs handled via dedicated paths instead of vs.attrs. Exported so copilot
+// tools can reuse the same exclusion list.
+export const htmlAttrsIgnoredByTpl = new Set([
+  "class", // RuleSet styles
+  "className", // RuleSet styles
+  "style", // RuleSet styles (split to safe/unsafe)
+  "data-plasmic-name", // Tpl name
+  "data-plasmic-component", // Plasmic metadata
+  "data-props", // Plasmic metadata
+  "slot", // Plasmic slot
+  "src", // image asset
+  "srcset", // image asset
+]);
+
 type TplVariantSettingsData = {
   variantCombo: WIVariant[];
   safeStyles: Record<string, string>;
@@ -363,6 +379,10 @@ async function wiTreeToTpl(
     tplVariantSettingsData.set(tpl, tplVariantSettings);
   }
 
+  function htmlAttrsToTplAttrs(node: WIBase): AttrsSpec {
+    return filterObject(node.attrs, ([key]) => !htmlAttrsIgnoredByTpl.has(key));
+  }
+
   async function rec(node: WIElement): Promise<TplNode[]> {
     // Fragment expands its children in place
     if (node.type === "fragment") {
@@ -374,6 +394,7 @@ async function wiTreeToTpl(
     const tplName = node.attrs["data-plasmic-name"];
     if (node.type === "text") {
       const tpl = vtm.mkTplTagX(node.tag, {
+        attrs: htmlAttrsToTplAttrs(node),
         name: tplName,
         type: TplTagType.Text,
       });
@@ -489,6 +510,7 @@ async function wiTreeToTpl(
 
       const tpl = vtm.mkTplImage({
         attrs: {
+          ...htmlAttrsToTplAttrs(node),
           src: code(JSON.stringify(getSrc())),
         },
         type: ImageAssetType.Picture,
@@ -502,6 +524,7 @@ async function wiTreeToTpl(
       const tpl = vtm.mkTplTagX(
         node.tag,
         {
+          attrs: htmlAttrsToTplAttrs(node),
           name: tplName,
           type: TplTagType.Other,
         },

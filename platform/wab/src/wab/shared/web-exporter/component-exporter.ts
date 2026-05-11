@@ -68,10 +68,10 @@ function buildTplNode(tpl: TplNode): XmlElement {
  * - ImageAssetRef: Asset dataUri
  * - StyleTokenRef: Token UUID
  *
- * Returns empty string for dynamic expressions (ObjectPath, VarRef, EventHandler, etc.)
+ * Returns undefined for dynamic expressions (ObjectPath, VarRef, EventHandler, etc.)
  * that can't be serialized to static HTML.
  */
-function extractExprValue(expr: Expr): string {
+function extractStaticExprValue(expr: Expr): string | undefined {
   // First try to extract as JSON (handles CustomCode, TemplatedString, CompositeExpr)
   const jsonValue = tryExtractJson(expr);
   if (jsonValue !== undefined) {
@@ -91,8 +91,12 @@ function extractExprValue(expr: Expr): string {
   }
 
   // For dynamic expressions (ObjectPath, VarRef, EventHandler, RenderExpr, etc.),
-  // we can't serialize them to static HTML, so return empty string
-  return "";
+  // we can't serialize them to static HTML.
+  return undefined;
+}
+
+function extractExprValue(expr: Expr): string {
+  return extractStaticExprValue(expr) ?? "";
 }
 
 export function getStylesFromRuleSet(rs: RuleSet): Record<string, string> {
@@ -136,6 +140,25 @@ function getStylesFromVariantSetting(
   return styles;
 }
 
+// Attrs that are either rendered by buildTplTag (id, style, children) or store internal
+// asset data we don't need in Copilot (e.g. outerHTML on svg resolves to a base64 data).
+const RESERVED_ATTR_KEYS = new Set(["id", "style", "children", "outerHTML"]);
+
+function getAttrsFromVariantSetting(
+  vs: VariantSetting
+): Record<string, string> {
+  const attrs: Record<string, string> = {};
+  for (const [key, expr] of Object.entries(vs.attrs)) {
+    if (!RESERVED_ATTR_KEYS.has(key)) {
+      const value = extractStaticExprValue(expr);
+      if (value !== undefined) {
+        attrs[key] = value;
+      }
+    }
+  }
+  return attrs;
+}
+
 function getStyleString(vs: any): string | undefined {
   const styles = getStylesFromVariantSetting(vs);
   const entries = Object.entries(styles);
@@ -160,6 +183,11 @@ function buildTplTag(tpl: TplTag): XmlElement {
   const style = getStyleString(vs);
   if (style) {
     attrs.style = style;
+  }
+
+  // Include static HTML attributes
+  for (const [key, value] of Object.entries(getAttrsFromVariantSetting(vs))) {
+    attrs[key] = value;
   }
 
   // For text blocks, render inline with text content
@@ -312,6 +340,7 @@ interface TplOverride {
   vsUid: number;
   rsUid: number;
   styles: Record<string, string>;
+  attrs: Record<string, string>;
 }
 
 /**
@@ -335,13 +364,15 @@ function getTplOverrides(
     }
 
     const styles = getStylesFromVariantSetting(vs);
+    const attrs = getAttrsFromVariantSetting(vs);
 
-    if (Object.keys(styles).length > 0) {
+    if (Object.keys(styles).length > 0 || Object.keys(attrs).length > 0) {
       overrides.push({
         tplUuid: tpl.uuid,
         vsUid: vs.uid,
         rsUid: vs.rs.uid,
         styles,
+        attrs,
       });
     }
   }
@@ -350,18 +381,25 @@ function getTplOverrides(
 }
 
 function buildTplOverride(o: TplOverride): XmlElement {
+  const variantSettingChildren: XmlElement[] = [];
+  if (Object.keys(o.styles).length > 0) {
+    variantSettingChildren.push({
+      RuleSet: [{ _attr: { id: String(o.rsUid) } }, JSON.stringify(o.styles)],
+    });
+  }
+  if (Object.keys(o.attrs).length > 0) {
+    variantSettingChildren.push({
+      Attrs: JSON.stringify(o.attrs),
+    });
+  }
+
   return {
     element: [
       { _attr: { uuid: o.tplUuid } },
       {
         VariantSetting: [
           { _attr: { id: String(o.vsUid) } },
-          {
-            RuleSet: [
-              { _attr: { id: String(o.rsUid) } },
-              JSON.stringify(o.styles),
-            ],
-          },
+          ...variantSettingChildren,
         ],
       },
     ],
