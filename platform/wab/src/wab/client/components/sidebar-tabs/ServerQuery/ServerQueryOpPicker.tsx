@@ -79,6 +79,50 @@ const LazyValuePreview = React.lazy(async () => {
 
 const CUSTOM_CODE_OPTION = "__custom_code__";
 
+type ServerQueryMode = "query" | "mutation";
+
+function mkCustomFunctionArgs(
+  customFunction: CustomFunction,
+  registrationMeta: CustomFunctionMeta<any> | undefined,
+  mode: ServerQueryMode
+): FunctionArg[] {
+  if (!registrationMeta?.params) {
+    return [];
+  }
+
+  const args: FunctionArg[] = [];
+  const defaultParamValues = customFunction.params.map(() => undefined as any);
+  for (const [paramIndex, param] of customFunction.params.entries()) {
+    const registeredParam = registrationMeta.params?.find(
+      (p) => p.name === param.argName
+    );
+    if (!registeredParam || typeof registeredParam === "string") {
+      continue;
+    }
+
+    const propType = registeredParam as StudioPropType<any>;
+    const defaultValue = getPropTypeDefaultValue(propType, {
+      componentPropValues: defaultParamValues,
+      ccContextData: undefined,
+      controlExtras: {
+        path: [param.argName],
+        mode,
+      },
+    });
+    if (defaultValue != null) {
+      defaultParamValues[paramIndex] = defaultValue;
+      args.push(
+        new FunctionArg({
+          uuid: mkShortId(),
+          argType: param,
+          expr: codeLit(defaultValue),
+        })
+      );
+    }
+  }
+  return args;
+}
+
 interface QueryDraft {
   queryName?: string;
   fnExpr?: CustomFunctionExpr;
@@ -162,43 +206,6 @@ function getAvailableCustomFunctions(
   return availableCustomFunctions;
 }
 
-/**
- * Create FunctionArgs for a new CustomFunction, with default values
- * for parameters that have defaultValue defined in registration metadata.
- */
-function mkCustomFunctionArgs(
-  customFunction: CustomFunction,
-  registrationMeta: CustomFunctionMeta<any> | undefined
-): FunctionArg[] {
-  if (!registrationMeta?.params) {
-    return [];
-  }
-
-  const args: FunctionArg[] = [];
-  for (const param of customFunction.params) {
-    const registeredParam = registrationMeta.params?.find(
-      (p) => p.name === param.argName
-    );
-    if (!registeredParam || typeof registeredParam === "string") {
-      continue;
-    }
-
-    const defaultValue = getPropTypeDefaultValue(
-      registeredParam as StudioPropType<any>
-    );
-    if (defaultValue != null) {
-      args.push(
-        new FunctionArg({
-          uuid: mkShortId(),
-          argType: param,
-          expr: codeLit(defaultValue),
-        })
-      );
-    }
-  }
-  return args;
-}
-
 export const ServerQueryOpDraftForm = observer(
   function ServerQueryOpDraftForm(props: {
     value: QueryDraft;
@@ -210,7 +217,7 @@ export const ServerQueryOpDraftForm = observer(
     showQueryName?: boolean;
     allowedOps?: string[];
     exprCtx: ExprCtx;
-    filterMode: "query" | "mutation";
+    mode: ServerQueryMode;
   }) {
     const {
       value,
@@ -220,8 +227,8 @@ export const ServerQueryOpDraftForm = observer(
       env: data,
       schema,
       showQueryName,
-      filterMode,
       exprCtx,
+      mode,
     } = props;
     const studioCtx = useStudioCtx();
     const viewCtx = studioCtx.focusedViewCtx();
@@ -248,9 +255,9 @@ export const ServerQueryOpDraftForm = observer(
     const availableFunctions = React.useMemo(
       () =>
         getAllCustomFunctions(studioCtx.site).filter((fn) =>
-          filterMode === "mutation" ? fn.isMutation : fn.isQuery
+          mode === "mutation" ? fn.isMutation : fn.isQuery
         ),
-      [studioCtx.site.projectDependencies.length, filterMode]
+      [studioCtx.site.projectDependencies.length, mode]
     );
 
     const argsMap = React.useMemo(
@@ -355,7 +362,7 @@ export const ServerQueryOpDraftForm = observer(
       const firstFunc = availableFunctions[0];
       const meta = getRegistrationMeta(firstFunc);
       if (!value?.fnExpr) {
-        const args = mkCustomFunctionArgs(firstFunc, meta);
+        const args = mkCustomFunctionArgs(firstFunc, meta, mode);
         onChange({
           ...value,
           fnExpr: new CustomFunctionExpr({
@@ -373,7 +380,7 @@ export const ServerQueryOpDraftForm = observer(
             ...value,
             fnExpr: new CustomFunctionExpr({
               func: firstFunc,
-              args: mkCustomFunctionArgs(firstFunc, meta),
+              args: mkCustomFunctionArgs(firstFunc, meta, mode),
             }),
           });
         }
@@ -444,7 +451,11 @@ export const ServerQueryOpDraftForm = observer(
             codeExpr: undefined,
             fnExpr: new CustomFunctionExpr({
               func: newFunc,
-              args: mkCustomFunctionArgs(newFunc, getRegistrationMeta(newFunc)),
+              args: mkCustomFunctionArgs(
+                newFunc,
+                getRegistrationMeta(newFunc),
+                mode
+              ),
             }),
           });
         }
@@ -535,7 +546,8 @@ export const ServerQueryOpDraftForm = observer(
                       func,
                       args: mkCustomFunctionArgs(
                         func,
-                        getRegistrationMeta(func)
+                        getRegistrationMeta(func),
+                        mode
                       ),
                     })
                   : undefined,
@@ -750,7 +762,6 @@ export const ServerQueryOpExprFormAndPreview = observer(
     allowedOps?: string[];
     exprCtx: ExprCtx;
     interaction?: Interaction;
-    filterMode: "query" | "mutation";
   }) {
     const {
       value,
@@ -761,8 +772,9 @@ export const ServerQueryOpExprFormAndPreview = observer(
       schema,
       allowedOps,
       exprCtx,
-      filterMode,
+      interaction,
     } = props;
+    const mode: ServerQueryMode = interaction ? "mutation" : "query";
     const studioCtx = useStudioCtx();
     const parentQuery = isKnownComponentServerQuery(value) ? value : undefined;
     const [draft, setDraft] = React.useState<QueryDraft>(() => {
@@ -904,7 +916,7 @@ export const ServerQueryOpExprFormAndPreview = observer(
                 allowedOps={allowedOps}
                 showQueryName={!!parentQuery}
                 exprCtx={exprCtx}
-                filterMode={filterMode}
+                mode={mode}
               />
             </div>
             <BottomModalButtons>

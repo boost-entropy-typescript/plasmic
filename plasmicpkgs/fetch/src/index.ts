@@ -1,5 +1,6 @@
 import registerFunction, {
   CustomFunctionMeta,
+  FunctionControlExtras,
 } from "@plasmicapp/host/registerFunction";
 
 type Registerable = {
@@ -117,6 +118,7 @@ const registerFetchParams: CustomFunctionMeta<typeof wrappedFetch> = {
   importPath: "@plasmicpkgs/fetch",
   displayName: "HTTP Fetch",
   isQuery: true,
+  isMutation: true,
   params: [
     {
       name: "opts",
@@ -129,6 +131,11 @@ const registerFetchParams: CustomFunctionMeta<typeof wrappedFetch> = {
         method: {
           type: "choice",
           options: [...HTTP_METHODS],
+          defaultValue: (
+            _args: unknown,
+            _data: unknown,
+            extras: FunctionControlExtras
+          ) => (extras.mode === "mutation" ? "POST" : undefined),
         },
         headers: {
           type: "object",
