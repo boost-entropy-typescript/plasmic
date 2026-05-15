@@ -12,6 +12,7 @@ import { ensure } from "../utils/lang-utils";
 import { installUpgrade } from "../utils/npm-utils";
 import { CPAStrategy, GenerateFilesArgs } from "../utils/strategy";
 import { makeLayout_app_codegen } from "./templates/app-codegen/layout";
+import { makePlasmicHostPage_app_codegen } from "./templates/app-codegen/plasmic-host";
 import { makePlasmicInitClient_app_codegen } from "./templates/app-codegen/plasmic-init-client";
 import { makeCatchallPage_app_loader } from "./templates/app-loader/catchall-page";
 import { makePlasmicHostPage_app_loader } from "./templates/app-loader/plasmic-host";
@@ -30,7 +31,7 @@ export const nextjsStrategy: CPAStrategy = {
     const experimentalAppArg = platformOptions.nextjs?.appDir
       ? "--app"
       : "--no-app";
-    const templateArg = template ? ` --template ${template}` : "";
+    const templateArg = template ? ` --example ${template}` : "";
     // TODO: Change to latest when nextjs stops using react@19-rc
     const createCommand =
       `npx create-next-app@14 ${projectPath} ${typescriptArg} ${experimentalAppArg} ${templateArg}` +
@@ -137,7 +138,7 @@ async function generateFilesAppDir(args: GenerateFilesArgs) {
     await fs.mkdir(path.join(projectPath, "app", "plasmic-host"));
     await fs.writeFile(
       path.join(projectPath, "app", "plasmic-host", `page.${jsOrTs}x`),
-      makePlasmicHostPage_pages_codegen() // plasmic-host page contents are the same as the pages router
+      makePlasmicHostPage_app_codegen()
     );
 
     // This should generate
