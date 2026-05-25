@@ -1,6 +1,7 @@
 import { expect, Page } from "@playwright/test";
 import { PageModels, test } from "../fixtures/test";
 import { setDynamicVisibility } from "../utils/auto-open-utils";
+import { pasteIntoMonaco } from "../utils/key-utils";
 import { goToProject } from "../utils/studio-utils";
 
 const MOCK_API_URL = "https://mock-api-for-server-queries.test";
@@ -173,9 +174,6 @@ test.describe("server queries", () => {
     projectId = await apiClient.setupNewProject({
       name: "custom-code-server-queries",
     });
-    await page
-      .context()
-      .grantPermissions(["clipboard-read", "clipboard-write"]);
     await goToProject(
       page,
       `/projects/${projectId}?serverQueries=true&dataTokens=true`
@@ -223,12 +221,10 @@ test.describe("server queries", () => {
     await test.step('Create "Greeting" query with data token from inspector', async () => {
       const codeEditor = await openNewCustomCodeQuery(models, "Greeting");
 
-      await page.evaluate(() =>
-        navigator.clipboard.writeText(
-          "await new Promise(resolve => setTimeout(() => {\n  resolve(`Welcome to ${ }`)\n}, 2000))"
-        )
+      await pasteIntoMonaco(
+        codeEditor,
+        "await new Promise(resolve => setTimeout(() => {\n  resolve(`Welcome to ${ }`)\n}, 2000))"
       );
-      await page.keyboard.press("ControlOrMeta+V");
 
       // Position cursor between ${ and } to insert the data token there
       for (let i = 0; i < 14; i++) {
@@ -260,7 +256,7 @@ test.describe("server queries", () => {
     await assertQuerySummary("greeting");
 
     await test.step('Create "Full Greeting" query with $q reference from inspector', async () => {
-      await openNewCustomCodeQuery(models, "Full Greeting");
+      const codeEditor = await openNewCustomCodeQuery(models, "Full Greeting");
 
       // Insert $q.greeting.data from the data context inspector
       await serverQueryModal.locator('[data-insert-path="$q"]').click();
@@ -275,10 +271,9 @@ test.describe("server queries", () => {
         .filter({ hasText: "Insert" })
         .click();
 
-      // Type the rest of the expression
       await page.keyboard.press("End");
-      await page.keyboard.type(' + ", enjoy your stay!', { delay: 5 });
-      await page.keyboard.press("ArrowRight");
+      // Use synthetic paste so Monaco doesn't auto-close the inner `"`.
+      await pasteIntoMonaco(codeEditor, ' + ", enjoy your stay!"');
 
       await serverQueryModal.locator("button").getByText("Execute").click();
       await expect(previewResult).toContainText(
