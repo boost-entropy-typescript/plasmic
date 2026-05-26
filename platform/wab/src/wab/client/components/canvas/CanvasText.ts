@@ -35,6 +35,7 @@ import {
   isTagListContainer,
   listContainerTags,
   normalizeMarkers,
+  renderRichTextChildren,
   textInlineTags,
 } from "@/wab/shared/core/rich-text-util";
 import {
@@ -1268,6 +1269,97 @@ const mkTextChild = computedFn(
         () => renderTplNode(node, ctx),
         `mkTextChild(${node.uuid})`
       ),
+  { keepAlive: true }
+);
+
+// Builds read-only React children for RawText. Unlike codegen, plain-text runs are wrapped
+// in <span> to mirror Slate's renderLeaf shape (Studio hover/click/selection logic relies
+// on it). Canvas text uses `white-space: pre-wrap`, so <br/> insertion isn't needed.
+function renderRawTextChildren(
+  react: typeof React,
+  rawText: ReturnType<typeof ensureKnownRawText>,
+  ctx: RenderingCtx
+): React.ReactNode[] {
+  const spanClassName = defaultStyleClassNames(
+    studioDefaultStylesClassNameBase,
+    { tag: "span", projectId: canvasProjectId }
+  ).join(" ");
+
+  return renderRichTextChildren<React.ReactNode>(
+    rawText,
+    {
+      text: (text, key) => react.createElement("span", { key }, text),
+      styledRun: (text, cssRules, className, key) =>
+        react.createElement("span", { key, className, style: cssRules }, text),
+      nodeMarker: (tpl, key) => {
+        const childTpl = ensureKnownTplTag(tpl);
+        return react.createElement(mkTextChild(ctx.viewCtx), {
+          key,
+          node: childTpl,
+          ctx: {
+            ...ctx,
+            inline: isTagInline(childTpl.tag),
+            valKey: ctx.valKey + "." + childTpl.uuid,
+          },
+        });
+      },
+    },
+    { spanClassName }
+  );
+}
+
+// Read-only version of mkCanvasText: renders content as plain React elements.
+// mkRichText uses this when not editing to avoid initializing Slate
+export const mkReadOnlyCanvasText = computedFn(
+  (react: typeof React) =>
+    function ReadOnlyCanvasText({
+      node,
+      inline,
+      ctx,
+      effectiveVs,
+    }: Pick<RichTextProps, "node" | "inline" | "ctx" | "effectiveVs">) {
+      return mkUseCanvasObserver(ctx.sub, ctx.viewCtx)(
+        () =>
+          withErrorDisplayFallback(
+            react,
+            ctx,
+            node,
+            () => {
+              const className = mkClassName(node, inline);
+              const tag = inline ? "span" : "div";
+
+              if (isExprText(effectiveVs.text)) {
+                const exprTextProps = mkExprTextProps(
+                  node,
+                  effectiveVs,
+                  ctx.env,
+                  {
+                    projectFlags: ctx.projectFlags,
+                    component: ctx.ownerComponent ?? null,
+                    inStudio: true,
+                  }
+                );
+                return react.createElement(tag, {
+                  className,
+                  style: DEFAULT_TEXT_STYLE,
+                  ...exprTextProps,
+                });
+              }
+
+              const rawText = ensureKnownRawText(effectiveVs.text);
+              return react.createElement(tag, {
+                className,
+                style: DEFAULT_TEXT_STYLE,
+                children: renderRawTextChildren(react, rawText, ctx),
+              });
+            },
+            {
+              hasLoadingBoundary: ctx.env.$ctx[hasLoadingBoundaryKey],
+            }
+          ),
+        `mkReadOnlyCanvasText(${node.uuid})`
+      );
+    },
   { keepAlive: true }
 );
 
