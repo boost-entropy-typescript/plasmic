@@ -222,6 +222,38 @@ export class StudioModel extends BaseModel {
     await this.page.keyboard.press("Shift+1");
   }
 
+  /**
+   * Reset zoom to 100%. Useful for canvas clicks, at low zoom sometimes the target tpl
+   * isn't correctly selected.
+   */
+  async zoomReset() {
+    await this.frame.locator("body").evaluate(() => {
+      (window as any).dbg.studioCtx.tryZoomWithScale(1);
+    });
+  }
+
+  /**
+   * Select a tpl in the current arena by its text. Checks all arena artboards and clicks
+   * the first matching element.
+   */
+  async selectInCanvasByText(text: string | RegExp, tag: "button" | "div") {
+    await this.zoomReset();
+    const count = await this.frames.count();
+    for (let i = 0; i < count; i++) {
+      const candidate = this.frames
+        .nth(i)
+        .contentFrame()
+        .locator(tag)
+        .filter({ hasText: text })
+        .first();
+      if (await candidate.count()) {
+        await candidate.click({ force: true });
+        return;
+      }
+    }
+    throw new Error(`Could not find ${tag} matching "${text}" in any artboard`);
+  }
+
   async addNodeToSelectedFrame(node: string, xPos: number, yPos: number) {
     await this.leftPanel.insertNode(node);
     await this.rightPanel.designTabButton.click();
@@ -708,21 +740,23 @@ export class StudioModel extends BaseModel {
   }
 
   async waitForSave() {
-    await this.page.evaluate(() => {
-      return new Promise<void>((resolve) => {
-        const checkSaveIndicator = () => {
-          const saveIndicator = document.querySelector(
-            '*[class^="PlasmicSaveIndicator"]'
-          );
-          if (!saveIndicator) {
-            resolve();
-          } else {
-            setTimeout(checkSaveIndicator, 100);
-          }
-        };
-        checkSaveIndicator();
-      });
-    });
+    // Wait until the studio reports no unsaved changes. The save indicator is unreliable
+    // because quick edits may not surface it long enough for the locator to observe
+    await expect
+      .poll(
+        async () => {
+          return this.frame.locator("body").evaluate(() => {
+            const ctx = (window as any).dbg?.studioCtx;
+            if (!ctx) {
+              return "no-ctx";
+            }
+            return ctx.hasUnsavedChanges() ? "dirty" : "clean";
+          });
+        },
+        { timeout: 30000 }
+      )
+      .toBe("clean");
+    await expect(this.saveIndicator).toHaveCount(0, { timeout: 30000 });
   }
 
   async pressPublishButton() {
