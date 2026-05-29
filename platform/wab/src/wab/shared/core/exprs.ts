@@ -131,6 +131,12 @@ export interface ExprCtx {
 
 export type FallbackableExpr = CustomCode | ObjectPath;
 
+export type TemplatedStringPropEditorValue =
+  | string
+  | TemplatedString
+  | ObjectPath
+  | CustomCode;
+
 export const summarizeExpr = (expr: Expr, exprCtx: ExprCtx): string =>
   switchType(expr)
     .when(CustomCode, (customCode: CustomCode) => {
@@ -1363,6 +1369,27 @@ export function mkTemplatedStringOfOneDynExpr(expr: CustomCode | ObjectPath) {
 /** Joins all string parts of a TemplatedString, discarding any dynamic expressions. */
 export function flattenTemplatedStringToString(text: TemplatedString): string {
   return text.text.filter(isString).join("");
+}
+
+/**
+ * Collapses a TemplatedString if possible:
+ * - A single non-empty dynamic part returns the bare expr.
+ * - A static text only template returns the joined string.
+ */
+export function simplifyTemplatedString(
+  ts: TemplatedString
+): TemplatedStringPropEditorValue {
+  const nonEmpty = ts.text.filter((p) => p !== "");
+  if (
+    nonEmpty.length === 1 &&
+    (isKnownObjectPath(nonEmpty[0]) || isKnownCustomCode(nonEmpty[0]))
+  ) {
+    return nonEmpty[0];
+  }
+  if (!hasDynamicParts(ts)) {
+    return flattenTemplatedStringToString(ts);
+  }
+  return ts;
 }
 
 export function getSingleDynExprFromTemplatedString(expr: TemplatedString) {
