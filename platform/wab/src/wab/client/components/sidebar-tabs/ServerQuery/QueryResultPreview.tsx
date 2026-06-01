@@ -1,5 +1,6 @@
 import styles from "@/wab/client/components/sidebar-tabs/ServerQuery/QueryResultPreview.module.scss";
 import { ServerQueryOpPreview } from "@/wab/client/components/sidebar-tabs/ServerQuery/ServerQueryOpPicker";
+import { useServerQueryOp } from "@/wab/client/components/sidebar-tabs/ServerQuery/useServerQueryOp";
 import { ValuePreview } from "@/wab/client/components/sidebar-tabs/data-tab";
 import { Modal } from "@/wab/client/components/widgets/Modal";
 import { useStudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
@@ -10,7 +11,7 @@ import { ServerQueryOp } from "@/wab/shared/codegen/react-p/server-queries/utils
 import { ensure } from "@/wab/shared/common";
 import {
   StatefulQueryState,
-  useServerQueryOp,
+  makeCustomCodeQueryKey,
 } from "@/wab/shared/core/custom-functions";
 import { ExprCtx } from "@/wab/shared/core/exprs";
 import {
@@ -28,6 +29,20 @@ export const CustomFunctionExprPreview = observer(
     env?: Record<string, any>;
     exprCtx: ExprCtx;
   }) {
+    if (!props.env) {
+      return null;
+    }
+    return <CustomFunctionExprPreviewInner {...props} env={props.env} />;
+  }
+);
+
+const CustomFunctionExprPreviewInner = observer(
+  function CustomFunctionExprPreviewInner(props: {
+    expr: CustomFunctionExpr;
+    title?: React.ReactNode;
+    env: Record<string, any>;
+    exprCtx: ExprCtx;
+  }) {
     const { expr, env, title, exprCtx } = props;
     const studioCtx = useStudioCtx();
     const functionId = customFunctionId(expr.func);
@@ -35,20 +50,13 @@ export const CustomFunctionExprPreview = observer(
       studioCtx.getRegisteredFunctionsMap().get(functionId),
       `Missing registered function for ${SERVER_QUERY_LOWER}`
     );
-    const result = useServerQueryOp(
-      env
-        ? {
-            fnId: functionId,
-            fn: regFunc.function,
-            expr,
-            env,
-            exprCtx,
-          }
-        : undefined
-    );
-    if (!result) {
-      return null;
-    }
+    const result = useServerQueryOp({
+      fnId: functionId,
+      fn: regFunc.function,
+      expr,
+      env,
+      exprCtx,
+    });
     return <QueryResultPreview queryState={result.queryState} title={title} />;
   }
 );
@@ -91,19 +99,24 @@ export const CustomCodePreview = observer(function CustomCodePreview(props: {
   title?: React.ReactNode;
   env?: Record<string, any>;
 }) {
-  const { queryUuid, expr, env, title } = props;
-  const result = useServerQueryOp(
-    env
-      ? {
-          fnId: `custom-code:${queryUuid}`,
-          code: expr,
-          env,
-        }
-      : undefined
-  );
-  if (!result) {
+  if (!props.env) {
     return null;
   }
+  return <CustomCodePreviewInner {...props} env={props.env} />;
+});
+
+const CustomCodePreviewInner = observer(function CustomCodePreviewInner(props: {
+  queryUuid: string;
+  expr: CustomCode;
+  title?: React.ReactNode;
+  env: Record<string, any>;
+}) {
+  const { queryUuid, expr, env, title } = props;
+  const result = useServerQueryOp({
+    fnId: makeCustomCodeQueryKey(queryUuid),
+    code: expr,
+    env,
+  });
   return <QueryResultPreview queryState={result.queryState} title={title} />;
 });
 

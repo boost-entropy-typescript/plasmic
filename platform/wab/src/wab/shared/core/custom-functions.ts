@@ -11,14 +11,11 @@ import {
 import { findExprsInNode } from "@/wab/shared/core/tpls";
 import { tryEvalExpr } from "@/wab/shared/eval";
 import { parseCodeExpression } from "@/wab/shared/eval/expression-parser";
-import { noopFn } from "@/wab/shared/functions";
 import {
-  CustomCode,
   CustomFunction,
   CustomFunctionExpr,
   ProjectDependency,
   TplNode,
-  isKnownCustomCode,
   isKnownCustomFunctionExpr,
   isKnownEventHandler,
 } from "@/wab/shared/model/classes";
@@ -26,52 +23,29 @@ import { convertToFunction } from "@/wab/shared/parser-utils";
 import type {
   PlasmicQuery,
   PlasmicQueryResult,
-  QueryComponentNode,
   QueryExecutionContext,
 } from "@plasmicapp/data-sources";
 import {
   _StatefulQueryResult as StatefulQueryResult,
-  _StatefulQueryState as StatefulQueryState,
-  makeQueryCacheKey,
   throwIfPlasmicUndefinedDataError,
-  unstable_usePlasmicQueries as usePlasmicQueries,
 } from "@plasmicapp/data-sources";
-import type { SWRResponse } from "@plasmicapp/query";
-import { usePlasmicDataConfig } from "@plasmicapp/query";
 import { groupBy, pick, pickBy } from "lodash";
 import { computedFn } from "mobx-utils";
-import React from "react";
 
 export {
   _StatefulQueryResult as StatefulQueryResult,
   type _StatefulQueryState as StatefulQueryState,
 } from "@plasmicapp/data-sources";
 
-interface CustomFunctionOpArgs {
-  fnId: string;
-  fn: (...args: any[]) => any;
-  expr: CustomFunctionExpr;
-  env: Record<string, any>;
-  exprCtx: ExprCtx;
-  currGlobalThis?: typeof globalThis;
-}
-
-export interface CustomCodeOpArgs {
-  fnId: string;
-  code: CustomCode;
-  env: Record<string, any>;
-}
-
-export type ServerQueryOpArgs = CustomFunctionOpArgs | CustomCodeOpArgs;
-
-export interface ServerQueryOpResult<T> {
-  queryState: StatefulQueryState<T>;
-  swrResponse: Pick<SWRResponse<T>, "mutate">;
-}
-
-function isCustomCodeOpArgs(args: ServerQueryOpArgs): args is CustomCodeOpArgs {
-  return "code" in args && isKnownCustomCode(args.code);
-}
+/**
+ * Wraps a query function so its fetch uses the shared studio cache keyed by `id` + args.
+ * This guarantees a non-deterministic function is executed once per cache key.
+ */
+export type ServerQueryFetchWrapper = (
+  id: string,
+  fn: (...args: any[]) => Promise<any>,
+  ...args: any[]
+) => Promise<any>;
 
 export function getEnvForPlasmicQueries(
   env: Record<string, any>
@@ -92,11 +66,20 @@ export function getEnvForPlasmicQueries(
 }
 
 /**
+ * Query ID for a custom-code data query
+ */
+export function makeCustomCodeQueryKey(uuid: string): string {
+  return `custom-code:${uuid}`;
+}
+
+/**
  * Builds a runtime `PlasmicQuery` node for Studio editor.
  *
  * In production codegen, the static env only contains $$ and $dataTokens.
  * In Studio editor, the static env also includes $q, which are static relative
  * to this query the user is currently editing.
+ *
+ * `queryId` should be the canonical key (e.g. `makeCustomCodeQueryKey`)
  */
 export function buildCustomCodePlasmicQuery(
   queryId: string,
@@ -112,6 +95,21 @@ export function buildCustomCodePlasmicQuery(
     id: `${queryId}:${code}`,
     fn: buildCustomCodeFn(code, getRawEnv),
     args: buildCustomCodeArgs(code, getRawEnv),
+  };
+}
+
+/**
+ * Wraps a PlasmicQuery node's fetcher with `wrapFetch` (shared studio cache),
+ * keyed by its own SWR `id` so the cache entry tracks the same identity.
+ */
+export function wrapPlasmicQueryFetch<
+  Q extends PlasmicQuery<(...args: any[]) => Promise<unknown>>
+>(node: Q, wrapFetch: ServerQueryFetchWrapper): Q {
+  const innerFn = node.fn;
+  const id = node.id;
+  return {
+    ...node,
+    fn: ((...args: any[]) => wrapFetch(id, innerFn as any, ...args)) as Q["fn"],
   };
 }
 
@@ -199,120 +197,6 @@ function buildCustomCodeArgs(
         $state: pick(executionCtx.$state, depStateTopLevelNames),
       },
     ];
-  };
-}
-
-const NOOP_ID = "__noop__";
-
-/** Runs a server query op (CustomFunctionExpr or CustomCode). */
-export function useServerQueryOp(
-  args: ServerQueryOpArgs
-): ServerQueryOpResult<unknown>;
-export function useServerQueryOp(args: undefined): undefined;
-export function useServerQueryOp(
-  args: ServerQueryOpArgs | undefined
-): ServerQueryOpResult<unknown> | undefined;
-export function useServerQueryOp(
-  args: ServerQueryOpArgs | undefined
-): ServerQueryOpResult<unknown> | undefined {
-  const fnId = args?.fnId ?? NOOP_ID;
-  const fn = args && !isCustomCodeOpArgs(args) ? args.fn : noopFn;
-  const expr = args && !isCustomCodeOpArgs(args) ? args.expr : undefined;
-  const env = args?.env ?? {};
-  const exprCtx = args && !isCustomCodeOpArgs(args) ? args.exprCtx : undefined;
-  const currGlobalThis =
-    args && !isCustomCodeOpArgs(args) ? args.currGlobalThis : undefined;
-  const code = args && isCustomCodeOpArgs(args) ? args.code : undefined;
-
-  const { mutate } = usePlasmicDataConfig();
-  const rootProps = env.$props ?? {};
-  const rootCtx = env.$ctx ?? {};
-  const rootState: Record<string, unknown> | null = env.$state ?? null;
-  const envRef = React.useRef(env);
-  envRef.current = env;
-
-  const queryTree = React.useMemo(
-    (): QueryComponentNode =>
-      code
-        ? {
-            type: "component",
-            queries: {
-              [fnId]: buildCustomCodePlasmicQuery(
-                fnId,
-                code.code,
-                () => envRef.current
-              ),
-            },
-            propsContext: {},
-            stateSpecs: [],
-            children: [],
-          }
-        : {
-            type: "component",
-            queries: {
-              [fnId]: {
-                id: fnId,
-                fn,
-                args: ({ $q, $props, $ctx, $state }) =>
-                  expr
-                    ? getCustomFunctionParams(
-                        expr,
-                        {
-                          ...(envRef.current ?? {}),
-                          $q: { ...(envRef.current?.$q ?? {}), ...$q },
-                          $props,
-                          $ctx,
-                          $state,
-                        },
-                        exprCtx!,
-                        currGlobalThis
-                      )
-                    : [],
-              },
-            },
-            propsContext: {},
-            stateSpecs: [],
-            children: [],
-          },
-    [fnId, fn, expr, exprCtx, currGlobalThis, code]
-  );
-  // Even if no args are present, we still need to run the hooks to obey
-  // React hook rules, but we will ignore the results and return undefined.
-  const $queries = usePlasmicQueries(queryTree, rootCtx, rootProps, rootState);
-  const swrResponse = React.useMemo(
-    () => ({
-      mutate: async () => {
-        const params = expr
-          ? getCustomFunctionParams(
-              expr,
-              {
-                ...(envRef.current ?? {}),
-                $q: { ...(envRef.current?.$q ?? {}), ...$queries },
-                $props: rootProps,
-                $ctx: rootCtx,
-              },
-              exprCtx!,
-              currGlobalThis
-            )
-          : [];
-        return mutate(makeQueryCacheKey(fnId, params));
-      },
-    }),
-    [rootProps, rootCtx, expr, exprCtx, fnId, mutate, $queries, currGlobalThis]
-  );
-
-  if (fnId === NOOP_ID) {
-    return undefined;
-  }
-
-  // $query is a mutable object and will not trigger React updates as normal,
-  // so we secretly use the internal state which is guaranteed to change.
-  const $query = $queries[fnId];
-  const queryState = ($query as StatefulQueryResult)
-    .current as StatefulQueryState;
-  return {
-    queryState,
-    swrResponse,
   };
 }
 
