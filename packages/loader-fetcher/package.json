@@ -1,5 +1,5 @@
 {
-  "version": "2.0.2",
+  "version": "2.0.3",
   "license": "MIT",
   "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
@@ -15,7 +15,7 @@
     "dist"
   ],
   "engines": {
-    "node": ">=10"
+    "node": ">=18"
   },
   "scripts": {
     "build": "pnpm build:types && pnpm build:index",
@@ -37,9 +37,6 @@
       "limit": "10 KB"
     }
   ],
-  "dependencies": {
-    "@plasmicapp/isomorphic-unfetch": "1.0.3"
-  },
   "devDependencies": {
     "@types/node": "^20.19.43",
     "typescript": "^5.2.2"
