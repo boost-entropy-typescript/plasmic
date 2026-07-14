@@ -54,6 +54,7 @@ export function readResultSchema() {
     elementSchema(),
     tokenSchema(),
     animationSchema(),
+    dataContextSchema(),
     invalidResourceSchema(),
   ]);
 }
@@ -104,6 +105,11 @@ export function projectSchema() {
       .array(animationSummarySchema())
       .optional()
       .describe("Animation sequences (own + imported), when requested."),
+    dataQueryFunctions: dataQueryFunctionsSchema()
+      .optional()
+      .describe(
+        "Installed and installable custom functions usable by createDataQuery, when requested."
+      ),
     importedProjects: z
       .array(importedProjectSchema())
       .describe("Imported (direct dependency) projects; always included."),
@@ -504,6 +510,7 @@ export function invalidResourceSchema() {
         "Animation",
         "Prop",
         "State",
+        "DataContext",
       ])
       .describe(
         "Kind of resource that could not be found (matches its __type)."
@@ -515,6 +522,108 @@ export function invalidResourceSchema() {
 export type InvalidResourceJson = z.infer<
   ReturnType<typeof invalidResourceSchema>
 >;
+
+/**
+ * The runtime data available to dynamic values / custom code at a component or
+ * page root (`scope: "root"`) or at a specific element (`scope: "element"`).
+ * The env is walked into a tree of typed `DataPath` nodes: `$props`, `$state`,
+ * `$ctx`, `$queries`, `$q`, etc. and their nested fields.
+ */
+export function dataContextSchema() {
+  return z.object({
+    __type: z.literal("DataContext"),
+    componentUuid: z
+      .string()
+      .describe("UUID of the component/page the context was read from."),
+    scope: z
+      .enum(["root", "element"])
+      .describe(
+        "`root` for the component/page-level context, `element` for a specific element's context."
+      ),
+    elementUuid: z
+      .string()
+      .optional()
+      .describe("UUID of the element, present only for `element` scope."),
+    paths: z
+      .array(dataPathSchema())
+      .describe(
+        "Top-level data paths available in this context (e.g. $props, $state, $queries, $q, $ctx)."
+      ),
+  });
+}
+export type DataContextJson = z.infer<ReturnType<typeof dataContextSchema>>;
+
+/**
+ * One node in a data-context tree: a named path with its variable type and,
+ * for primitives, a short stringified preview. Objects/arrays nest via
+ * `children`; oversized or cyclic branches are flagged `truncated`. A synthetic
+ * `name: "…"` node marks where sibling keys/items were omitted for size.
+ */
+export type DataPathJson = {
+  __type: "DataPath";
+  name: string;
+  type?: string;
+  label?: string;
+  value?: string;
+  length?: number;
+  truncated?: boolean;
+  reason?: string;
+  omittedCount?: number;
+  children?: DataPathJson[];
+};
+
+// Single instance so the recursive `z.lazy` reference below resolves to the same
+// object every time. Otherwise zod-to-json-schema can't detect recursion.
+let dataPathSchemaSingleton: z.ZodType<DataPathJson> | undefined;
+
+export function dataPathSchema(): z.ZodType<DataPathJson> {
+  if (dataPathSchemaSingleton) {
+    return dataPathSchemaSingleton;
+  }
+  dataPathSchemaSingleton = z.object({
+    __type: z.literal("DataPath"),
+    name: z
+      .string()
+      .describe("Path segment: an object key, array index, or `…` marker."),
+    type: z
+      .string()
+      .optional()
+      .describe(
+        'Variable type, e.g. "string", "number", "boolean", "object", "array", "react-element", "function". Absent on `…` markers.'
+      ),
+    label: z
+      .string()
+      .optional()
+      .describe("Human-friendly label from the data-picker metadata, if any."),
+    value: z
+      .string()
+      .optional()
+      .describe(
+        "Short JSON-encoded preview of a primitive value (may be truncated)."
+      ),
+    length: z
+      .number()
+      .optional()
+      .describe("Number of items, present for arrays."),
+    truncated: z
+      .boolean()
+      .optional()
+      .describe("True when this branch was cut off (depth, size, or cycle)."),
+    reason: z
+      .string()
+      .optional()
+      .describe('Why the branch was truncated, e.g. "circular".'),
+    omittedCount: z
+      .number()
+      .optional()
+      .describe("Number of omitted sibling keys/items, on a `…` marker."),
+    children: z
+      .array(z.lazy(() => dataPathSchema()))
+      .optional()
+      .describe("Nested paths, present for non-empty objects and arrays."),
+  }) as z.ZodType<DataPathJson>;
+  return dataPathSchemaSingleton;
+}
 
 export function screenBreakpointSchema() {
   return z.object({
@@ -565,4 +674,72 @@ export function importedProjectSchema() {
 }
 export type ImportedProjectJson = z.infer<
   ReturnType<typeof importedProjectSchema>
+>;
+
+/** Custom functions usable in data queries: installed and installable. */
+export function dataQueryFunctionsSchema() {
+  return z.object({
+    __type: z.literal("DataQueryFunctions"),
+    installed: z
+      .array(installedFunctionSchema())
+      .describe("Custom functions already registered in the project."),
+    installable: z
+      .array(installableFunctionSchema())
+      .describe(
+        "Custom functions available from hostless packages not yet installed."
+      ),
+  });
+}
+export type DataQueryFunctionsJson = z.infer<
+  ReturnType<typeof dataQueryFunctionsSchema>
+>;
+
+export function installedFunctionSchema() {
+  return z.object({
+    __type: z.literal("InstalledFunction"),
+    id: z
+      .string()
+      .describe("Stable function id, used to bind the function to a query."),
+    displayName: z.string().optional(),
+    namespace: z.string().optional(),
+    importPath: z.string().optional(),
+    description: z.string().optional(),
+    isQuery: z.boolean(),
+    isMutation: z.boolean(),
+    params: z.array(functionParamSchema()).describe("Function parameters."),
+  });
+}
+export type InstalledFunctionJson = z.infer<
+  ReturnType<typeof installedFunctionSchema>
+>;
+
+export function functionParamSchema() {
+  return z.object({
+    __type: z.literal("FunctionParam"),
+    name: z.string(),
+    type: z.string().describe("Param type tag."),
+    displayName: z.string().optional(),
+    description: z.string().optional(),
+    defaultValue: z.string().optional(),
+    options: z
+      .string()
+      .optional()
+      .describe("Comma-separated choices, for choice params."),
+  });
+}
+export type FunctionParamJson = z.infer<ReturnType<typeof functionParamSchema>>;
+
+export function installableFunctionSchema() {
+  return z.object({
+    __type: z.literal("InstallableFunction"),
+    id: z
+      .string()
+      .describe("Stable id used to install and bind via createDataQuery."),
+    displayName: z.string(),
+    packageProjectId: z.string().optional(),
+    description: z.string().optional(),
+  });
+}
+export type InstallableFunctionJson = z.infer<
+  ReturnType<typeof installableFunctionSchema>
 >;

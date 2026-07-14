@@ -1,5 +1,6 @@
 import { ArrayPrimitiveEditor } from "@/wab/client/components/sidebar-tabs/ComponentProps/ArrayPrimitiveEditor";
 import { ChoicePropEditor } from "@/wab/client/components/sidebar-tabs/ComponentProps/ChoicePropEditor";
+import { notifyLinkedPropDrift } from "@/wab/client/components/sidebar-tabs/linked-prop-utils";
 import { PropValueEditor } from "@/wab/client/components/sidebar-tabs/PropValueEditor";
 import ParamSection from "@/wab/client/components/sidebar-tabs/StateManagement/ParamSection";
 import { LabeledItemRow } from "@/wab/client/components/sidebar/sidebar-helpers";
@@ -409,6 +410,9 @@ export function ComponentPropModal(props: {
     if (existingParam && isOptionsType(newParamType)) {
       checkOptionsUsage(name);
     }
+    if (existingParam) {
+      notifyLinkedPropDrift(studioCtx, component, existingParam);
+    }
   };
 
   const canRename = !existingParam || canRenameParam(component, existingParam);
@@ -497,10 +501,22 @@ export function ComponentPropModal(props: {
             ? "eventHandler"
             : paramType === "text" && isLocalizationEnabled
             ? "localizable"
+            : isChoiceType
+            ? "choice"
             : undefined
         }
         hideEventArgs={!!type && paramType === "eventHandler"}
         showAdvancedSection={true}
+        choiceSettings={
+          isChoiceType ? (
+            <ArrayPrimitiveEditor
+              label={"Allowed Values"}
+              values={choices.map(getValue)}
+              onChange={onChangeChoices}
+              data-test-id={"component-prop-choices"}
+            />
+          ) : undefined
+        }
         overrides={{
           name: {
             props: {
@@ -587,17 +603,7 @@ export function ComponentPropModal(props: {
           advancedSection: {
             render: () => {
               return (
-                <>
-                  <AdvancedToggle advanced={advanced} onChange={setAdvanced} />
-                  {isChoiceType && (
-                    <ArrayPrimitiveEditor
-                      label={"Allowed Values"}
-                      values={choices.map(getValue)}
-                      onChange={onChangeChoices}
-                      data-test-id={"component-prop-choices"}
-                    />
-                  )}
-                </>
+                <AdvancedToggle advanced={advanced} onChange={setAdvanced} />
               );
             },
           },
