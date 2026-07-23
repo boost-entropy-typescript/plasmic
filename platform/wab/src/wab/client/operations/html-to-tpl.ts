@@ -21,6 +21,12 @@ import { CodeComponentsRegistry } from "@/wab/shared/code-components/code-compon
 import { paramToVarName, toVarName } from "@/wab/shared/codegen/util";
 import { assertNever, mkShortId, withoutNils } from "@/wab/shared/common";
 import {
+  interpolatedStringToCodeExpr,
+  interpolatedStringToExpr,
+  interpolatedStringToRichText,
+} from "@/wab/shared/copilot/dynamic-value-input";
+import { mkNormalizedRep } from "@/wab/shared/copilot/utils";
+import {
   code,
   codeLit,
   customCode,
@@ -46,12 +52,15 @@ import {
   isAnimationProperty,
   parseCssAnimationsFromStyles,
 } from "@/wab/shared/css/animations";
+import { isDynamicValue } from "@/wab/shared/dynamic-bindings";
+import { EvaluationError } from "@/wab/shared/eval/expression-parser";
 import {
   Animation,
   AnimationSequence,
   Component,
   CustomCode,
   EventHandler,
+  Expr,
   FunctionExpr,
   ImageAssetRef,
   Interaction,
@@ -59,8 +68,8 @@ import {
   isKnownDateString,
   isKnownTplTag,
   KeyFrame,
+  ObjectPath,
   Param,
-  RawText,
   Site,
   TplNode,
   TplTag,
@@ -86,6 +95,7 @@ import {
   VariantGroupType,
 } from "@/wab/shared/Variants";
 import { VariantTplMgr } from "@/wab/shared/VariantTplMgr";
+import { setTplVisibility, TplVisibility } from "@/wab/shared/visibility-utils";
 import { deserializePlasmicComponentAttrs } from "@/wab/shared/web-exporter/component-utils";
 import L, { isArray } from "lodash";
 
@@ -137,7 +147,13 @@ export async function htmlToTpl(
     return null;
   }
 
-  const { tpls, tplImageAssetMap, tplVariantSettingsData } = result;
+  const {
+    tpls,
+    tplImageAssetMap,
+    tplVariantSettingsData,
+    tplRepeatData,
+    tplVisibilityData,
+  } = result;
 
   return {
     tpls,
@@ -206,6 +222,32 @@ export async function htmlToTpl(
         }
       }
 
+      const baseCombo = [getBaseVariant(owningComponent)];
+
+      // Apply inline repetition (data-repeat) onto the base variant setting.
+      // Must run in finalize/studioCtx.change(), since assigning dataRep outside
+      // change() serializes the value but the canvas env does not register the
+      // repeat locals (currentItem/currentIndex).
+      for (const [tplNode, rep] of tplRepeatData.entries()) {
+        vtm.ensureBaseVariantSetting(tplNode).dataRep = mkNormalizedRep(
+          rep.collection,
+          rep.itemName,
+          rep.indexName
+        );
+      }
+
+      // Apply inline visibility (data-visibility / data-visible-if). Done in finalize
+      // (after style merge) because setTplVisibility writes a RuleSet flag
+      // (PLASMIC_DISPLAY_NONE) that must not be  overwritten by the WI style merge.
+      for (const [tplNode, vis] of tplVisibilityData.entries()) {
+        setTplVisibility(tplNode, baseCombo, vis.visibility);
+        if (vis.visibility === TplVisibility.CustomExpr && vis.dataCond) {
+          // Overwrite the placeholder dataCond that setTplVisibility set with
+          // the real condition expression.
+          ensureVariantSetting(tplNode, baseCombo).dataCond = vis.dataCond;
+        }
+      }
+
       // if we have any image/svg tpls we need to create their respective assets and update their attrs accordingly
       for (const [assetTpl, assetData] of tplImageAssetMap) {
         const { asset } = finalizeOpts.tplMgr.getOrCreateImageAsset(
@@ -237,6 +279,11 @@ export const htmlAttrsIgnoredByTpl = new Set([
   "slot", // Plasmic slot
   "src", // image asset
   "srcset", // image asset
+  "data-repeat", // repetition collection (dataRep)
+  "data-repeat-item", // repetition item local-var name
+  "data-repeat-index", // repetition index local-var name
+  "data-visible-if", // dynamic visibility condition (dataCond)
+  "data-visibility", // static visibility state (displayNone / notRendered)
 ]);
 
 /** Matches both lowercase HTML (`onclick`) and camelCase React (`onClick`). */
@@ -290,6 +337,18 @@ type TplVariantSettingsData = {
   safeStyles: Record<string, string>;
   unsafeStyles: Record<string, string>;
   wiAnimations: CssAnimation[] | null;
+};
+
+type TplVisibilityData = {
+  visibility: TplVisibility;
+  /** Present only for TplVisibility.CustomExpr (the data-visible-if condition). */
+  dataCond?: ObjectPath | CustomCode;
+};
+
+type TplRepeatData = {
+  collection: ObjectPath | CustomCode;
+  itemName?: string;
+  indexName?: string;
 };
 
 function applyVariantStyles(
@@ -358,6 +417,50 @@ async function wiTreeToTpl(
     }
   >();
   const tplVariantSettingsData = new Map<TplNode, TplVariantSettingsData[]>();
+  // Repetition (data-repeat) and visibility (data-visibility / data-visible-if),
+  // are both applied in finalize.
+  const tplRepeatData = new Map<TplNode, TplRepeatData>();
+  const tplVisibilityData = new Map<TplNode, TplVisibilityData>();
+
+  function collectDataRepeat(node: WIBase, tpl: TplNode) {
+    const collectionStr = node.attrs["data-repeat"];
+    if (collectionStr === undefined) {
+      return;
+    }
+    tplRepeatData.set(tpl, {
+      collection: interpolatedStringToCodeExpr(collectionStr),
+      itemName: node.attrs["data-repeat-item"],
+      indexName: node.attrs["data-repeat-index"],
+    });
+  }
+  function collectVisibility(node: WIBase, tpl: TplNode) {
+    const visibleIf = node.attrs["data-visible-if"];
+    if (visibleIf !== undefined) {
+      tplVisibilityData.set(tpl, {
+        visibility: TplVisibility.CustomExpr,
+        dataCond: interpolatedStringToCodeExpr(visibleIf),
+      });
+      return;
+    }
+    const visibility = node.attrs["data-visibility"];
+    if (visibility === "displayNone") {
+      tplVisibilityData.set(tpl, { visibility: TplVisibility.DisplayNone });
+    } else if (visibility === "notRendered") {
+      tplVisibilityData.set(tpl, { visibility: TplVisibility.NotRendered });
+    } else if (visibility !== undefined && visibility !== "visible") {
+      throw new EvaluationError(
+        `Invalid data-visibility value ${JSON.stringify(
+          visibility
+        )}. Expected "visible", "displayNone", or "notRendered"; use data-visible-if for a dynamic condition.`
+      );
+    }
+  }
+
+  /** Collect repetition + visibility bindings authored via `data-*` attributes. */
+  function collectStructuralBindings(node: WIBase, tpl: TplNode) {
+    collectDataRepeat(node, tpl);
+    collectVisibility(node, tpl);
+  }
 
   function collectWIVariantData(
     node: Exclude<WIElement, WIFragment>,
@@ -469,7 +572,9 @@ async function wiTreeToTpl(
           mkEventHandlerExprFromHtmlAttrValue(value);
         continue;
       }
-      result[key] = value;
+      result[key] = isDynamicValue(value)
+        ? interpolatedStringToExpr(value)
+        : value;
     }
     return result;
   }
@@ -490,11 +595,9 @@ async function wiTreeToTpl(
         type: TplTagType.Text,
       });
       const vs = vtm.ensureBaseVariantSetting(tpl);
-      vs.text = new RawText({
-        markers: [],
-        text: node.text,
-      });
+      vs.text = interpolatedStringToRichText(node.text);
       collectWIVariantData(node, tpl);
+      collectStructuralBindings(node, tpl);
       return [tpl];
     }
 
@@ -521,6 +624,7 @@ async function wiTreeToTpl(
           name: tplName,
         });
         collectWIVariantData(node, tpl);
+        collectStructuralBindings(node, tpl);
 
         // We will store each image to it's corresponding tpl so we can process it
         // later to upload image and attach asset to this tpl in 'processWebImporterTree',
@@ -589,6 +693,7 @@ async function wiTreeToTpl(
         args,
       });
       collectWIVariantData(node, tplComponent);
+      collectStructuralBindings(node, tplComponent);
       return [tplComponent];
     }
 
@@ -602,15 +707,19 @@ async function wiTreeToTpl(
         return node.attrs.src;
       };
 
+      const src = getSrc();
       const tpl = vtm.mkTplImage({
         attrs: {
           ...htmlAttrsToTplAttrs(node),
-          src: code(JSON.stringify(getSrc())),
+          src: isDynamicValue(src)
+            ? interpolatedStringToExpr(src)
+            : code(JSON.stringify(src)),
         },
         type: ImageAssetType.Picture,
         name: tplName,
       });
       collectWIVariantData(node, tpl);
+      collectStructuralBindings(node, tpl);
       return [tpl];
     }
 
@@ -630,6 +739,7 @@ async function wiTreeToTpl(
       );
 
       collectWIVariantData(node, tpl);
+      collectStructuralBindings(node, tpl);
 
       return [tpl];
     }
@@ -647,6 +757,8 @@ async function wiTreeToTpl(
     tpls,
     tplImageAssetMap,
     tplVariantSettingsData,
+    tplRepeatData,
+    tplVisibilityData,
   };
 }
 
@@ -775,7 +887,7 @@ export function getComponentArgFromHtmlProp(
   componentName: string,
   propName: string,
   value: unknown
-): [Param, VariantsRef | CustomCode] {
+): [Param, Expr] {
   const name = toVarName(propName);
   const param = component.params.find(
     (p) => paramToVarName(component, p) === name
@@ -836,6 +948,12 @@ export function getComponentArgFromHtmlProp(
       }
       return [param, new VariantsRef({ variants: [variant] })];
     }
+  }
+
+  // A string with `{{ jsExpr }}` is a dynamic data binding, valid for any
+  // (non-variant-group) param type regardless of its declared type.
+  if (typeof value === "string" && isDynamicValue(value)) {
+    return [param, interpolatedStringToExpr(value)];
   }
 
   // Primitive-valued types (bool, num, text/img/href/target).

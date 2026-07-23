@@ -7,11 +7,13 @@ import {
 } from "@/wab/shared/Variants";
 import { paramToVarName, toVarName } from "@/wab/shared/codegen/util";
 import { assert, switchType } from "@/wab/shared/common";
+import { exprToInterpolatedString } from "@/wab/shared/copilot/dynamic-value-input";
 import {
   isPageComponent,
   tryGetVariantGroupValueFromArg,
 } from "@/wab/shared/core/components";
 import { stripParens, tryExtractJson } from "@/wab/shared/core/exprs";
+import { JsonValue } from "@/wab/shared/core/lang";
 import {
   getStateOnChangePropName,
   getStateVarName,
@@ -26,14 +28,18 @@ import {
   isTplTextBlock,
   tplChildren,
 } from "@/wab/shared/core/tpls";
-import { normProp } from "@/wab/shared/css";
+import { PLASMIC_DISPLAY_NONE, normProp } from "@/wab/shared/css";
 import {
   Component,
+  CompositeExpr,
   CustomCode,
   Expr,
+  ImageAssetRef,
   ObjectPath,
   RuleSet,
   Site,
+  StyleTokenRef,
+  TemplatedString,
   TplComponent,
   TplNode,
   TplSlot,
@@ -41,12 +47,11 @@ import {
   Variant,
   VariantSetting,
   isKnownCustomCode,
-  isKnownImageAssetRef,
+  isKnownExprText,
   isKnownObjectPath,
   isKnownPropParam,
   isKnownRawText,
   isKnownRenderExpr,
-  isKnownStyleTokenRef,
   isKnownTemplatedString,
 } from "@/wab/shared/model/classes";
 import {
@@ -55,6 +60,11 @@ import {
   isNumType,
   isOptionsType,
 } from "@/wab/shared/model/model-util";
+import {
+  TplVisibility,
+  getVariantSettingVisibility,
+  hasVisibilitySetting,
+} from "@/wab/shared/visibility-utils";
 import {
   getDataPlasmicProject,
   serializePlasmicTplComponent,
@@ -96,61 +106,30 @@ function buildTplNode(tpl: TplNode, site: Site): XmlElement {
 }
 
 /**
- * Extracts a value from supported expression types via tryExtractJson
- * (CustomCode, TemplatedString, CompositeExpr), plus asset and style-token
- * references. Returns undefined for dynamic expressions (ObjectPath, VarRef,
- * EventHandler, etc.) that can't be serialized statically.
- *
- * By default a non-string JSON value is stringified, for use as an HTML
- * attribute. Pass `{ json: true }` to keep the typed JSON value instead.
+ * Serialize an `Expr` to its exported value. Returns undefined for expr kinds
+ * with no exported form (see `exprToInterpolatedString`), which callers skip.
  */
-function extractStaticExprValue(expr: Expr): string | undefined;
-function extractStaticExprValue(expr: Expr, opts: { json: true }): unknown;
-function extractStaticExprValue(
-  expr: Expr,
-  opts?: { json?: boolean }
-): unknown {
-  const jsonValue = tryExtractJson(expr);
-  if (jsonValue !== undefined) {
-    if (opts?.json) {
-      return jsonValue;
-    }
-    return typeof jsonValue === "string"
-      ? jsonValue
-      : JSON.stringify(jsonValue);
-  }
-  if (isKnownImageAssetRef(expr)) {
-    return expr.asset.dataUri || "";
-  }
-  if (isKnownStyleTokenRef(expr)) {
-    return expr.token.uuid;
-  }
-  return undefined;
+function serializeExprValue(expr: Expr): JsonValue | undefined {
+  return switchType(expr)
+    .when(ImageAssetRef, (imageAssetRef) => imageAssetRef.asset.dataUri || "")
+    .when(StyleTokenRef, (styleTokenRef) => styleTokenRef.token.uuid)
+    .when(CompositeExpr, (compositeExpr) => tryExtractJson(compositeExpr))
+    .when([CustomCode, ObjectPath, TemplatedString], (valueExpr) => {
+      // Static values keep their typed JSON value, dynamic bindings render as `{{ jsExpr }}`.
+      const jsonValue = tryExtractJson(valueExpr);
+      return jsonValue !== undefined
+        ? jsonValue
+        : exprToInterpolatedString(valueExpr);
+    })
+    .elseUnsafe(() => undefined);
 }
 
-/**
- * Normalizes a string-or-expression value, falling back for null/undefined and
- * for dynamic expressions that can't be serialized. Defaults to a plain string
- * (""); pass `{ json: true }` to keep the typed JSON value (undefined fallback).
- */
-function extractExprValue(value: string | Expr | null | undefined): string;
-function extractExprValue(
-  value: string | Expr | null | undefined,
-  opts: { json: true }
-): unknown;
-function extractExprValue(
-  value: string | Expr | null | undefined,
-  opts?: { json?: boolean }
-): unknown {
-  if (value == null) {
-    return opts?.json ? undefined : "";
-  }
-  if (typeof value === "string") {
-    return value;
-  }
-  return opts?.json
-    ? extractStaticExprValue(value, { json: true })
-    : extractStaticExprValue(value) ?? "";
+/** Like `serializeExprValue`, but stringified for use as an HTML attribute. */
+function serializeExprToString(expr: Expr): string | undefined {
+  const value = serializeExprValue(expr);
+  return value === undefined || typeof value === "string"
+    ? value
+    : JSON.stringify(value);
 }
 
 export function getStylesFromRuleSet(rs: RuleSet): Record<string, string> {
@@ -187,9 +166,15 @@ function getStylesFromVariantSetting(
     }
   }
 
-  // Filter styles to what's applicable for this TplNode
+  // Filter styles to what's applicable for this TplNode. PLASMIC_DISPLAY_NONE
+  // is an internal visibility flag (not real CSS) — it is surfaced via the
+  // data-visibility attribute instead (see getVisibilityAttrs), so drop it
+  // from the emitted style string to avoid a confusing double-representation.
   return Object.fromEntries(
-    Object.entries(styles).filter(([prop]) => isStylePropApplicable(tpl, prop))
+    Object.entries(styles).filter(
+      ([prop]) =>
+        prop !== PLASMIC_DISPLAY_NONE && isStylePropApplicable(tpl, prop)
+    )
   );
 }
 
@@ -204,13 +189,69 @@ function getAttrsFromVariantSetting(
   const attrs: Record<string, string> = {};
   for (const [key, expr] of Object.entries(vs.attrs)) {
     if (!RESERVED_ATTR_KEYS.has(key)) {
-      const value = extractStaticExprValue(expr);
+      const value = serializeExprToString(expr);
       if (value !== undefined) {
         attrs[key] = value;
       }
     }
   }
   return attrs;
+}
+
+/**
+ * Serializes a variant setting's visibility as `data-visible-if` (dynamic) or
+ * `data-visibility` (static). Visible emits nothing by default, `explicitVisible: true`
+ * emits `data-visibility="visible"` explicitly, e.g. for variants revealing an
+ * element hidden in the base variant.
+ */
+function getVisibilityAttrs(
+  vs: VariantSetting,
+  opts?: { explicitVisible?: boolean }
+): Record<string, string> {
+  switch (getVariantSettingVisibility(vs)) {
+    case TplVisibility.CustomExpr: {
+      const cond = vs.dataCond
+        ? exprToInterpolatedString(vs.dataCond)
+        : undefined;
+      return cond !== undefined ? { "data-visible-if": cond } : {};
+    }
+    case TplVisibility.DisplayNone:
+      return { "data-visibility": "displayNone" };
+    case TplVisibility.NotRendered:
+      return { "data-visibility": "notRendered" };
+    default:
+      return opts?.explicitVisible && hasVisibilitySetting(vs)
+        ? { "data-visibility": "visible" }
+        : {};
+  }
+}
+
+/**
+ * Serializes repetition + visibility bindings as `data-*` attributes so they
+ * survive read -> insertHtml (mirrors html-to-tpl's parsing):
+ * - Repetition (base-vs only): `data-repeat` / `data-repeat-item` / `data-repeat-index`.
+ * - Visibility (the given vs): see getVisibilityAttrs.
+ */
+function getStructuralBindingAttrs(
+  tpl: TplNode,
+  vs: VariantSetting
+): Record<string, string> {
+  const attrs: Record<string, string> = {};
+
+  // Repetition lives on the base variant setting only (not variantable).
+  const baseVs = tryGetBaseVariantSetting(tpl);
+  if (baseVs?.dataRep) {
+    const collection = exprToInterpolatedString(baseVs.dataRep.collection);
+    if (collection !== undefined) {
+      attrs["data-repeat"] = collection;
+      attrs["data-repeat-item"] = baseVs.dataRep.element.name;
+      if (baseVs.dataRep.index) {
+        attrs["data-repeat-index"] = baseVs.dataRep.index.name;
+      }
+    }
+  }
+
+  return { ...attrs, ...getVisibilityAttrs(vs) };
 }
 
 function getStyleString(vs: VariantSetting, tpl: TplNode): string | undefined {
@@ -244,11 +285,25 @@ function buildTplTag(tpl: TplTag, site: Site): XmlElement {
     attrs[key] = value;
   }
 
+  // Include repetition + visibility (data-*) bindings.
+  for (const [key, value] of Object.entries(
+    getStructuralBindingAttrs(tpl, vs)
+  )) {
+    attrs[key] = value;
+  }
+
   // For text blocks, render inline with text content
   if (isTplTextBlock(tpl)) {
     // Try to get text from vsettings.text (RawText)
     if (isKnownRawText(vs.text)) {
       return mkXmlElement(tpl.tag, attrs, [vs.text.text]);
+    }
+    // Dynamic text (ExprText) -> `{{ jsExpr }}` interpolation.
+    if (isKnownExprText(vs.text)) {
+      const dynamic = exprToInterpolatedString(vs.text.expr);
+      if (dynamic !== undefined) {
+        return mkXmlElement(tpl.tag, attrs, [dynamic]);
+      }
     }
     // Fallback to attrs.children
     if (vs.attrs.children) {
@@ -297,7 +352,10 @@ function buildTplComponent(tpl: TplComponent, site: Site): XmlElement {
         continue;
       }
 
-      propsObj[propName] = extractExprValue(arg.expr, { json: true });
+      const value = serializeExprValue(arg.expr);
+      if (value !== undefined) {
+        propsObj[propName] = value;
+      }
     }
   }
 
@@ -309,6 +367,13 @@ function buildTplComponent(tpl: TplComponent, site: Site): XmlElement {
   const style = getStyleString(vs, tpl);
   if (style) {
     attrs.style = style;
+  }
+
+  // Include repetition + visibility (data-*) bindings.
+  for (const [key, value] of Object.entries(
+    getStructuralBindingAttrs(tpl, vs)
+  )) {
+    attrs[key] = value;
   }
 
   // Build slot contents with <slot> wrappers
@@ -397,7 +462,10 @@ function getTplOverrides(
     }
 
     const styles = getStylesFromVariantSetting(vs, tpl);
-    const attrs = getAttrsFromVariantSetting(vs);
+    const attrs = {
+      ...getAttrsFromVariantSetting(vs),
+      ...getVisibilityAttrs(vs, { explicitVisible: true }),
+    };
 
     if (Object.keys(styles).length > 0 || Object.keys(attrs).length > 0) {
       overrides.push({ tplUuid: tpl.uuid, styles, attrs });
@@ -424,9 +492,7 @@ function buildComponentProps(component: Component): PropJson[] {
         prop.options = options;
       }
       if (param.defaultExpr) {
-        const defaultValue = extractExprValue(param.defaultExpr, {
-          json: true,
-        });
+        const defaultValue = serializeExprValue(param.defaultExpr);
         if (defaultValue !== undefined) {
           prop.default = defaultValue;
         }
@@ -480,9 +546,9 @@ function buildComponentStates(component: Component): StateJson[] {
       accessType: state.accessType as StateJson["accessType"],
     };
     if (state.param.defaultExpr) {
-      const staticValue = extractExprValue(state.param.defaultExpr, {
-        json: true,
-      });
+      // Statically-known initial values serialize to their JSON value; dynamic
+      // bindings serialize structurally (ObjectPath/CustomCode/TemplatedString).
+      const staticValue = tryExtractJson(state.param.defaultExpr);
       const initialValue =
         staticValue !== undefined
           ? staticValue
@@ -603,10 +669,17 @@ function buildPageMeta(component: Component): PageMetaJson | undefined {
     pm.params && Object.keys(pm.params).length > 0 ? pm.params : undefined;
   const query =
     pm.query && Object.keys(pm.query).length > 0 ? pm.query : undefined;
-  const title = extractExprValue(pm.title);
-  const description = extractExprValue(pm.description);
-  const canonical = extractExprValue(pm.canonical);
-  const openGraphImage = extractExprValue(pm.openGraphImage);
+  // Page meta fields are either plain strings or Exprs.
+  const serializeMetaField = (value: string | Expr | null | undefined) =>
+    value == null
+      ? undefined
+      : typeof value === "string"
+      ? value
+      : serializeExprToString(value);
+  const title = serializeMetaField(pm.title);
+  const description = serializeMetaField(pm.description);
+  const canonical = serializeMetaField(pm.canonical);
+  const openGraphImage = serializeMetaField(pm.openGraphImage);
   return {
     __type: "PageMeta",
     ...(pm.path ? { path: pm.path } : {}),
