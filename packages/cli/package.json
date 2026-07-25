@@ -1,6 +1,6 @@
 {
   "name": "@plasmicapp/cli",
-  "version": "0.1.366",
+  "version": "0.1.367",
   "description": "plasmic cli for syncing local code with Plasmic designs",
   "engines": {
     "node": ">=12"
@@ -51,7 +51,7 @@
     "axios": "^1.0.0",
     "chalk": "^4.1.0",
     "cli-progress": "^3.12.0",
-    "esbuild": "0.27.7",
+    "esbuild": "0.28.1",
     "fast-glob": "^3.2.4",
     "findup-sync": "^4.0.0",
     "fs": "^0.0.1-security",

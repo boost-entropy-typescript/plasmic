@@ -1,5 +1,5 @@
 {
-  "version": "1.0.20",
+  "version": "1.0.21",
   "name": "@plasmicapp/data-sources",
   "license": "MIT",
   "types": "./dist/index.d.ts",
@@ -38,11 +38,12 @@
   "devDependencies": {
     "@types/react": "^18",
     "react": "^18.3.1",
-    "vitest": "3.2.4"
+    "vite": "8.1.5",
+    "vitest": "4.1.10"
   },
   "dependencies": {
     "@plasmicapp/data-sources-context": "0.1.24",
-    "@plasmicapp/host": "2.0.11",
+    "@plasmicapp/host": "2.0.12",
     "@plasmicapp/query": "0.1.86",
     "fast-stringify": "^2.0.0"
   },
