@@ -44,6 +44,7 @@ import { findAllAndMap } from "@/wab/shared/css/css-tree-utils";
 import { parseFlexShorthand } from "@/wab/shared/css/flex";
 import { splitCssValue } from "@/wab/shared/css/parse";
 import { CssTransforms } from "@/wab/shared/css/transforms";
+import { hasInvalidUrl } from "@/wab/shared/css/urls";
 import { Site } from "@/wab/shared/model/classes";
 import { VariantGroupType } from "@/wab/shared/Variants";
 import {
@@ -358,14 +359,15 @@ function splitStylesBySafety(styles: Record<string, string>): {
   safe: WISafeStyles;
   unsafe: WIUnsafeStyles;
 } {
-  const entries = Object.entries(styles);
-
-  const safe = Object.fromEntries(
-    entries.filter(([k, _v]) => recognizedStylesKeys.has(k))
-  );
-  const unsafe = Object.fromEntries(
-    entries.filter(([k, _v]) => !recognizedStylesKeys.has(k))
-  );
+  const safe: WISafeStyles = {};
+  const unsafe: WIUnsafeStyles = {};
+  for (const [key, value] of Object.entries(styles)) {
+    if (recognizedStylesKeys.has(key) && !hasInvalidUrl(value)) {
+      safe[key] = value;
+    } else {
+      unsafe[key] = value;
+    }
+  }
   return {
     safe,
     unsafe,
@@ -686,6 +688,32 @@ function getElementsWITree(node: Node, defaultStyles: CSSStyleDeclaration) {
 
     if (elt instanceof HTMLElement && tag === "plasmic-component") {
       return parseComponent(elt, allVariantSettings, attrs, rec);
+    }
+
+    if (tag === "slot-target") {
+      const name = attrs["name"];
+      if (!name) {
+        throw new Error(`<slot-target> requires a "name" attribute`);
+      }
+      if (elt.querySelector("slot-target")) {
+        throw new Error(
+          `<slot-target name="${name}"> contains a nested <slot-target>; slots cannot be nested`
+        );
+      }
+      return {
+        type: "slot-target",
+        tag,
+        name,
+        defaultChildren: withoutNils([...elt.childNodes].map((e) => rec(e))),
+        attrs,
+        variantSettings: allVariantSettings,
+      };
+    }
+
+    if (tag === "slot") {
+      throw new Error(
+        `<slot> is only allowed as a direct child of <plasmic-component> to fill one of its slots; to define a new slot, use <slot-target name="...">`
+      );
     }
 
     if (tag === "svg") {
