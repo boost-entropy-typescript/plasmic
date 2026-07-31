@@ -1,7 +1,14 @@
 {
   "name": "@plasmicpkgs/react-aria",
-  "version": "0.0.190",
+  "version": "0.0.191",
   "description": "Plasmic registration calls for react-aria based components",
+  "homepage": "https://www.plasmic.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/plasmicapp/plasmic.git",
+    "directory": "plasmicpkgs/react-aria"
+  },
+  "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "module": "dist/react-aria.esm.js",
@@ -53,7 +60,7 @@
     "react-stately": "^3.38.0"
   },
   "devDependencies": {
-    "@plasmicapp/host": "2.0.12",
+    "@plasmicapp/host": "2.0.13",
     "@rollup/plugin-commonjs": "^11.0.0",
     "@rollup/plugin-json": "^4.0.0",
     "@rollup/plugin-node-resolve": "^9.0.0",
