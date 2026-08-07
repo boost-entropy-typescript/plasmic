@@ -1,6 +1,6 @@
 {
   "name": "@plasmicpkgs/antd5",
-  "version": "0.0.367",
+  "version": "0.0.368",
   "description": "Plasmic registration calls for Ant Design v5 components.",
   "homepage": "https://www.plasmic.app",
   "repository": {
@@ -60,7 +60,7 @@
     "storybook": "storybook dev -p 6006 --no-open",
     "build-storybook": "storybook build",
     "test-storybook": "test-storybook",
-    "test": "TEST_CWD=`pwd` pnpm -w test"
+    "test": "vitest run"
   },
   "dependencies": {
     "antd": "^5.12.7",
@@ -73,10 +73,10 @@
     "@babel/preset-env": "^7.22.15",
     "@babel/preset-react": "^7.22.15",
     "@babel/preset-typescript": "^7.22.15",
-    "@plasmicapp/data-sources": "1.0.24",
-    "@plasmicapp/host": "2.0.15",
+    "@plasmicapp/data-sources": "1.0.25",
+    "@plasmicapp/host": "2.0.16",
     "@plasmicapp/query": "0.1.87",
-    "@plasmicapp/react-web": "1.0.30",
+    "@plasmicapp/react-web": "1.0.31",
     "@rollup/plugin-commonjs": "^11.0.0",
     "@rollup/plugin-json": "^4.0.0",
     "@rollup/plugin-node-resolve": "^9.0.0",
@@ -92,7 +92,9 @@
     "rollup": "^3.10.1",
     "rollup-plugin-dts": "^5.0.0",
     "rollup-plugin-esbuild": "^5.0.0",
-    "rollup-plugin-replace-imports": "^1.0.0"
+    "rollup-plugin-replace-imports": "^1.0.0",
+    "vite": "8.1.5",
+    "vitest": "4.1.10"
   },
   "peerDependencies": {
     "@plasmicapp/data-sources": ">=0.1.0",
