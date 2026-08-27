@@ -213,6 +213,7 @@ export class ApiClient {
           "x-plasmic-api-user": "user2@example.com",
           "x-plasmic-api-token": await this.getApiToken(),
         },
+        timeout: 60000,
       }
     );
 
@@ -289,6 +290,26 @@ export class ApiClient {
     }
     await this.login(email, password);
     await this.removeProject(projectId);
+  }
+
+  async updateProjectMeta(projectId: string, meta: Record<string, any>) {
+    const csrf = await this.getCsrf();
+
+    const res = await this.request.put(
+      `${this.baseUrl}/api/v1/projects/${projectId}/meta`,
+      {
+        data: meta,
+        headers: { "X-CSRF-Token": csrf },
+      }
+    );
+
+    if (!res.ok()) {
+      const errorText = await res.text();
+      throw new Error(
+        `Failed to update project meta: ${res.status()} ${errorText}`
+      );
+    }
+    return await res.json();
   }
 
   async createComponentState(
