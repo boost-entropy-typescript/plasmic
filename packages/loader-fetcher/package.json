@@ -1,5 +1,5 @@
 {
-  "version": "2.0.5",
+  "version": "2.0.6",
   "description": "Low-level fetcher for downloading Plasmic project bundles from the Plasmic API.",
   "homepage": "https://www.plasmic.app",
   "repository": {
@@ -28,7 +28,6 @@
     "build": "pnpm build:types && pnpm build:index",
     "build:types": "tsc",
     "build:index": "node ../../build.mjs ./src/index.ts",
-    "yalcp": "yalc publish --push",
     "test": "vitest run",
     "lint": "eslint",
     "prepublishOnly": "npm run build",

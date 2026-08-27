@@ -1,5 +1,5 @@
 {
-  "version": "1.0.76",
+  "version": "1.0.77",
   "description": "Utilities for running Plasmic A/B tests, feature flags, and audience segmentation.",
   "homepage": "https://www.plasmic.app",
   "repository": {
@@ -28,7 +28,6 @@
     "build": "pnpm build:types && pnpm build:index",
     "build:types": "tsc",
     "build:index": "node ../../build.mjs ./src/index.ts",
-    "yalcp": "yalc publish --push",
     "test": "vitest run",
     "coverage": "vitest run --coverage",
     "lint": "eslint",
@@ -46,7 +45,7 @@
     }
   ],
   "devDependencies": {
-    "@plasmicapp/loader-fetcher": "2.0.5",
+    "@plasmicapp/loader-fetcher": "workspace:*",
     "@types/json-logic-js": "^1.2.1",
     "@vitest/coverage-v8": "4.1.10",
     "vite": "8.1.5",
