@@ -1,6 +1,6 @@
 {
   "name": "@plasmicapp/cli",
-  "version": "0.1.374",
+  "version": "0.1.375",
   "description": "plasmic cli for syncing local code with Plasmic designs",
   "homepage": "https://www.plasmic.app",
   "repository": {
@@ -39,7 +39,6 @@
     "@types/findup-sync": "^2.0.2",
     "@types/glob": "^7.2.0",
     "@types/inquirer": "^6.5.0",
-    "@types/latest-version": "^4.0.1",
     "@types/lodash": "^4.17.25",
     "@types/node": "^22",
     "@types/pako": "^1.0.1",

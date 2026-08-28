@@ -1,5 +1,5 @@
 {
-  "version": "1.0.87",
+  "version": "1.0.88",
   "description": "Watch a Plasmic project for changes over socket.io and trigger live updates during development.",
   "homepage": "https://www.plasmic.app",
   "repository": {
@@ -44,9 +44,6 @@
       "limit": "10 KB"
     }
   ],
-  "devDependencies": {
-    "@types/socket.io-client": "^3.0.0"
-  },
   "dependencies": {
     "socket.io-client": "^4.1.2"
   },
