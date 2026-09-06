@@ -58,6 +58,31 @@ function DataQueryCodeEditorLayout_(
 
   const [currentValue, setCurrentValue] = React.useState(displayValue);
   const [codeEditorKey, setCodeEditorKey] = React.useState(0);
+  const justCommitted = React.useRef<string>();
+
+  // Storing the code normalizes its formatting, so adopting the value we just
+  // committed would rewrite what the user typed. Everything else, such as a data
+  // token rename, is a real change to show.
+  React.useEffect(() => {
+    const isOwnCommit = justCommitted.current === defaultValue;
+    justCommitted.current = undefined;
+    if (!isOwnCommit) {
+      setCurrentValue(displayValue);
+    }
+  }, [defaultValue, displayValue]);
+
+  const commitValue = React.useCallback(
+    (val: string) => {
+      setCurrentValue(val);
+      const transformed = viewCtx
+        ? transformDataTokensInCode(val, viewCtx.site, studioCtx.siteInfo.id)
+            .code
+        : val;
+      justCommitted.current = transformed;
+      onChange(transformed);
+    },
+    [onChange, studioCtx.siteInfo.id, viewCtx]
+  );
 
   const completionData = React.useMemo(
     () => getEnvForPlasmicQueries(cleanDataForPreview(data)),
@@ -75,8 +100,7 @@ function DataQueryCodeEditorLayout_(
           currentValue,
           context,
           onUpdate: (v: string) => {
-            setCurrentValue(v);
-            onChange(v);
+            commitValue(v);
             setCodeEditorKey((k) => k + 1);
           },
         },
@@ -87,19 +111,9 @@ function DataQueryCodeEditorLayout_(
           key={codeEditorKey}
           hideLineNumbers={true}
           language="javascript"
-          defaultValue={displayValue}
+          defaultValue={currentValue}
           data={completionData}
-          onChange={(val: string) => {
-            setCurrentValue(val);
-            const transformed = viewCtx
-              ? transformDataTokensInCode(
-                  val,
-                  viewCtx.site,
-                  studioCtx.siteInfo.id
-                ).code
-              : val;
-            onChange(transformed);
-          }}
+          onChange={commitValue}
           enableMinimap={false}
           hideGlobalSuggestions={true}
           folding={false}

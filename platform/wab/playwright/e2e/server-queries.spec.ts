@@ -255,6 +255,22 @@ test.describe("server queries", () => {
     });
     await assertQuerySummary("greeting");
 
+    await test.step("editor keeps the formatting the user typed", async () => {
+      const codeEditor = await openNewCustomCodeQuery(models, "Numbers");
+
+      // Each keystroke is stored as normalized JS, which breaks an array this
+      // long over five lines. The editor has to keep showing what was typed.
+      // Monaco closes the bracket itself, so don't type the "]".
+      await page.keyboard.type("[1, 2, 3");
+      await expect(codeEditor.locator(".view-line")).toHaveText(["[1, 2, 3]"]);
+
+      await serverQueryModal.locator("button").getByText("Execute").click();
+      await expect(previewResult).toContainText("[1, 2, 3]");
+
+      await serverQueryModal.locator("button").getByText("Save").click();
+      await serverQueryModal.waitFor({ state: "hidden" });
+    });
+
     await test.step('Create "Full Greeting" query with $q reference from inspector', async () => {
       const codeEditor = await openNewCustomCodeQuery(models, "Full Greeting");
 

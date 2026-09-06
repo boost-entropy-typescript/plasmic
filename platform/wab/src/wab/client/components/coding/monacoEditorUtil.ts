@@ -505,6 +505,9 @@ function replaceUserValueFn(
   model: monaco.editor.ITextModel
 ) {
   return (value) => {
+    if (model.getValue() === value) {
+      return;
+    }
     editor.executeEdits(
       "replaceUserValue",
       [
