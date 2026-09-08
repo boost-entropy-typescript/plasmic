@@ -1,6 +1,6 @@
 {
   "name": "@plasmicpkgs/strapi",
-  "version": "0.0.39",
+  "version": "0.0.40",
   "description": "Custom functions for querying Strapi content from Plasmic data queries.",
   "homepage": "https://www.plasmic.app",
   "license": "MIT",
@@ -34,7 +34,7 @@
     "postpublish": "bash ../../scripts/publish-api-doc-model.sh"
   },
   "dependencies": {
-    "qs": "^6.15.3"
+    "qs": "^6.16.0"
   },
   "devDependencies": {
     "@plasmicapp/host": "workspace:*",
