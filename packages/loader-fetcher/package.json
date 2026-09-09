@@ -1,5 +1,5 @@
 {
-  "version": "2.0.7",
+  "version": "2.0.8",
   "description": "Low-level fetcher for downloading Plasmic project bundles from the Plasmic API.",
   "homepage": "https://www.plasmic.app",
   "repository": {
@@ -45,9 +45,9 @@
   ],
   "devDependencies": {
     "@types/node": "^20.19.43",
-    "typescript": "^5.2.2",
-    "vite": "8.1.5",
-    "vitest": "4.1.10"
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
   },
   "publishConfig": {
     "access": "public"

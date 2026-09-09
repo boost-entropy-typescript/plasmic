@@ -1,5 +1,5 @@
 {
-  "version": "2.0.27",
+  "version": "2.0.28",
   "name": "@plasmicapp/loader-nextjs",
   "description": "Plasmic loader SDK for Next.js",
   "homepage": "https://www.plasmic.app",
@@ -82,14 +82,14 @@
     "server-only": "0.0.1"
   },
   "devDependencies": {
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "@vitest/coverage-v8": "4.1.10",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
     "next": "^14",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
-    "vite": "8.1.5",
-    "vitest": "4.1.10"
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "next": ">=14.0.0",
