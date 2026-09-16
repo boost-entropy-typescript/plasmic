@@ -1,6 +1,6 @@
 {
   "name": "@plasmicapp/cli",
-  "version": "0.1.378",
+  "version": "0.1.379",
   "description": "plasmic cli for syncing local code with Plasmic designs",
   "homepage": "https://www.plasmic.app",
   "repository": {
@@ -63,7 +63,7 @@
     "open": "^8.0.9",
     "pako": "^1.0.11",
     "path": "^0.12.7",
-    "prettier": "^3.8.3",
+    "prettier": "catalog:",
     "semver": "^7.7.4",
     "socket.io-client": "^4.8.3",
     "tmp": "^0.2.5",
