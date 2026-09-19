@@ -648,6 +648,12 @@ function addMiddlewares(
     logger().debug("Skipping CSRF setup...");
   }
 
+  app.use((req, _res, next) => {
+    if (req.readableAborted) {
+      return;
+    }
+    next();
+  });
   // Parse body further down to prevent unauthorized users from incurring large parses.
   app.use(bodyParser.json({ limit: "400mb" }));
   app.use(bodyParser.urlencoded({ extended: true }));
@@ -1862,15 +1868,21 @@ function addEndErrorHandlers(app: express.Application) {
         res: Response,
         _next: NextFunction,
       ) => {
-        // Too noisy in CI to print AuthError all the time
-        if (!(origErr instanceof AuthError)) {
+        const response = toErrorResponse(origErr);
+
+        // Log at a severity matching the status code we're about to return.
+        // A 4xx is the client's mistake and is expected traffic, so logging it
+        // at ERROR both buries real failures and dominates log volume; only an
+        // unhandled error (no response, i.e. a 500) is ours to act on.
+        if (!response || response.statusCode >= 500) {
           logger().error("ERROR!", origErr);
+        } else if (!(origErr instanceof AuthError)) {
+          logger().warn("Request failed", origErr);
         }
         if (res.headersSent || res.writableEnded) {
           logError(origErr, "Tried to edit closed response");
           return;
         }
-        const response = toErrorResponse(origErr);
         if (response) {
           res.status(response.statusCode).json({ error: response.body });
         } else {
