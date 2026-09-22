@@ -10,9 +10,10 @@ packages:
 
 injectWorkspacePackages: true
 
-# upgrade-internal installs @plasmicapp/* and @plasmicpkgs/* minutes after the release
-# pipeline publishes them, so pnpm's 24h default quarantine fails every release.
-minimumReleaseAge: 0
+minimumReleaseAge: 4320
+minimumReleaseAgeExclude:
+  - "@plasmicapp/*"
+  - "@plasmicpkgs/*"
 
 catalog:
   "@godaddy/terminus": 4.12.1
@@ -49,6 +50,7 @@ overrides:
   playwright: "catalog:"
   playwright-core: "catalog:"
   "vitest>vite": "catalog:"
+  "@aws-sdk/core": 3.977.9
 
   react-aria-components: 1.9.0
   sha.js: ^2.4.12
