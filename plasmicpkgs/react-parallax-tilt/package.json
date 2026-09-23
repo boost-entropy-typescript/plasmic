@@ -1,6 +1,6 @@
 {
   "name": "@plasmicpkgs/react-parallax-tilt",
-  "version": "0.0.263",
+  "version": "0.0.264",
   "description": "Plasmic registration calls for react-parallax-tilt.",
   "homepage": "https://www.plasmic.app",
   "repository": {
@@ -42,7 +42,7 @@
     "tslib": "catalog:"
   },
   "dependencies": {
-    "react-parallax-tilt": "^1.7.341"
+    "react-parallax-tilt": "^1.7.342"
   },
   "peerDependencies": {
     "@plasmicapp/host": ">=1.0.0",
